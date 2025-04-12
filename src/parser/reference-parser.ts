@@ -6,7 +6,9 @@ import { isReadonlyArray, isString } from '../util/object-utils.js'
 import {
   AnyColumn,
   AnyColumnWithTable,
+  AnyPropertyPath,
   ExtractColumnType,
+  ExtractPropertyPathType,
 } from '../util/type-utils.js'
 import { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js'
 import {
@@ -37,6 +39,7 @@ import { JSONPathNode } from '../operation-node/json-path-node.js'
 export type StringReference<DB, TB extends keyof DB> =
   | AnyColumn<DB, TB>
   | AnyColumnWithTable<DB, TB>
+  | AnyPropertyPath<DB, TB>
 
 export type SimpleReferenceExpression<DB, TB extends keyof DB> =
   | StringReference<DB, TB>
@@ -79,21 +82,24 @@ export type ExtractTypeFromStringReference<
   TB extends keyof DB,
   RE extends string,
   DV = unknown,
-> = RE extends `${infer SC}.${infer T}.${infer C}`
-  ? `${SC}.${T}` extends TB
-    ? C extends keyof DB[`${SC}.${T}`]
-      ? DB[`${SC}.${T}`][C]
-      : never
-    : never
-  : RE extends `${infer T}.${infer C}`
-    ? T extends TB
-      ? C extends keyof DB[T]
-        ? DB[T][C]
+> =
+  RE extends AnyPropertyPath<DB, TB>
+    ? ExtractPropertyPathType<DB[TB], RE>
+    : RE extends `${infer SC}.${infer T}.${infer C}`
+      ? `${SC}.${T}` extends TB
+        ? C extends keyof DB[`${SC}.${T}`]
+          ? DB[`${SC}.${T}`][C]
+          : never
         : never
-      : never
-    : RE extends AnyColumn<DB, TB>
-      ? ExtractColumnType<DB, TB, RE>
-      : DV
+      : RE extends `${infer T}.${infer C}`
+        ? T extends TB
+          ? C extends keyof DB[T]
+            ? DB[T][C]
+            : never
+          : never
+        : RE extends AnyColumn<DB, TB>
+          ? ExtractColumnType<DB, TB, RE>
+          : DV
 
 export type OrderedColumnName<C extends string> =
   C extends `${string} ${infer O}`

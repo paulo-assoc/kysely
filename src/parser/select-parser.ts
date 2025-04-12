@@ -4,10 +4,14 @@ import { SelectionNode } from '../operation-node/selection-node.js'
 import {
   AnyAliasedColumn,
   AnyAliasedColumnWithTable,
+  AnyAliasedPropertyPath,
   AnyColumn,
   AnyColumnWithTable,
+  AnyPropertyPath,
+  PropertyPathFromString,
   DrainOuterGeneric,
   ExtractColumnType,
+  ExtractPropertyPathType,
 } from '../util/type-utils.js'
 import { parseAliasedStringReference } from './reference-parser.js'
 import {
@@ -31,6 +35,8 @@ export type SelectExpression<DB, TB extends keyof DB> =
   | AnyAliasedColumn<DB, TB>
   | AnyColumnWithTable<DB, TB>
   | AnyColumn<DB, TB>
+  | AnyAliasedPropertyPath<DB, TB>
+  | AnyPropertyPath<DB, TB>
   | DynamicReferenceBuilder<any>
   | AliasedExpressionOrFactory<DB, TB>
 
@@ -123,37 +129,41 @@ type ExtractTypeFromStringSelectExpression<
   DB,
   TB extends keyof DB,
   SE extends string,
-> = SE extends `${infer SC}.${infer T}.${infer C} as ${string}`
-  ? `${SC}.${T}` extends TB
-    ? C extends keyof DB[`${SC}.${T}`]
-      ? DB[`${SC}.${T}`][C]
-      : never
-    : never
-  : SE extends `${infer T}.${infer C} as ${string}`
-    ? T extends TB
-      ? C extends keyof DB[T]
-        ? DB[T][C]
+> = SE extends `${infer PE extends string} as ${string}`
+  ? PropertyPathFromString<DB[TB], PE>
+  : SE extends `${infer SC}.${infer T}.${infer C} as ${string}`
+    ? `${SC}.${T}` extends TB
+      ? C extends keyof DB[`${SC}.${T}`]
+        ? DB[`${SC}.${T}`][C]
         : never
       : never
-    : SE extends `${infer C} as ${string}`
-      ? C extends AnyColumn<DB, TB>
-        ? ExtractColumnType<DB, TB, C>
-        : never
-      : SE extends `${infer SC}.${infer T}.${infer C}`
-        ? `${SC}.${T}` extends TB
-          ? C extends keyof DB[`${SC}.${T}`]
-            ? DB[`${SC}.${T}`][C]
-            : never
+    : SE extends `${infer T}.${infer C} as ${string}`
+      ? T extends TB
+        ? C extends keyof DB[T]
+          ? DB[T][C]
           : never
-        : SE extends `${infer T}.${infer C}`
-          ? T extends TB
-            ? C extends keyof DB[T]
-              ? DB[T][C]
+        : never
+      : SE extends `${infer C} as ${string}`
+        ? C extends AnyColumn<DB, TB>
+          ? ExtractColumnType<DB, TB, C>
+          : never
+        : SE extends AnyPropertyPath<DB[TB], keyof DB[TB]>
+          ? ExtractPropertyPathType<DB[TB], SE>
+          : SE extends `${infer SC}.${infer T}.${infer C}`
+            ? `${SC}.${T}` extends TB
+              ? C extends keyof DB[`${SC}.${T}`]
+                ? DB[`${SC}.${T}`][C]
+                : never
               : never
-            : never
-          : SE extends AnyColumn<DB, TB>
-            ? ExtractColumnType<DB, TB, SE>
-            : never
+            : SE extends `${infer T}.${infer C}`
+              ? T extends TB
+                ? C extends keyof DB[T]
+                  ? DB[T][C]
+                  : never
+                : never
+              : SE extends AnyColumn<DB, TB>
+                ? ExtractColumnType<DB, TB, SE>
+                : never
 
 export type AllSelection<DB, TB extends keyof DB> = DrainOuterGeneric<{
   [C in AnyColumn<DB, TB>]: {

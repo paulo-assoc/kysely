@@ -230,6 +230,8 @@ export {
   AnyAliasedColumnWithTable,
   AnyColumn,
   AnyColumnWithTable,
+  AnyPropertyPath,
+  AnyAliasedPropertyPath,
   Equals,
   UnknownRow,
   Simplify,

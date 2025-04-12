@@ -99,6 +99,14 @@ export type AnyAliasedColumnWithTable<
 > = `${AnyColumnWithTable<DB, TB>} as ${string}`
 
 /**
+ * Just like {@link AnyPropertyPath} but with a ` as <string>` suffix.
+ */
+export type AnyAliasedPropertyPath<
+  DB,
+  TB extends keyof DB,
+> = `${AnyPropertyPath<DB, TB>} as ${string}`
+
+/**
  * Extracts the item type of an array.
  */
 export type ArrayItemType<T> = T extends ReadonlyArray<infer I> ? I : never
@@ -218,3 +226,67 @@ export type DrainOuterGeneric<T> = [T] extends [unknown] ? T : never
 export type ShallowRecord<K extends keyof any, T> = DrainOuterGeneric<{
   [P in K]: T
 }>
+
+type Decrement<N extends number> = [never, 0, 1, 2, 3, 4, 5, 6, 7, 8][N]
+
+export type PropertyPathFromString<
+  T,
+  PE extends string,
+  Depth extends number = 5,
+> = Depth extends 0
+  ? never
+  : PE extends `${infer K}.${infer Rest}`
+    ? K extends keyof T
+      ? PropertyPathFromString<T[K], Rest, Decrement<Depth>>
+      : never
+    : PE extends `${infer ArrayKey}[${number}]${infer Rest}`
+      ? ArrayKey extends keyof T
+        ? T[ArrayKey] extends Array<infer U>
+          ? Rest extends `.${infer Remaining}`
+            ? PropertyPathFromString<U, Remaining, Decrement<Depth>>
+            : U
+          : never
+        : never
+      : PE extends keyof T
+        ? T[PE]
+        : never
+
+export type ExtractPropertyPathType<
+  T,
+  P extends string,
+> = P extends `${infer K}[${number}].${infer Rest}`
+  ? K extends keyof T
+    ? T[K] extends Array<infer AV>
+      ? ExtractPropertyPathType<AV, Rest>
+      : never
+    : never
+  : P extends `${infer K}.${infer Rest}`
+    ? K extends keyof T
+      ? ExtractPropertyPathType<T[K], Rest>
+      : never
+    : P extends keyof T
+      ? T[P]
+      : never
+
+type NestedPropertyPaths<
+  T,
+  K extends keyof T,
+  Depth extends number = 5,
+> = Depth extends 0
+  ? never
+  : K extends string
+    ? T[K] extends Array<infer AV>
+      ?
+          | K
+          | `${K}[${number}]`
+          | `${K}[${number}].${NestedPropertyPaths<AV, keyof AV, Decrement<Depth>>}`
+      : T[K] extends object
+        ? K | `${K}.${NestedPropertyPaths<T[K], keyof T[K], Decrement<Depth>>}`
+        : K
+    : never
+
+export type AnyPropertyPath<DB, TB extends keyof DB> = NestedPropertyPaths<
+  DB[TB],
+  keyof DB[TB]
+> &
+  string
