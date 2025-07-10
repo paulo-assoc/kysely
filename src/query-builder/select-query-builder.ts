@@ -83,6 +83,8 @@ import { TopModifier } from '../operation-node/top-node.js'
 import { parseTop } from '../parser/top-parser.js'
 import { JoinType } from '../operation-node/join-node.js'
 import { OrderByInterface } from './order-by-interface.js'
+import { FeedOptions, FeedResponse } from '@azure/cosmos'
+import { FeedResult } from '../driver/database-connection.js'
 
 export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   extends WhereInterface<DB, TB>,
@@ -2125,6 +2127,13 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   execute(): Promise<Simplify<O>[]>
 
   /**
+   * Executes the query and returns an array of rows.
+   *
+   * Also see the {@link executeTakeFirst} and {@link executeTakeFirstOrThrow} methods.
+   */
+  find(options?: FeedOptions): Promise<FeedResult<O>>
+
+  /**
    * Executes the query and returns the first result or undefined if
    * the query returned no result.
    */
@@ -2656,6 +2665,18 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     )
 
     return result.rows
+  }
+
+  async find(options?: FeedOptions): Promise<FeedResponse<any>> {
+    const compiledQuery = this.compile()
+
+    const result = await this.#props.executor.cosmosExecuteQuery<O>(
+      compiledQuery,
+      this.#props.queryId,
+      options,
+    )
+
+    return result
   }
 
   async executeTakeFirst(): Promise<SimplifySingleResult<O>> {

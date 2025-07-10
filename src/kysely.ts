@@ -24,6 +24,7 @@ import { Log, LogConfig } from './util/log.js'
 import { QueryExecutorProvider } from './query-executor/query-executor-provider.js'
 import {
   DatabaseConnection,
+  FeedResult,
   QueryResult,
 } from './driver/database-connection.js'
 import { CompiledQuery } from './query-compiler/compiled-query.js'
@@ -48,6 +49,7 @@ import {
   provideControlledConnection,
 } from './util/provide-controlled-connection.js'
 import { ConnectionProvider } from './driver/connection-provider.js'
+import { FeedOptions } from '@azure/cosmos'
 
 // @ts-ignore
 Symbol.asyncDispose ??= Symbol('Symbol.asyncDispose')
@@ -1175,6 +1177,15 @@ class NotCommittedOrRolledBackAssertingExecutor implements QueryExecutor {
   ): Promise<QueryResult<R>> {
     assertNotCommittedOrRolledBack(this.#state)
     return this.#executor.executeQuery(compiledQuery, queryId)
+  }
+
+  cosmosExecuteQuery<R>(
+    compiledQuery: CompiledQuery<R>,
+    queryId: QueryId,
+    options: FeedOptions,
+  ): Promise<FeedResult<R>> {
+    assertNotCommittedOrRolledBack(this.#state)
+    return this.#executor.cosmosExecuteQuery(compiledQuery, queryId, options)
   }
 
   stream<R>(

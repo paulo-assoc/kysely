@@ -1,5 +1,6 @@
 import {
   DatabaseConnection,
+  FeedResult,
   QueryResult,
 } from '../../driver/database-connection.js'
 import {
@@ -30,6 +31,7 @@ import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
 import { randomString } from '../../util/random-string.js'
 import { Deferred } from '../../util/deferred.js'
+import { FeedOptions } from '@azure/cosmos'
 
 const PRIVATE_RESET_METHOD = Symbol()
 const PRIVATE_DESTROY_METHOD = Symbol()
@@ -196,6 +198,13 @@ class MssqlConnection implements DatabaseConnection {
     } catch (err) {
       throw extendStackTrace(err, new Error())
     }
+  }
+
+  async cosmosExecuteQuery<R>(
+    compiledQuery: CompiledQuery,
+    options?: FeedOptions,
+  ): Promise<FeedResult<R>> {
+    return new FeedResult<R>([], {}, false, {} as any) // TODO: Implement Cosmos DB support;
   }
 
   async rollbackTransaction(savepointName?: string): Promise<void> {
