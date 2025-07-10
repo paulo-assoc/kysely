@@ -1,10 +1,11 @@
 import { ConnectionProvider } from '../driver/connection-provider.js'
-import { QueryResult } from '../driver/database-connection.js'
+import { FeedResult, QueryResult } from '../driver/database-connection.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { RootOperationNode } from '../query-compiler/query-compiler.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { QueryId } from '../util/query-id.js'
 import { DialectAdapter } from '../dialect/dialect-adapter.js'
+import { FeedOptions } from '@azure/cosmos'
 
 /**
  * This interface abstracts away the details of how to compile a query into SQL
@@ -50,8 +51,18 @@ export interface QueryExecutor extends ConnectionProvider {
   ): Promise<QueryResult<R>>
 
   /**
+   * Executes a cosmos compiled query and runs the result through all plugins'
+   * `transformResult` method.
+   */
+  cosmosExecuteQuery<R>(
+    compiledQuery: CompiledQuery<R>,
+    queryId: QueryId,
+    options?: FeedOptions,
+  ): Promise<FeedResult<R>>
+
+  /**
    * Executes a compiled query and runs the result through all plugins'
-   * `transformResult` method. Results are streamead instead of loaded
+   * `transformResult` method. Results are streamed instead of loaded
    * at once.
    */
   stream<R>(

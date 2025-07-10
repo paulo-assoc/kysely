@@ -1,5 +1,7 @@
+import { FeedOptions } from '@azure/cosmos'
 import {
   DatabaseConnection,
+  FeedResult,
   QueryResult,
 } from '../../driver/database-connection.js'
 import { Driver } from '../../driver/driver.js'
@@ -129,6 +131,13 @@ class SqliteConnection implements DatabaseConnection {
           : undefined,
       rows: [],
     })
+  }
+
+  async cosmosExecuteQuery<R>(
+    compiledQuery: CompiledQuery,
+    options?: FeedOptions,
+  ): Promise<FeedResult<R>> {
+    return new FeedResult<R>([], {}, false, {} as any) // TODO: Implement Cosmos DB support;
   }
 
   async *streamQuery<R>(

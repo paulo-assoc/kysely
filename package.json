@@ -81,6 +81,9 @@
     "Sami Koskimäki <sami@jakso.me>",
     "Igal Klebanov <igalklebanov@gmail.com>"
   ],
+  "dependencies": {
+    "@azure/cosmos": "^4.3.0"
+  },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.17.0",
     "@ark/attest": "^0.36.0",

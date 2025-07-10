@@ -160,7 +160,7 @@ type ExtractTypeFromStringSelectExpression<
                 ? C extends keyof DB[T]
                   ? DB[T][C]
                   : never
-                : never
+                : PropertyPathFromString<DB[TB], SE> // Use PropertyPathFromString for nested objects
               : SE extends AnyColumn<DB, TB>
                 ? ExtractColumnType<DB, TB, SE>
                 : never

@@ -133,6 +133,16 @@ export type SimplifyResult<O> = O extends InsertResult
 
 export type Simplify<T> = DrainOuterGeneric<{ [K in keyof T]: T[K] } & {}>
 
+// export type Simplify2<T, Depth extends number = 9> = Depth extends 0
+//   ? T
+//   : DrainOuterGeneric<
+//       T extends Array<infer U>
+//         ? Array<Simplify2<U, Decrement<Depth>>>
+//         : T extends object
+//           ? { [K in keyof T]: Simplify2<T[K], Decrement<Depth>> } & {}
+//           : T
+//     >
+
 /**
  * Represents a database row whose column names and their types are unknown.
  */

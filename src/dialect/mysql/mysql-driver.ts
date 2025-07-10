@@ -1,5 +1,7 @@
+import { FeedOptions } from '@azure/cosmos'
 import {
   DatabaseConnection,
+  FeedResult,
   QueryResult,
 } from '../../driver/database-connection.js'
 import { Driver, TransactionSettings } from '../../driver/driver.js'
@@ -204,6 +206,13 @@ class MysqlConnection implements DatabaseConnection {
     } catch (err) {
       throw extendStackTrace(err, new Error())
     }
+  }
+
+  async cosmosExecuteQuery<R>(
+    compiledQuery: CompiledQuery,
+    options?: FeedOptions,
+  ): Promise<FeedResult<R>> {
+    return new FeedResult<R>([], {}, false, {} as any) // TODO: Implement Cosmos DB support;
   }
 
   #executeQuery(compiledQuery: CompiledQuery): Promise<MysqlQueryResult> {

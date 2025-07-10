@@ -292,3 +292,5 @@ export {
   ExpressionOrFactory,
 } from './parser/expression-parser.js'
 export { Collation } from './parser/collate-parser.js'
+
+export { FeedOptions } from '@azure/cosmos'

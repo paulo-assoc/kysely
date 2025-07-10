@@ -1,4 +1,9 @@
-import { DatabaseConnection, QueryResult } from './database-connection.js'
+import { CosmosDiagnostics } from '@azure/cosmos'
+import {
+  DatabaseConnection,
+  FeedResult,
+  QueryResult,
+} from './database-connection.js'
 import { Driver } from './driver.js'
 
 /**
@@ -85,6 +90,10 @@ class DummyConnection implements DatabaseConnection {
     return {
       rows: [],
     }
+  }
+
+  async cosmosExecuteQuery<R>(): Promise<FeedResult<R>> {
+    return new FeedResult<R>([], {}, false, new CosmosDiagnostics())
   }
 
   async *streamQuery<R>(): AsyncIterableIterator<QueryResult<R>> {

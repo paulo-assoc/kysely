@@ -1,6 +1,7 @@
 import { ConnectionProvider } from '../driver/connection-provider.js'
 import {
   DatabaseConnection,
+  FeedResult,
   QueryResult,
 } from '../driver/database-connection.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
@@ -12,6 +13,7 @@ import { DialectAdapter } from '../dialect/dialect-adapter.js'
 import { QueryExecutor } from './query-executor.js'
 import { provideControlledConnection } from '../util/provide-controlled-connection.js'
 import { logOnce } from '../util/log-once.js'
+import { FeedOptions } from '@azure/cosmos'
 
 const NO_PLUGINS: ReadonlyArray<KyselyPlugin> = freeze([])
 
@@ -74,6 +76,28 @@ export abstract class QueryExecutorBase implements QueryExecutor {
       }
 
       return await this.#transformResult(result, queryId)
+    })
+  }
+
+  async cosmosExecuteQuery<R>(
+    compiledQuery: CompiledQuery,
+    queryId: QueryId,
+    options?: FeedOptions,
+  ): Promise<FeedResult<R>> {
+    return await this.provideConnection(async (connection) => {
+      const result = await connection.cosmosExecuteQuery<R>(
+        compiledQuery,
+        options,
+      )
+
+      if ('numUpdatedOrDeletedRows' in result) {
+        logOnce(
+          'kysely:warning: outdated driver/plugin detected! `QueryResult.numUpdatedOrDeletedRows` has been replaced with `QueryResult.numAffectedRows`.',
+        )
+      }
+
+      return result
+      //return await this.#transformResult(result, queryId)
     })
   }
 
