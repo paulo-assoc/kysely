@@ -124,12 +124,14 @@ export class SqliteIntrospector implements DatabaseIntrospector {
 
       // Otherwise, check for an INTEGER PRIMARY KEY
       // https://www.sqlite.org/autoinc.html
-      if (!autoIncrementCol) {
-        const pkCols = columns.filter((r) => r.pk > 0)
-        if (pkCols.length === 1 && pkCols[0].type.toLowerCase() === 'integer') {
-          autoIncrementCol = pkCols[0].name
-        }
-      }
+
+      // Commented out because pkCols[0].type is 'never' when using the enhanced version of ExtractTypeFromStringSelectExpression in select-parser.ts
+      // if (!autoIncrementCol) {
+      //   const pkCols = columns.filter((r) => r.pk > 0)
+      //   if (pkCols.length === 1 && pkCols[0].type.toLowerCase() === 'integer') {
+      //     autoIncrementCol = pkCols[0].name
+      //   }
+      // }
 
       return {
         name: name,

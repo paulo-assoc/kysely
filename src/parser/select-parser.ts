@@ -8,9 +8,7 @@ import {
   AnyColumn,
   AnyColumnWithTable,
   AnyPropertyPath,
-  PropertyPathFromString,
   DrainOuterGeneric,
-  ExtractColumnType,
   ExtractPropertyPathType,
 } from '../util/type-utils.js'
 import { parseAliasedStringReference } from './reference-parser.js'
@@ -125,45 +123,152 @@ type ExtractTypeFromSelectExpression<
             ? ExtractTypeFromStringSelectExpression<DB, TB, RA> | undefined
             : never
 
-type ExtractTypeFromStringSelectExpression<
+// This is the new version that works correctly with nested objects
+export type ExtractTypeFromStringSelectExpression<
   DB,
   TB extends keyof DB,
   SE extends string,
 > = SE extends `${infer PE extends string} as ${string}`
-  ? PropertyPathFromString<DB[TB], PE>
-  : SE extends `${infer SC}.${infer T}.${infer C} as ${string}`
-    ? `${SC}.${T}` extends TB
-      ? C extends keyof DB[`${SC}.${T}`]
-        ? DB[`${SC}.${T}`][C]
-        : never
-      : never
-    : SE extends `${infer T}.${infer C} as ${string}`
-      ? T extends TB
-        ? C extends keyof DB[T]
-          ? DB[T][C]
-          : never
-        : never
-      : SE extends `${infer C} as ${string}`
-        ? C extends AnyColumn<DB, TB>
-          ? ExtractColumnType<DB, TB, C>
-          : never
-        : SE extends AnyPropertyPath<DB[TB], keyof DB[TB]>
-          ? ExtractPropertyPathType<DB[TB], SE>
-          : SE extends `${infer SC}.${infer T}.${infer C}`
-            ? `${SC}.${T}` extends TB
-              ? C extends keyof DB[`${SC}.${T}`]
-                ? DB[`${SC}.${T}`][C]
-                : never
-              : never
-            : SE extends `${infer T}.${infer C}`
-              ? T extends TB
-                ? C extends keyof DB[T]
-                  ? DB[T][C]
-                  : never
-                : PropertyPathFromString<DB[TB], SE> // Use PropertyPathFromString for nested objects
-              : SE extends AnyColumn<DB, TB>
-                ? ExtractColumnType<DB, TB, SE>
-                : never
+  ? ExtractPropertyPathType<DB[TB], PE>
+  : SE extends `${infer PE extends string}`
+    ? ExtractPropertyPathType<DB[TB], PE>
+    : never
+
+// This is the original version that was not working correctly with nested objects
+// type ExtractTypeFromStringSelectExpression<
+//   DB,
+//   TB extends keyof DB,
+//   SE extends string,
+// > = SE extends `${infer SC}.${infer T}.${infer C} as ${string}`
+//   ? `${SC}.${T}` extends TB
+//     ? C extends keyof DB[`${SC}.${T}`]
+//       ? DB[`${SC}.${T}`][C]
+//       : never
+//     : never
+//   : SE extends `${infer T}.${infer C} as ${string}`
+//     ? T extends TB
+//       ? C extends keyof DB[T]
+//         ? DB[T][C]
+//         : never
+//       : never
+//     : SE extends `${infer C} as ${string}`
+//       ? C extends AnyColumn<DB, TB>
+//         ? ExtractColumnType<DB, TB, C>
+//         : never
+//       : SE extends `${infer SC}.${infer T}.${infer C}`
+//         ? `${SC}.${T}` extends TB
+//           ? C extends keyof DB[`${SC}.${T}`]
+//             ? DB[`${SC}.${T}`][C]
+//             : never
+//           : never
+//         : SE extends `${infer T}.${infer C}`
+//           ? T extends TB
+//             ? C extends keyof DB[T]
+//               ? DB[T][C]
+//               : never
+//             : never
+//           : SE extends AnyColumn<DB, TB>
+//             ? ExtractColumnType<DB, TB, SE>
+//             : never
+
+// type ExtractTypeFromStringSelectExpression<
+//   DB,
+//   TB extends keyof DB,
+//   SE extends string,
+// > = SE extends `${infer PE extends string} as ${string}`
+//   ? ExtractPropertyPathType<DB[TB], PE>
+//   : SE extends `${infer SC}.${infer T}.${infer C} as ${string}`
+//     ? `${SC}.${T}` extends TB
+//       ? C extends keyof DB[`${SC}.${T}`]
+//         ? DB[`${SC}.${T}`][C]
+//         : 'a'
+//       : 'b'
+//     : SE extends `${infer T}.${infer C} as ${string}`
+//       ? T extends TB
+//         ? C extends keyof DB[T]
+//           ? DB[T][C]
+//           : 'c'
+//         : 'd'
+//       : SE extends `${infer C} as ${string}`
+//         ? C extends AnyColumn<DB, TB>
+//           ? ExtractColumnType<DB, TB, C>
+//           : 'e'
+//         : SE extends AnyPropertyPath<DB[TB], keyof DB[TB]>
+//           ? ExtractPropertyPathType<DB[TB], SE>
+//           : SE extends `${infer SC}.${infer T}.${infer C}`
+//             ? `${SC}.${T}` extends TB
+//               ? C extends keyof DB[`${SC}.${T}`]
+//                 ? DB[`${SC}.${T}`][C]
+//                 : 'f'
+//               : 'g'
+//             : SE extends `${infer T}.${infer C}`
+//               ? T extends TB
+//                 ? C extends keyof DB[T]
+//                   ? DB[T][C]
+//                   : 'h'
+//                 : ExtractPropertyPathType<DB[TB], SE> // Use PropertyPathFromString for nested objects
+//               : SE extends AnyColumn<DB, TB>
+//                 ? ExtractColumnType<DB, TB, SE>
+//                 : 'i'
+
+interface User {
+  name: string
+  details: {
+    age: number
+    hobbies: string[]
+    colors: string[][]
+    addresses: {
+      street: string
+      city: string
+      zip: string
+      villa: {
+        name: string
+        year: number
+        old: boolean
+      }
+    }[]
+  }
+  friends: { id: number; name: string }[]
+
+  settings: {
+    theme: 'light' | 'dark'
+  }[]
+}
+
+interface Database {
+  user: User
+}
+
+type NameType = Selection<Database, 'user', 'name'> // string
+type AgeType = Selection<Database, 'user', 'details.age'> // number
+type AddressType = Selection<Database, 'user', 'details.addresses[0]'> // { street: string; city: string; zip: string; }
+type VillaType = Selection<Database, 'user', 'details.addresses[0].villa'> // { name: string; year: number; old: boolean; }
+type HobbyType = Selection<Database, 'user', 'details.hobbies[0]'> // string
+type HobbiesType = Selection<Database, 'user', 'details.hobbies'> // string[]
+type FriendNameType = Selection<Database, 'user', 'friends[0].name'> // string
+type SettingsType = Selection<Database, 'user', 'settings'> // { theme: "light" | "dark"; }[]
+type SettingType = Selection<Database, 'user', 'settings[0]'> // { theme: "light" | "dark"; }
+type ThemeType = Selection<Database, 'user', 'settings[0].theme'> // "light" | "dark"
+
+type NameTypeA = Selection<Database, 'user', 'name as n'> // string
+type AgeTypeA = Selection<Database, 'user', 'details.age as a'> // number
+type AddressTypeA = Selection<Database, 'user', 'details.addresses[0] as a'> // { street: string; city: string; zip: string; }
+type VillaTypeA = Selection<Database, 'user', 'details.addresses[0].villa as v'> // { name: string; year: number; old: boolean; }
+type HobbyTypeA = Selection<Database, 'user', 'details.hobbies[0] as h'> // string
+type HobbiesTypeA = Selection<Database, 'user', 'details.hobbies as h'> // string[]
+type FriendNameTypeA = Selection<Database, 'user', 'friends[0].name as fn'> // string
+type SettingsTypeA = Selection<Database, 'user', 'settings as s'> // { theme: "light" | "dark"; }[]
+type SettingTypeA = Selection<Database, 'user', 'settings[0] as s'> // { theme: "light" | "dark"; }
+type ThemeTypeA = Selection<Database, 'user', 'settings[0].theme as t'> // "light" | "dark"
+
+// type NameType = ExtractPropertyPathType<User, 'name'> // string
+// type AgeType = ExtractPropertyPathType<User, 'details.age'> // number
+// type HobbyType = ExtractPropertyPathType<User, 'details.hobbies[0]'> // string
+// type HobbiesType = ExtractPropertyPathType<User, 'details.hobbies'> // string[]
+// type FriendNameType = ExtractPropertyPathType<User, 'friends[0].name'> // string
+// type SettingsType = ExtractPropertyPathType<User, 'settings'> // { theme: "light" | "dark"; }[]
+// type SettingType = ExtractPropertyPathType<User, 'settings[0]'> // { theme: "light" | "dark"; }
+// type ThemeType = ExtractPropertyPathType<User, 'settings[0].theme'> // "light" | "dark"
 
 export type AllSelection<DB, TB extends keyof DB> = DrainOuterGeneric<{
   [C in AnyColumn<DB, TB>]: {
