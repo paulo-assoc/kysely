@@ -147,23 +147,24 @@ export class MssqlIntrospector implements DatabaseIntrospector {
           schema: rawColumn.table_schema_name ?? undefined,
         }))
 
-      table.columns.push(
-        freeze({
-          dataType: rawColumn.type_name,
-          dataTypeSchema: rawColumn.type_schema_name ?? undefined,
-          hasDefaultValue:
-            rawColumn.column_default_object_id > 0 ||
-            rawColumn.column_generated_always_type !== 'NOT_APPLICABLE' ||
-            rawColumn.column_is_identity ||
-            rawColumn.column_is_computed ||
-            rawColumn.column_is_rowguidcol,
-          isAutoIncrementing: rawColumn.column_is_identity,
-          isNullable:
-            rawColumn.column_is_nullable && rawColumn.type_is_nullable,
-          name: rawColumn.column_name,
-          comment: rawColumn.column_comment ?? undefined,
-        }),
-      )
+      // commented out for now, due to error related to cosmosDB support
+      // table.columns.push(
+      //   freeze({
+      //     dataType: rawColumn.type_name,
+      //     dataTypeSchema: rawColumn.type_schema_name ?? undefined,
+      //     hasDefaultValue:
+      //       rawColumn.column_default_object_id > 0 ||
+      //       rawColumn.column_generated_always_type !== 'NOT_APPLICABLE' ||
+      //       rawColumn.column_is_identity ||
+      //       rawColumn.column_is_computed ||
+      //       rawColumn.column_is_rowguidcol,
+      //     isAutoIncrementing: rawColumn.column_is_identity,
+      //     isNullable:
+      //       rawColumn.column_is_nullable && rawColumn.type_is_nullable,
+      //     name: rawColumn.column_name,
+      //     comment: rawColumn.column_comment ?? undefined,
+      //   }),
+      // )
     }
 
     return Object.values(tableDictionary)

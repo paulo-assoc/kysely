@@ -7,6 +7,7 @@ import {
   AnyColumn,
   AnyColumnWithTable,
   AnyPropertyPath,
+  AnyPropertyPathWithTable,
   ExtractColumnType,
   ExtractPropertyPathType,
 } from '../util/type-utils.js'
@@ -35,11 +36,13 @@ import {
 import { JSONReferenceNode } from '../operation-node/json-reference-node.js'
 import { JSONOperatorChainNode } from '../operation-node/json-operator-chain-node.js'
 import { JSONPathNode } from '../operation-node/json-path-node.js'
+import { ExtractTypeFromStringSelectExpression } from './select-parser.js'
 
 export type StringReference<DB, TB extends keyof DB> =
   | AnyColumn<DB, TB>
   | AnyColumnWithTable<DB, TB>
   | AnyPropertyPath<DB, TB>
+  | AnyPropertyPathWithTable<DB, TB>
 
 export type SimpleReferenceExpression<DB, TB extends keyof DB> =
   | StringReference<DB, TB>
@@ -66,7 +69,8 @@ export type ExtractRawTypeFromReferenceExpression<
   RE,
   DV = unknown,
 > = RE extends string
-  ? ExtractTypeFromStringReference<DB, TB, RE>
+  ? //? ExtractTypeFromStringReference<DB, TB, RE>
+    ExtractTypeFromStringSelectExpression<DB, TB, RE> // experimental
   : RE extends SelectQueryBuilderExpression<infer O>
     ? O[keyof O] | null
     : RE extends (qb: any) => SelectQueryBuilderExpression<infer O>
@@ -84,7 +88,7 @@ export type ExtractTypeFromStringReference<
   DV = unknown,
 > =
   RE extends AnyPropertyPath<DB, TB>
-    ? ExtractPropertyPathType<DB[TB], RE>
+    ? ExtractPropertyPathType<DB[TB], RE> //TODO: not working with aliased references? The property type is not extracted.
     : RE extends `${infer SC}.${infer T}.${infer C}`
       ? `${SC}.${T}` extends TB
         ? C extends keyof DB[`${SC}.${T}`]

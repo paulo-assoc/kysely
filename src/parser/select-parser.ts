@@ -8,6 +8,7 @@ import {
   AnyColumn,
   AnyColumnWithTable,
   AnyPropertyPath,
+  AnyPropertyPathWithTable,
   DrainOuterGeneric,
   ExtractPropertyPathType,
 } from '../util/type-utils.js'
@@ -34,6 +35,7 @@ export type SelectExpression<DB, TB extends keyof DB> =
   | AnyColumnWithTable<DB, TB>
   | AnyColumn<DB, TB>
   | AnyAliasedPropertyPath<DB, TB>
+  | AnyPropertyPathWithTable<DB, TB>
   | AnyPropertyPath<DB, TB>
   | DynamicReferenceBuilder<any>
   | AliasedExpressionOrFactory<DB, TB>
@@ -170,46 +172,6 @@ export type ExtractTypeFromStringSelectExpression<
 //           : SE extends AnyColumn<DB, TB>
 //             ? ExtractColumnType<DB, TB, SE>
 //             : never
-
-// type ExtractTypeFromStringSelectExpression<
-//   DB,
-//   TB extends keyof DB,
-//   SE extends string,
-// > = SE extends `${infer PE extends string} as ${string}`
-//   ? ExtractPropertyPathType<DB[TB], PE>
-//   : SE extends `${infer SC}.${infer T}.${infer C} as ${string}`
-//     ? `${SC}.${T}` extends TB
-//       ? C extends keyof DB[`${SC}.${T}`]
-//         ? DB[`${SC}.${T}`][C]
-//         : 'a'
-//       : 'b'
-//     : SE extends `${infer T}.${infer C} as ${string}`
-//       ? T extends TB
-//         ? C extends keyof DB[T]
-//           ? DB[T][C]
-//           : 'c'
-//         : 'd'
-//       : SE extends `${infer C} as ${string}`
-//         ? C extends AnyColumn<DB, TB>
-//           ? ExtractColumnType<DB, TB, C>
-//           : 'e'
-//         : SE extends AnyPropertyPath<DB[TB], keyof DB[TB]>
-//           ? ExtractPropertyPathType<DB[TB], SE>
-//           : SE extends `${infer SC}.${infer T}.${infer C}`
-//             ? `${SC}.${T}` extends TB
-//               ? C extends keyof DB[`${SC}.${T}`]
-//                 ? DB[`${SC}.${T}`][C]
-//                 : 'f'
-//               : 'g'
-//             : SE extends `${infer T}.${infer C}`
-//               ? T extends TB
-//                 ? C extends keyof DB[T]
-//                   ? DB[T][C]
-//                   : 'h'
-//                 : ExtractPropertyPathType<DB[TB], SE> // Use PropertyPathFromString for nested objects
-//               : SE extends AnyColumn<DB, TB>
-//                 ? ExtractColumnType<DB, TB, SE>
-//                 : 'i'
 
 interface User {
   name: string
