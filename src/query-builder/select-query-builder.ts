@@ -27,7 +27,7 @@ import { QueryNode } from '../operation-node/query-node.js'
 import {
   AnyArrayPropertyPathWithTable,
   DrainOuterGeneric,
-  ArrayElementType,
+  ArrayItemType,
   NarrowPartial,
   Nullable,
   ShallowRecord,
@@ -2807,6 +2807,7 @@ class AliasedSelectQueryBuilderImpl<
   }
 }
 
+//TODO: Remove this after the current solution is tested throroughly.
 // export type SelectQueryBuilderWithJoin<
 //   DB,
 //   TB extends keyof DB,
@@ -2834,12 +2835,12 @@ export type SelectQueryBuilderWithJoin<
     ? JA extends keyof DB
       ? JP extends keyof DB[JA]
         ? DB[JA][JP] extends any[]
-          ? InnerJoinedBuilder<DB, TB, O, A, ArrayElementType<DB[JA][JP]>>
-          : SelectQueryBuilder<DB, TB, O>
-        : SelectQueryBuilder<DB, TB, O>
-      : SelectQueryBuilder<DB, TB, O>
-    : SelectQueryBuilder<DB, TB, O>
-  : SelectQueryBuilder<DB, TB, O>
+          ? InnerJoinedBuilder<DB, TB, O, A, ArrayItemType<DB[JA][JP]>>
+          : never
+        : never
+      : never
+    : never
+  : never
 
 export type SelectQueryBuilderWithInnerJoin<
   DB,

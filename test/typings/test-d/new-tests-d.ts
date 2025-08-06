@@ -24,14 +24,27 @@ interface Database {
 }
 
 async function JoinTest(db: Kysely<Database>) {
-  const result = db
+  const result1 = db
     .selectFrom('orders as o')
     .join('i in o.items')
     .join('t in o.tags')
+    .join('x in i.taxes')
     .groupBy('i.category')
     .select((eb) => [
       'i.category',
       eb.fn.sum<number>('i.amount').as('totalAmount'),
+      'x.type as taxType',
     ])
     .compile()
+
+  // const result2 = db
+  //   .selectFrom('orders as o')
+  //   .join('i in o.items[0].taxes')
+  //   .join('t in o.tags')
+  //   .groupBy('i.category')
+  //   .select((eb) => [
+  //     'i.category',
+  //     eb.fn.sum<number>('i.amount').as('totalAmount'),
+  //   ])
+  //   .compile()
 }

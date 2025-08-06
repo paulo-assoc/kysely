@@ -8,7 +8,7 @@ import {
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { OperationNode } from '../operation-node/operation-node.js'
 import { AliasedExpression } from '../expression/expression.js'
-import { ArrayPropertyNames, DrainOuterGeneric } from '../util/type-utils.js'
+import { AnyArrayPropertyPath, DrainOuterGeneric } from '../util/type-utils.js'
 
 export type TableExpression<DB, TB extends keyof DB> =
   | AnyAliasedTable<DB>
@@ -22,7 +22,7 @@ export type TableExpressionOrList<DB, TB extends keyof DB> =
 export type AnyAliasedNestedArray<
   DB,
   TB extends keyof DB,
-> = `${string} in ${ArrayPropertyNames<DB, TB>}`
+> = `${string} in ${AnyArrayPropertyPath<DB, TB>}`
 
 export type SimpleTableReference<DB> = AnyAliasedTable<DB> | AnyTable<DB>
 export type AnyAliasedTable<DB> = `${AnyTable<DB>} as ${string}`
