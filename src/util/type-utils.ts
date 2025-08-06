@@ -87,6 +87,32 @@ export type AnyPropertyPathWithTable<DB, TB extends keyof DB> = {
   [T in TB]: `${T & string}.${AnyPropertyPath<DB, TB> & string}`
 }[TB]
 
+// Grok: Utility type to compute array property paths for a given table
+type ArrayPropertyPath<T> = {
+  [K in keyof T]: T[K] extends any[] ? K : never
+}[keyof T]
+
+// export type AnyArrayPropertyPathWithTable<DB, TB extends keyof DB> = {
+//   [T in TB]: `${T & string}.${AnyArrayPropertyPath<DB, TB> & string}`
+// }[TB]
+
+export type AnyArrayPropertyPathWithTable<DB, TB extends keyof any> =
+  | {
+      [T in TB]: T extends keyof DB
+        ? `${T & string}.${ArrayPropertyPath<DB[T]> & string}`
+        : never
+    }[TB]
+  | {
+      [A in keyof DB]: A extends string
+        ? DB[A] extends DB[keyof DB]
+          ? `${A & string}.${ArrayPropertyPath<DB[A]> & string}`
+          : never
+        : never
+    }[keyof DB]
+
+// Utility type to extract the element type of an array
+export type ArrayElementType<T> = T extends (infer U)[] ? U : never
+
 /**
  * Just like {@link AnyColumn} but with a ` as <string>` suffix.
  */
@@ -242,8 +268,6 @@ export type ShallowRecord<K extends keyof any, T> = DrainOuterGeneric<{
   [P in K]: T
 }>
 
-type ArrayElementType2<U> = U extends Array<infer AV> ? AV : never
-
 type DirectExtract<T, P extends string> = T extends any
   ? P extends keyof T
     ? T[P]
@@ -256,12 +280,12 @@ export type ExtractPropertyPathType<T, P extends string> = T extends any
       ? ExtractPropertyPathType<T[K], Rest>
       : K extends `${infer ArrayKey}[${number}]`
         ? ArrayKey extends keyof T
-          ? ExtractPropertyPathType<ArrayElementType2<T[ArrayKey]>, Rest>
+          ? ExtractPropertyPathType<ArrayElementType<T[ArrayKey]>, Rest>
           : never
         : ExtractPropertyPathType<T, Rest>
     : P extends `${infer K}[${number}]`
       ? K extends keyof T
-        ? ArrayElementType2<T[K]>
+        ? ArrayElementType<T[K]>
         : never
       : DirectExtract<T, P>
   : never
@@ -304,8 +328,8 @@ export type ArrayPropertyNames<
                         ? `${K & string}[${number}]`
                         : `${Path}.${K & string}[${number}]`
                     >
-                  : 'a'
-                : 'b')
+                  : never
+                : never)
         : DB[T][K] extends object
           ? ArrayPropertyNames<
               { _: DB[T][K] },
@@ -313,7 +337,7 @@ export type ArrayPropertyNames<
               Decrement[Depth],
               Path extends '' ? `${K & string}` : `${Path}.${K & string}`
             > // Recurse if object
-          : 'c' // Exclude non-array, non-object properties
+          : never // Exclude non-array, non-object properties
     }[keyof DB[T]]
 
 // Helper type to decrement depth
@@ -343,7 +367,7 @@ export type GetPathType<
       : never
 
 // Helper type to extract the element type of an array property
-export type ArrayElementType<
+export type ArrayPathElementType<
   DB,
   T extends keyof DB,
   Path extends ArrayPropertyNames<DB, T>,
@@ -444,6 +468,15 @@ export type AnyPropertyPath<DB, TB extends keyof DB> = NestedPropertyPaths<
   keyof DB[TB]
 > &
   string
+
+export type AnyArrayPropertyPath<DB, TB extends keyof DB> = {
+  //Currently not supporting nested arrays
+  [K in keyof DB[TB]]: K extends string
+    ? DB[TB][K] extends any[]
+      ? K // Only include array properties for now
+      : never
+    : never
+}[keyof DB[TB]]
 
 // Used for type testing purposes
 // const x: AnyPropertyPath<Database, 'families'> = 'parents[0].firstName'

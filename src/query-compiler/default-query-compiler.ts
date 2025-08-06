@@ -1883,6 +1883,7 @@ const SELECT_MODIFIER_PRIORITY: Readonly<Record<SelectModifier, number>> =
   })
 
 const JOIN_TYPE_SQL: Readonly<Record<JoinType, string>> = freeze({
+  Join: 'join',
   InnerJoin: 'inner join',
   LeftJoin: 'left join',
   RightJoin: 'right join',

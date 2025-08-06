@@ -235,7 +235,6 @@ export {
   ArrayPropertyNames,
   ObjectPropertyNames,
   GetPathType,
-  ArrayElementType,
   Equals,
   UnknownRow,
   Simplify,

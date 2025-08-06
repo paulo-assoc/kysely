@@ -14,6 +14,7 @@ export type JoinType =
   | 'Using'
   | 'OuterApply'
   | 'CrossApply'
+  | 'Join'
 
 export interface JoinNode extends OperationNode {
   readonly kind: 'JoinNode'

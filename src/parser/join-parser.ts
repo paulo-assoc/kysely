@@ -42,7 +42,11 @@ export function parseJoin(joinType: JoinType, args: any[]): JoinNode {
   } else if (args.length === 2) {
     return parseCallbackJoin(joinType, args[0], args[1])
   } else if (args.length === 1) {
-    return parseOnlessJoin(joinType, args[0])
+    if (joinType === 'Join') {
+      return parseInJoin(joinType, args[0])
+    } else {
+      return parseOnlessJoin(joinType, args[0])
+    }
   } else {
     throw new Error('not implemented')
   }
@@ -70,6 +74,13 @@ function parseSingleOnJoin(
 }
 
 function parseOnlessJoin(
+  joinType: JoinType,
+  from: TableExpression<any, any>,
+): JoinNode {
+  return JoinNode.create(joinType, parseTableExpression(from))
+}
+
+function parseInJoin(
   joinType: JoinType,
   from: TableExpression<any, any>,
 ): JoinNode {

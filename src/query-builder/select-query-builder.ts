@@ -25,7 +25,9 @@ import {
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import {
+  AnyArrayPropertyPathWithTable,
   DrainOuterGeneric,
+  ArrayElementType,
   NarrowPartial,
   Nullable,
   ShallowRecord,
@@ -706,6 +708,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * on "doggos"."owner" = "person"."id"
    * ```
    */
+
   innerJoin<
     TE extends TableExpression<DB, TB>,
     K1 extends JoinReferenceExpression<DB, TB, TE>,
@@ -795,6 +798,16 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   crossJoin<TE extends TableExpression<DB, TB>>(
     table: TE,
   ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
+
+  // join<TE extends `${string} in ${AnyArrayPropertyPathWithTable<DB, TB>}`>(
+  //   table: TE,
+  // ): SelectQueryBuilderWithJoin<DB, TB, O, TE>
+  join<
+    TE extends
+      `${string} in ${AnyArrayPropertyPathWithTable<DB, TB | keyof DB>}`,
+  >(
+    table: TE,
+  ): SelectQueryBuilderWithJoin<DB, TB, O, TE>
 
   /**
    * Just like {@link innerJoin} but adds a lateral join instead of an inner join.
@@ -2378,6 +2391,10 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     return this.#join('CrossJoin', args)
   }
 
+  join(...args: any): any {
+    return this.#join('Join', args)
+  }
+
   innerJoinLateral(...args: any): any {
     return this.#join('LateralInnerJoin', args)
   }
@@ -2789,6 +2806,40 @@ class AliasedSelectQueryBuilderImpl<
     )
   }
 }
+
+// export type SelectQueryBuilderWithJoin<
+//   DB,
+//   TB extends keyof DB,
+//   O,
+//   TE extends `${string} in ${AnyArrayPropertyPathWithTable<DB, TB>}`,
+// > = TE extends `${infer A} in ${infer T}`
+//   ? T extends `${infer JA}.${infer JP}`
+//     ? JA extends keyof DB
+//       ? JP extends keyof DB[JA]
+//         ? DB[JA][JP] extends any[]
+//           ? InnerJoinedBuilder<DB, TB, O, A, ArrayElementType<DB[JA][JP]>>
+//           : never
+//         : never
+//       : never
+//     : never
+//   : never
+
+export type SelectQueryBuilderWithJoin<
+  DB,
+  TB extends keyof DB,
+  O,
+  TE extends `${string} in ${string}`,
+> = TE extends `${infer A} in ${infer T}`
+  ? T extends `${infer JA}.${infer JP}`
+    ? JA extends keyof DB
+      ? JP extends keyof DB[JA]
+        ? DB[JA][JP] extends any[]
+          ? InnerJoinedBuilder<DB, TB, O, A, ArrayElementType<DB[JA][JP]>>
+          : SelectQueryBuilder<DB, TB, O>
+        : SelectQueryBuilder<DB, TB, O>
+      : SelectQueryBuilder<DB, TB, O>
+    : SelectQueryBuilder<DB, TB, O>
+  : SelectQueryBuilder<DB, TB, O>
 
 export type SelectQueryBuilderWithInnerJoin<
   DB,
