@@ -36,6 +36,10 @@ import * as TestDatabase from 'better-sqlite3'
  * // Columns == 'id' | 'name' | 'species'
  * ```
  */
+
+// Helper type to decrement depth
+type Decrement = [never, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
 export type AnyColumn<DB, TB extends keyof DB> = {
   [T in TB]: keyof DB[T]
 }[TB] &
@@ -83,9 +87,106 @@ export type AnyColumnWithTable<DB, TB extends keyof DB> = {
   [T in TB]: `${T & string}.${keyof DB[T] & string}`
 }[TB]
 
+export type AnyPropertyPath<
+  DB,
+  TB extends keyof DB,
+  Depth extends number = 5,
+> = keyof DB[TB] extends string
+  ? Depth extends 0
+    ? never
+    : {
+        [K in keyof DB[TB]]: K extends string
+          ? DB[TB][K] extends Array<infer AV>
+            ?
+                | K
+                | `${K}[${number}]`
+                | `${K}[${number}].${AnyPropertyPath<{ table: AV }, 'table', Decrement[Depth]>}`
+            : DB[TB][K] extends object
+              ?
+                  | K
+                  | `${K}.${AnyPropertyPath<{ table: DB[TB][K] }, 'table', Decrement[Depth]>}`
+              : K
+          : never
+      }[keyof DB[TB]]
+  : never & string
+
+export type ExtractPropertyPathType<T, P extends string> = T extends any
+  ? P extends `${infer K}.${infer Rest}`
+    ? K extends keyof T
+      ? ExtractPropertyPathType<T[K], Rest>
+      : K extends `${infer ArrayKey}[${number}]`
+        ? ArrayKey extends keyof T
+          ? ExtractPropertyPathType<ArrayItemType<T[ArrayKey]>, Rest>
+          : never
+        : ExtractPropertyPathType<T, Rest>
+    : P extends `${infer K}[${number}]`
+      ? K extends keyof T
+        ? ArrayItemType<T[K]>
+        : never
+      : DirectExtract<T, P>
+  : never
+
 export type AnyPropertyPathWithTable<DB, TB extends keyof DB> = {
   [T in TB]: `${T & string}.${AnyPropertyPath<DB, TB> & string}`
 }[TB]
+
+export type AnyArrayPropertyPath<
+  DB,
+  T extends keyof DB,
+  Depth extends number = 5,
+  Path extends string = '',
+> = Depth extends 0
+  ? never // Stop recursion at depth 0
+  : {
+      [K in keyof DB[T]]: DB[T][K] extends any[] | undefined // Check if DB[T][K] is an array or an array | undefined
+        ? // Include the array path and recurse into array items if objects
+          | (Path extends '' ? `${K & string}` : `${Path}.${K & string}`)
+            | (DB[T][K] extends (infer U)[] | undefined
+                ? U extends object
+                  ? AnyArrayPropertyPath<
+                      { _: U },
+                      '_',
+                      Decrement[Depth],
+                      Path extends ''
+                        ? `${K & string}[${number}]`
+                        : `${Path}.${K & string}[${number}]`
+                    >
+                  : never
+                : never)
+        : DB[T][K] extends object
+          ? AnyArrayPropertyPath<
+              { _: DB[T][K] },
+              '_',
+              Decrement[Depth],
+              Path extends '' ? `${K & string}` : `${Path}.${K & string}`
+            > // Recurse if object
+          : never // Exclude non-array, non-object properties
+    }[keyof DB[T]]
+
+// Helper type to extract the item type of an array property
+export type ExtractArrayItemPathType<
+  DB,
+  T extends keyof DB,
+  Path extends string,
+> = Path extends `${infer Key}[0].${infer Rest}`
+  ? Key extends keyof DB[T]
+    ? DB[T][Key] extends (infer U)[] | undefined
+      ? U extends object
+        ? ExtractArrayItemPathType<{ _: U }, '_', Rest>
+        : never
+      : never
+    : never
+  : Path extends `${infer Key}[0]`
+    ? Key extends keyof DB[T]
+      ? DB[T][Key] extends (infer U)[] | undefined
+        ? U
+        : never
+      : never
+    : Path extends keyof DB[T]
+      ? DB[T][Path] extends (infer U)[] | undefined
+        ? U
+        : DB[T][Path]
+      : never
 
 export type AnyArrayPropertyPathWithTable<DB, TB extends keyof any> =
   | {
@@ -252,88 +353,6 @@ type DirectExtract<T, P extends string> = T extends any
     : never
   : never
 
-export type ExtractPropertyPathType<T, P extends string> = T extends any
-  ? P extends `${infer K}.${infer Rest}`
-    ? K extends keyof T
-      ? ExtractPropertyPathType<T[K], Rest>
-      : K extends `${infer ArrayKey}[${number}]`
-        ? ArrayKey extends keyof T
-          ? ExtractPropertyPathType<ArrayItemType<T[ArrayKey]>, Rest>
-          : never
-        : ExtractPropertyPathType<T, Rest>
-    : P extends `${infer K}[${number}]`
-      ? K extends keyof T
-        ? ArrayItemType<T[K]>
-        : never
-      : DirectExtract<T, P>
-  : never
-
-export type AnyArrayPropertyPath<
-  DB,
-  T extends keyof DB,
-  Depth extends number = 5,
-  Path extends string = '',
-> = Depth extends 0
-  ? never // Stop recursion at depth 0
-  : {
-      [K in keyof DB[T]]: DB[T][K] extends any[] | undefined // Check if DB[T][K] is an array or an array | undefined
-        ? // Include the array path and recurse into array items if objects
-          | (Path extends '' ? `${K & string}` : `${Path}.${K & string}`)
-            | (DB[T][K] extends (infer U)[] | undefined
-                ? U extends object
-                  ? AnyArrayPropertyPath<
-                      { _: U },
-                      '_',
-                      Decrement[Depth],
-                      Path extends ''
-                        ? `${K & string}[${number}]`
-                        : `${Path}.${K & string}[${number}]`
-                    >
-                  : never
-                : never)
-        : DB[T][K] extends object
-          ? AnyArrayPropertyPath<
-              { _: DB[T][K] },
-              '_',
-              Decrement[Depth],
-              Path extends '' ? `${K & string}` : `${Path}.${K & string}`
-            > // Recurse if object
-          : never // Exclude non-array, non-object properties
-    }[keyof DB[T]]
-
-// Helper type to decrement depth
-type Decrement = [never, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-
-// Helper type to resolve the type at a property path
-export type GetPathType<
-  DB,
-  T extends keyof DB,
-  Path extends string,
-> = Path extends `${infer Key}[0].${infer Rest}`
-  ? Key extends keyof DB[T]
-    ? DB[T][Key] extends (infer U)[] | undefined
-      ? U extends object
-        ? GetPathType<{ _: U }, '_', Rest>
-        : never
-      : never
-    : never
-  : Path extends `${infer Key}[0]`
-    ? Key extends keyof DB[T]
-      ? DB[T][Key] extends (infer U)[] | undefined
-        ? U
-        : never
-      : never
-    : Path extends keyof DB[T]
-      ? DB[T][Path]
-      : never
-
-// Helper type to extract the item type of an array property
-export type ExtractArrayItemPathType<
-  DB,
-  T extends keyof DB,
-  Path extends AnyArrayPropertyPath<DB, T>,
-> = GetPathType<DB, T, Path> extends (infer U)[] | undefined ? U : never
-
 // Utility type to make all properties of T optional
 type PartialKeyOfT<T> = { [K in keyof T]?: T[K] }
 
@@ -415,37 +434,13 @@ interface TestDatabase {
   }
 }
 
+// For testing purposes, to ensure the types work as expected
 type ArrayProps = AnyArrayPropertyPath<TestDatabase, 'user'>
 const useExample: ArrayProps = 'nested.arrayOfObjects[0].values'
-
 type ObjectProps = AnyObjectPropertyPath<TestDatabase, 'user', { id: number }>
 const objExample: ObjectProps = 'nested.arrayOfObjects[8]'
-
 type SettingsArrayProps = AnyArrayPropertyPath<TestDatabase, 'settings'>
 const settingsExample: SettingsArrayProps = 'otherArray[0].data'
-
-export type AnyPropertyPath<
-  DB,
-  TB extends keyof DB,
-  Depth extends number = 5,
-> = keyof DB[TB] extends string
-  ? Depth extends 0
-    ? never
-    : {
-        [K in keyof DB[TB]]: K extends string
-          ? DB[TB][K] extends Array<infer AV>
-            ?
-                | K
-                | `${K}[${number}]`
-                | `${K}[${number}].${AnyPropertyPath<{ table: AV }, 'table', Decrement[Depth]>}`
-            : DB[TB][K] extends object
-              ?
-                  | K
-                  | `${K}.${AnyPropertyPath<{ table: DB[TB][K] }, 'table', Decrement[Depth]>}`
-              : K
-          : never
-      }[keyof DB[TB]]
-  : never & string
 
 // Used for type testing purposes
 // const x: AnyPropertyPath<Database, 'families'> = 'parents[0].firstName'

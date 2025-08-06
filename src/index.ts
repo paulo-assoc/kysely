@@ -234,7 +234,6 @@ export {
   AnyAliasedPropertyPath,
   AnyArrayPropertyPath,
   AnyObjectPropertyPath,
-  GetPathType,
   Equals,
   UnknownRow,
   Simplify,
