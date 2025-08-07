@@ -136,7 +136,7 @@ export type AnyArrayPropertyPath<
   Depth extends number = 5,
   Path extends string = '',
 > = Depth extends 0
-  ? never // Stop recursion at depth 0
+  ? never // Stop recursion when depth reaches 0
   : {
       [K in keyof DB[T]]: DB[T][K] extends any[] | undefined // Check if DB[T][K] is an array or an array | undefined
         ? // Include the array path and recurse into array items if objects

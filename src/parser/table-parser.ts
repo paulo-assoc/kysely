@@ -109,6 +109,18 @@ export function parseTableExpression(
   }
 }
 
+export function parseJoinExpression(from: string): TableNode {
+  const ALIAS_SEPARATOR = ' in '
+
+  //if (from.includes(ALIAS_SEPARATOR)) {
+  const [alias, table] = from.split(ALIAS_SEPARATOR).map(trim)
+  //console.warn('parseJoinExpression:', from, alias, table)
+  //return AliasNode.create(parseInJoin(table), IdentifierNode.create(alias))
+  //} else {
+  return parseInJoin(from) //TODO: This a temporary fix. It should be replaced with a proper join expression parser in the form of `<alias> in <array-property-path>`.
+  //}
+}
+
 export function parseAliasedTable(from: string): TableNode | AliasNode {
   const ALIAS_SEPARATOR = ' as '
 
@@ -131,6 +143,10 @@ export function parseTable(from: string): TableNode {
   } else {
     return TableNode.create(from)
   }
+}
+
+export function parseInJoin(from: string): TableNode {
+  return TableNode.create(from)
 }
 
 function trim(str: string): string {

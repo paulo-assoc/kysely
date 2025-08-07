@@ -34,6 +34,7 @@ import {
   Simplify,
   SimplifySingleResult,
   SqlBool,
+  ExtractPropertyPathType,
 } from '../util/type-utils.js'
 import {
   DirectedOrderByStringReference,
@@ -2825,17 +2826,33 @@ class AliasedSelectQueryBuilderImpl<
 //     : never
 //   : never
 
+// export type SelectQueryBuilderWithJoin<
+//   DB,
+//   TB extends keyof DB,
+//   O,
+//   TE extends `${string} in ${string}`,
+// > = TE extends `${infer A} in ${infer T}`
+//   ? T extends `${infer JA}.${infer JP}`
+//     ? JA extends keyof DB
+//       ? JP extends keyof DB[JA]
+//         ? DB[JA][JP] extends any[]
+//           ? InnerJoinedBuilder<DB, TB, O, A, ArrayItemType<DB[JA][JP]>>
+//           : never
+//         : never
+//       : never
+//     : never
+//   : never
 export type SelectQueryBuilderWithJoin<
   DB,
   TB extends keyof DB,
   O,
   TE extends `${string} in ${string}`,
 > = TE extends `${infer A} in ${infer T}`
-  ? T extends `${infer JA}.${infer JP}`
-    ? JA extends keyof DB
-      ? JP extends keyof DB[JA]
-        ? DB[JA][JP] extends any[]
-          ? InnerJoinedBuilder<DB, TB, O, A, ArrayItemType<DB[JA][JP]>>
+  ? T extends `${infer Table}.${infer Path}`
+    ? Table extends keyof DB
+      ? ExtractPropertyPathType<DB[Table], Path> extends infer ArrayType
+        ? ArrayType extends any[]
+          ? InnerJoinedBuilder<DB, TB, O, A, ArrayItemType<ArrayType>>
           : never
         : never
       : never
