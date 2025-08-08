@@ -147,7 +147,6 @@ export function parseJoinExpression(from: string): TableNode {
 
   //if (from.includes(ALIAS_SEPARATOR)) {
   const [alias, table] = from.split(ALIAS_SEPARATOR).map(trim)
-  //console.warn('parseJoinExpression:', from, alias, table)
   //return AliasNode.create(parseInJoin(table), IdentifierNode.create(alias))
   //} else {
   return parseInJoin(from) //TODO: This a temporary fix. It should be replaced with a proper join expression parser in the form of `<alias> in <array-property-path>`.
@@ -167,15 +166,19 @@ export function parseAliasedTable(from: string): TableNode | AliasNode {
 }
 
 export function parseTable(from: string): TableNode {
-  const SCHEMA_SEPARATOR = '.'
+  // This fork of Kysely does not support schemas, so we are ignoring them for now.
 
-  if (from.includes(SCHEMA_SEPARATOR)) {
-    const [schema, table] = from.split(SCHEMA_SEPARATOR).map(trim)
+  // const SCHEMA_SEPARATOR = '.'
 
-    return TableNode.createWithSchema(schema, table)
-  } else {
-    return TableNode.create(from)
-  }
+  // if (from.includes(SCHEMA_SEPARATOR)) {
+  //   const [schema, table] = from.split(SCHEMA_SEPARATOR).map(trim)
+
+  //   console.log(`Parsing table with schema: ${schema}, table: ${table}`)
+
+  //   return TableNode.createWithSchema(schema, table)
+  // } else {
+  return TableNode.create(from)
+  // }
 }
 
 export function parseInJoin(from: string): TableNode {
