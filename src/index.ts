@@ -233,7 +233,7 @@ export {
   AnyPropertyPath,
   AnyAliasedPropertyPath,
   AnyArrayPropertyPath,
-  AnyObjectPropertyPath,
+  AnyMatchingObjectPropertyPath,
   Equals,
   UnknownRow,
   Simplify,

@@ -202,6 +202,125 @@ export type AnyArrayPropertyPathWithTable<DB, TB extends keyof any> =
         : never
     }[keyof DB]
 
+export type AnyObjectPropertyPath<
+  DB,
+  T extends keyof DB,
+  Depth extends number = 5,
+  Path extends string = '',
+> = Depth extends 0
+  ? never
+  : {
+      [K in keyof DB[T]]:
+        | (NonUndefined<DB[T][K]> extends object
+            ? Path extends ''
+              ? `${K & string}`
+              : `${Path}.${K & string}`
+            : never)
+        | (DB[T][K] extends (infer U)[] | undefined
+            ? NonUndefined<U> extends object
+              ?
+                  | (Path extends ''
+                      ? `${K & string}[${number}]`
+                      : `${Path}.${K & string}[${number}]`)
+                  | AnyObjectPropertyPath<
+                      { _: NonUndefined<U> },
+                      '_',
+                      Decrement[Depth],
+                      Path extends ''
+                        ? `${K & string}[${number}]`
+                        : `${Path}.${K & string}[${number}]`
+                    >
+              : never
+            : NonUndefined<DB[T][K]> extends object
+              ? AnyObjectPropertyPath<
+                  { _: NonUndefined<DB[T][K]> },
+                  '_',
+                  Decrement[Depth],
+                  Path extends '' ? `${K & string}` : `${Path}.${K & string}`
+                >
+              : never)
+    }[keyof DB[T]]
+
+export type AnyObjectPropertyPathWithTable<DB, TB extends keyof any> =
+  | {
+      [T in TB]: T extends keyof DB
+        ? `${T & string}.${AnyObjectPropertyPath<DB, T> & string}`
+        : never
+    }[TB]
+  | {
+      [A in keyof DB]: A extends string
+        ? DB[A] extends DB[keyof DB]
+          ? `${A & string}.${AnyObjectPropertyPath<DB, A> & string}`
+          : never
+        : never
+    }[keyof DB]
+
+/**
+ * Just like {@link AnyObjectPropertyPathWithTable} but with a ` as <string>` suffix.
+ */
+export type AnyAliasedObjectPropertyPathWithTable<
+  DB,
+  TB extends keyof DB,
+> = `${AnyObjectPropertyPathWithTable<DB, TB>} as ${string}`
+
+export type AnyMatchingObjectPropertyPath<
+  DB,
+  T extends keyof DB,
+  M,
+  Depth extends number = 5,
+  Path extends string = '',
+> = Depth extends 0
+  ? never
+  : {
+      [K in keyof DB[T]]:  // Include path if DB[T][K] is an object (not an array) that extends PartialM<M>
+        | (NonUndefined<DB[T][K]> extends object
+            ? NonUndefined<DB[T][K]> extends any[] | undefined
+              ? never // Exclude array paths
+              : NonUndefined<DB[T][K]> extends PartialKeyOfT<M>
+                ? Path extends ''
+                  ? `${K & string}`
+                  : `${Path}.${K & string}`
+                : never
+            : never)
+        | (DB[T][K] extends (infer U)[] | undefined
+            ? NonUndefined<U> extends object
+              ? // Include array item path if U extends PartialM<M>
+                | (NonUndefined<U> extends PartialKeyOfT<M>
+                      ? Path extends ''
+                        ? `${K & string}[${number}]`
+                        : `${Path}.${K & string}[${number}]`
+                      : never)
+                  // Recurse into array items
+                  | AnyMatchingObjectPropertyPath<
+                      { _: NonUndefined<U> },
+                      '_',
+                      M,
+                      Decrement[Depth],
+                      Path extends ''
+                        ? `${K & string}[${number}]`
+                        : `${Path}.${K & string}[${number}]`
+                    >
+              : never
+            : NonUndefined<DB[T][K]> extends object
+              ? // Recurse into object properties
+                AnyMatchingObjectPropertyPath<
+                  { _: NonUndefined<DB[T][K]> },
+                  '_',
+                  M,
+                  Decrement[Depth],
+                  Path extends '' ? `${K & string}` : `${Path}.${K & string}`
+                >
+              : never)
+    }[keyof DB[T]]
+
+/**
+ * Just like {@link AnyArrayPropertyPathWithTable} but with a ` as <string>` suffix.
+ */
+export type AnyAliasedArrayPropertyPathWithTable<
+  DB,
+  TB extends keyof DB,
+> = `${AnyArrayPropertyPathWithTable<DB, TB>} as ${string}`
+
 /**
  * Just like {@link AnyColumn} but with a ` as <string>` suffix.
  */
@@ -359,56 +478,6 @@ type PartialKeyOfT<T> = { [K in keyof T]?: T[K] }
 // Utility type to exclude undefined from a type
 type NonUndefined<T> = T extends undefined ? never : T
 
-export type AnyObjectPropertyPath<
-  DB,
-  T extends keyof DB,
-  M,
-  Depth extends number = 5,
-  Path extends string = '',
-> = Depth extends 0
-  ? never
-  : {
-      [K in keyof DB[T]]:  // Include path if DB[T][K] is an object (not an array) that extends PartialM<M>
-        | (NonUndefined<DB[T][K]> extends object
-            ? NonUndefined<DB[T][K]> extends any[] | undefined
-              ? never // Exclude array paths
-              : NonUndefined<DB[T][K]> extends PartialKeyOfT<M>
-                ? Path extends ''
-                  ? `${K & string}`
-                  : `${Path}.${K & string}`
-                : never
-            : never)
-        | (DB[T][K] extends (infer U)[] | undefined
-            ? NonUndefined<U> extends object
-              ? // Include array item path if U extends PartialM<M>
-                | (NonUndefined<U> extends PartialKeyOfT<M>
-                      ? Path extends ''
-                        ? `${K & string}[${number}]`
-                        : `${Path}.${K & string}[${number}]`
-                      : never)
-                  // Recurse into array items
-                  | AnyObjectPropertyPath<
-                      { _: NonUndefined<U> },
-                      '_',
-                      M,
-                      Decrement[Depth],
-                      Path extends ''
-                        ? `${K & string}[${number}]`
-                        : `${Path}.${K & string}[${number}]`
-                    >
-              : never
-            : NonUndefined<DB[T][K]> extends object
-              ? // Recurse into object properties
-                AnyObjectPropertyPath<
-                  { _: NonUndefined<DB[T][K]> },
-                  '_',
-                  M,
-                  Decrement[Depth],
-                  Path extends '' ? `${K & string}` : `${Path}.${K & string}`
-                >
-              : never)
-    }[keyof DB[T]]
-
 interface TestDatabase {
   user: {
     id: number
@@ -437,7 +506,11 @@ interface TestDatabase {
 // For testing purposes, to ensure the types work as expected
 type ArrayProps = AnyArrayPropertyPath<TestDatabase, 'user'>
 const useExample: ArrayProps = 'nested.arrayOfObjects[0].values'
-type ObjectProps = AnyObjectPropertyPath<TestDatabase, 'user', { id: number }>
+type ObjectProps = AnyMatchingObjectPropertyPath<
+  TestDatabase,
+  'user',
+  { id: number }
+>
 const objExample: ObjectProps = 'nested.arrayOfObjects[8]'
 type SettingsArrayProps = AnyArrayPropertyPath<TestDatabase, 'settings'>
 const settingsExample: SettingsArrayProps = 'otherArray[0].data'

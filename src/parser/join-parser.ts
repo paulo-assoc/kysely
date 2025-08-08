@@ -44,7 +44,6 @@ export function parseJoin(joinType: JoinType, args: any[]): JoinNode {
     return parseCallbackJoin(joinType, args[0], args[1])
   } else if (args.length === 1) {
     if (joinType === 'Join') {
-      console.warn('parseInJoin:', joinType, args[0])
       return parseInJoin(joinType, args[0])
     } else {
       return parseOnlessJoin(joinType, args[0])

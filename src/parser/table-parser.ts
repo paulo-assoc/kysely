@@ -8,12 +8,23 @@ import {
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { OperationNode } from '../operation-node/operation-node.js'
 import { AliasedExpression } from '../expression/expression.js'
-import { AnyArrayPropertyPath, DrainOuterGeneric } from '../util/type-utils.js'
+import {
+  AnyAliasedArrayPropertyPathWithTable,
+  AnyArrayPropertyPath,
+  AnyAliasedObjectPropertyPathWithTable,
+  DrainOuterGeneric,
+  AnyArrayPropertyPathWithTable,
+  ExtractArrayItemPathType,
+  AnyObjectPropertyPathWithTable,
+  ExtractPropertyPathType,
+} from '../util/type-utils.js'
 
 export type TableExpression<DB, TB extends keyof DB> =
   | AnyAliasedTable<DB>
   | AnyTable<DB>
   | AliasedExpressionOrFactory<DB, TB>
+  | AnyAliasedArrayPropertyPathWithTable<DB, keyof DB>
+  | AnyAliasedObjectPropertyPathWithTable<DB, keyof DB>
 
 export type TableExpressionOrList<DB, TB extends keyof DB> =
   | TableExpression<DB, TB>
@@ -65,15 +76,37 @@ type ExtractAliasFromTableExpression<DB, TE> = TE extends string
       ? QA
       : never
 
+// type ExtractRowTypeFromTableExpression<
+//   DB,
+//   TE,
+//   A extends keyof any,
+// > = TE extends `${infer T} as ${infer TA}`
+//   ? TA extends A
+//     ? T extends keyof DB
+//       ? DB[T]
+//       : never
+//     : never
+//   : TE extends A
+//     ? TE extends keyof DB
+//       ? DB[TE]
+//       : never
+//     : TE extends AliasedExpression<infer O, infer QA>
+//       ? QA extends A
+//         ? O
+//         : never
+//       : TE extends (qb: any) => AliasedExpression<infer O, infer QA>
+//         ? QA extends A
+//           ? O
+//           : never
+//         : never
+
 type ExtractRowTypeFromTableExpression<
   DB,
   TE,
   A extends keyof any,
 > = TE extends `${infer T} as ${infer TA}`
   ? TA extends A
-    ? T extends keyof DB
-      ? DB[T]
-      : never
+    ? ExtractPropertyPathType<DB, T>
     : never
   : TE extends A
     ? TE extends keyof DB

@@ -17,6 +17,27 @@ class Order {
     quantity: number
   }[] = []
   tags: { name: string }[] = []
+  customer: {
+    firstName: string
+    lastName: string
+    address: {
+      street: string
+      city: string
+      state: string
+      zip: string
+    }
+    phone: string
+  } = {
+    firstName: '',
+    lastName: '',
+    address: {
+      street: '',
+      city: '',
+      state: '',
+      zip: '',
+    },
+    phone: '',
+  }
 }
 
 interface Database {
@@ -43,5 +64,21 @@ async function JoinTest(db: Kysely<Database>) {
     .join('t in o.tags')
     .groupBy('t.name')
     .select((eb) => eb.fn.sum<number>('i.rate').as('totalAmount'))
+    .compile()
+
+  const result3 = db
+    .selectFrom('orders.items[0] as i')
+    .select('i.taxes')
+    .orderBy('i.taxes[0].type')
+    .compile()
+
+  const result4 = db
+    .selectFrom('orders.items[0].taxes[3] as t')
+    .select('t.type')
+    .compile()
+
+  const result5 = db
+    .selectFrom('orders.customer as c')
+    .select('c.firstName')
     .compile()
 }
