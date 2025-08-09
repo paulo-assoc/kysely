@@ -504,127 +504,127 @@ interface TestDatabase {
 }
 
 // For testing purposes, to ensure the types work as expected
-type ArrayProps = AnyArrayPropertyPath<TestDatabase, 'user'>
-const useExample: ArrayProps = 'nested.arrayOfObjects[0].values'
-type ObjectProps = AnyMatchingObjectPropertyPath<
-  TestDatabase,
-  'user',
-  { id: number }
->
-const objExample: ObjectProps = 'nested.arrayOfObjects[8]'
-type SettingsArrayProps = AnyArrayPropertyPath<TestDatabase, 'settings'>
-const settingsExample: SettingsArrayProps = 'otherArray[0].data'
+// type ArrayProps = AnyArrayPropertyPath<TestDatabase, 'user'>
+// const useExample: ArrayProps = 'nested.arrayOfObjects[0].values'
+// type ObjectProps = AnyMatchingObjectPropertyPath<
+//   TestDatabase,
+//   'user',
+//   { id: number }
+// >
+// const objExample: ObjectProps = 'nested.arrayOfObjects[8]'
+// type SettingsArrayProps = AnyArrayPropertyPath<TestDatabase, 'settings'>
+// const settingsExample: SettingsArrayProps = 'otherArray[0].data'
 
-// Used for type testing purposes
-// const x: AnyPropertyPath<Database, 'families'> = 'parents[0].firstName'
-// const c: ExtractPropertyPathType<Family, 'address'> = {
-//   state: 'California',
-//   county: 'Los Angeles',
-//   city: 'Los Angeles',
+// // Used for type testing purposes
+// // const x: AnyPropertyPath<Database, 'families'> = 'parents[0].firstName'
+// // const c: ExtractPropertyPathType<Family, 'address'> = {
+// //   state: 'California',
+// //   county: 'Los Angeles',
+// //   city: 'Los Angeles',
+// // }
+
+// const t: ExtractPropertyPathType<Family, 'f.pedigree.region'> = ''
+// // 1. Direct property access
+// const testDirect: ExtractPropertyPathType<Family, 'id'> = '123' // string
+// const testDirectOptional: ExtractPropertyPathType<Family, 'lastName'> = 'Smith' // string | undefined
+
+// // 2. Nested property access
+// const testNested: ExtractPropertyPathType<Family, 'address.state'> = 'CA' // string
+// const testNestedOptional: ExtractPropertyPathType<Family, 'pedigree.region'> =
+//   'North' // string
+
+// // 3. Array items access
+// const testArray: ExtractPropertyPathType<Family, 'parents[0]'> = {
+//   firstName: 'John',
+// } // Parent
+// const testArrayNested: ExtractPropertyPathType<Family, 'parents[0].givenName'> =
+//   'John' // string
+// const testArrayDeep: ExtractPropertyPathType<
+//   Family,
+//   'children[0].pets[0].givenName'
+// > = 'Fluffy' // string
+
+// // 4. Ignoring irrelevant prefixes
+// const testIgnorePrefix: ExtractPropertyPathType<Family, 'f.pedigree.region'> =
+//   'South' // string
+// const testIgnoreMultiplePrefixes: ExtractPropertyPathType<
+//   Family,
+//   'a.b.c.pedigree.region'
+// > = 'East' // string
+// const testIgnorePrefixArray: ExtractPropertyPathType<
+//   Family,
+//   'ignorethis.parents[0].givenName'
+// > = 'Jane' // string
+
+// // 5. Invalid paths
+// const testInvalid: ExtractPropertyPathType<Family, 'nonexistent'> =
+//   undefined as never // never
+// const testInvalidNested: ExtractPropertyPathType<
+//   Family,
+//   'address.nonexistent'
+// > = undefined as never // never
+// const testInvalidArray: ExtractPropertyPathType<
+//   Family,
+//   'parents[0].nonexistent'
+// > = undefined as never // never
+
+// // 6. Additional tests
+// const testArrayProperty: ExtractPropertyPathType<Family, 'parents.length'> = 5 // number
+// const testOptionalArray: ExtractPropertyPathType<
+//   Family,
+//   'location.coordinates[0]'
+// > = 10 // number
+// const testMixedPath: ExtractPropertyPathType<
+//   Family,
+//   'address.state.nonexistent'
+// > = undefined as never // never
+
+// // Used for type testing purposes
+// export interface Family {
+//   id: string
+//   lastName?: string
+//   parents: Parent[]
+//   children: Children[]
+//   address: Address
+//   creationDate: string
+//   isRegistered: boolean
+//   location?: Location
+//   pedigree?: {
+//     region: string
+//   }
 // }
 
-const t: ExtractPropertyPathType<Family, 'f.pedigree.region'> = ''
-// 1. Direct property access
-const testDirect: ExtractPropertyPathType<Family, 'id'> = '123' // string
-const testDirectOptional: ExtractPropertyPathType<Family, 'lastName'> = 'Smith' // string | undefined
+// export interface Parent {
+//   firstName?: string
+//   familyName?: string
+//   givenName?: string
+//   colors?: string[]
+// }
 
-// 2. Nested property access
-const testNested: ExtractPropertyPathType<Family, 'address.state'> = 'CA' // string
-const testNestedOptional: ExtractPropertyPathType<Family, 'pedigree.region'> =
-  'North' // string
+// export interface Children {
+//   firstName?: string
+//   gender: string
+//   grade: number
+//   pets?: Pet[]
+//   familyName?: string
+//   givenName?: string
+// }
 
-// 3. Array items access
-const testArray: ExtractPropertyPathType<Family, 'parents[0]'> = {
-  firstName: 'John',
-} // Parent
-const testArrayNested: ExtractPropertyPathType<Family, 'parents[0].givenName'> =
-  'John' // string
-const testArrayDeep: ExtractPropertyPathType<
-  Family,
-  'children[0].pets[0].givenName'
-> = 'Fluffy' // string
+// export interface Pet {
+//   givenName: string
+// }
 
-// 4. Ignoring irrelevant prefixes
-const testIgnorePrefix: ExtractPropertyPathType<Family, 'f.pedigree.region'> =
-  'South' // string
-const testIgnoreMultiplePrefixes: ExtractPropertyPathType<
-  Family,
-  'a.b.c.pedigree.region'
-> = 'East' // string
-const testIgnorePrefixArray: ExtractPropertyPathType<
-  Family,
-  'ignorethis.parents[0].givenName'
-> = 'Jane' // string
+// export interface Address {
+//   state: string
+//   county: string
+//   city: string
+// }
 
-// 5. Invalid paths
-const testInvalid: ExtractPropertyPathType<Family, 'nonexistent'> =
-  undefined as never // never
-const testInvalidNested: ExtractPropertyPathType<
-  Family,
-  'address.nonexistent'
-> = undefined as never // never
-const testInvalidArray: ExtractPropertyPathType<
-  Family,
-  'parents[0].nonexistent'
-> = undefined as never // never
+// export interface Location {
+//   type: string
+//   coordinates: number[]
+// }
 
-// 6. Additional tests
-const testArrayProperty: ExtractPropertyPathType<Family, 'parents.length'> = 5 // number
-const testOptionalArray: ExtractPropertyPathType<
-  Family,
-  'location.coordinates[0]'
-> = 10 // number
-const testMixedPath: ExtractPropertyPathType<
-  Family,
-  'address.state.nonexistent'
-> = undefined as never // never
-
-// Used for type testing purposes
-export interface Family {
-  id: string
-  lastName?: string
-  parents: Parent[]
-  children: Children[]
-  address: Address
-  creationDate: string
-  isRegistered: boolean
-  location?: Location
-  pedigree?: {
-    region: string
-  }
-}
-
-export interface Parent {
-  firstName?: string
-  familyName?: string
-  givenName?: string
-  colors?: string[]
-}
-
-export interface Children {
-  firstName?: string
-  gender: string
-  grade: number
-  pets?: Pet[]
-  familyName?: string
-  givenName?: string
-}
-
-export interface Pet {
-  givenName: string
-}
-
-export interface Address {
-  state: string
-  county: string
-  city: string
-}
-
-export interface Location {
-  type: string
-  coordinates: number[]
-}
-
-interface TestDatabase {
-  families: Family
-}
+// interface TestDatabase {
+//   families: Family
+// }

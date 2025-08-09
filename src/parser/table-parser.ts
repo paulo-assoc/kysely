@@ -20,11 +20,10 @@ import {
 } from '../util/type-utils.js'
 
 export type TableExpression<DB, TB extends keyof DB> =
-  | AnyAliasedTable<DB>
   | AnyTable<DB>
+  | AnyAliasedTable<DB>
+  | `${AnyTable<DB>}.${string} as ${string}` // This avoids recursive path union computation during parameter checking, ensuring invalid table names (e.g., db.selectFrom('persXons as p')) produce the expected error (Argument of type '"persXons as p"' is not assignable to parameter of type 'TableExpressionOrList') for all downstream methods (selectAll(), where(), etc.)
   | AliasedExpressionOrFactory<DB, TB>
-  | AnyAliasedArrayPropertyPathWithTable<DB, keyof DB>
-  | AnyAliasedObjectPropertyPathWithTable<DB, keyof DB>
 
 export type TableExpressionOrList<DB, TB extends keyof DB> =
   | TableExpression<DB, TB>
