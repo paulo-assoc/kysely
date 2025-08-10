@@ -164,29 +164,37 @@ export type AnyArrayPropertyPath<
     }[keyof DB[T]]
 
 // Helper type to extract the item type of an array property
-export type ExtractArrayItemPathType<
+export type ExtractArrayItemType<
   DB,
   T extends keyof DB,
-  Path extends string,
-> = Path extends `${infer Key}[0].${infer Rest}`
+  P extends string,
+> = P extends `${infer Key}[0].${infer Rest}`
   ? Key extends keyof DB[T]
     ? DB[T][Key] extends (infer U)[] | undefined
       ? U extends object
-        ? ExtractArrayItemPathType<{ _: U }, '_', Rest>
+        ? ExtractArrayItemType<{ _: U }, '_', Rest>
         : never
       : never
     : never
-  : Path extends `${infer Key}[0]`
+  : P extends `${infer Key}[0]`
     ? Key extends keyof DB[T]
       ? DB[T][Key] extends (infer U)[] | undefined
         ? U
         : never
       : never
-    : Path extends keyof DB[T]
-      ? DB[T][Path] extends (infer U)[] | undefined
+    : P extends keyof DB[T]
+      ? DB[T][P] extends (infer U)[] | undefined
         ? U
-        : DB[T][Path]
+        : DB[T][P]
       : never
+
+export type ExtractArrayItemTypeWithTable<
+  DB,
+  TB extends keyof DB,
+  P extends string,
+> = P extends `${TB & string}.${infer Rest}`
+  ? ExtractArrayItemType<DB, TB, Rest>
+  : never
 
 export type AnyArrayPropertyPathWithTable<DB, TB extends keyof any> =
   | {

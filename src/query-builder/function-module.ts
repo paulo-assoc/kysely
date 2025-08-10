@@ -15,15 +15,21 @@ import {
   StringReference,
   parseReferenceExpressionOrList,
   ExtractTypeFromStringReference,
+  parseReferenceExpression,
 } from '../parser/reference-parser.js'
 import { parseSelectAll } from '../parser/select-parser.js'
 import { KyselyTypeError } from '../util/type-error.js'
-import { IsNever } from '../util/type-utils.js'
+import {
+  AnyArrayPropertyPathWithTable,
+  ExtractArrayItemTypeWithTable,
+  IsNever,
+} from '../util/type-utils.js'
 import { AggregateFunctionBuilder } from './aggregate-function-builder.js'
 import { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js'
 import { isString } from '../util/object-utils.js'
 import { parseTable } from '../parser/table-parser.js'
 import { Selectable } from '../util/column-type.js'
+import { sql } from '../raw-builder/sql.js'
 
 /**
  * Helpers for type safe SQL function calls.
@@ -757,6 +763,11 @@ export interface FunctionModule<DB, TB extends keyof DB> {
     TB,
     T extends TB ? Selectable<DB[T]> : T extends Expression<infer O> ? O : never
   >
+
+  arrayContains<P extends AnyArrayPropertyPathWithTable<DB, TB>>(
+    property: P,
+    value: Partial<ExtractArrayItemTypeWithTable<DB, TB, P>>,
+  ): Expression<boolean>
 }
 
 export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
@@ -845,6 +856,18 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       return new ExpressionWrapper(
         FunctionNode.create('to_json', [
           isString(table) ? parseTable(table) : table.toOperationNode(),
+        ]),
+      )
+    },
+
+    arrayContains<P extends AnyArrayPropertyPathWithTable<DB, TB>>(
+      property: P,
+      value: Partial<ExtractArrayItemTypeWithTable<DB, TB, P>>,
+    ): Expression<boolean> {
+      return new ExpressionWrapper(
+        FunctionNode.create('ARRAY_CONTAINS', [
+          parseReferenceExpression(property), // Parse property as a reference
+          sql`${value}`.toOperationNode(), // Treat value as a literal
         ]),
       )
     },

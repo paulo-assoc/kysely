@@ -9,13 +9,8 @@ import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { OperationNode } from '../operation-node/operation-node.js'
 import { AliasedExpression } from '../expression/expression.js'
 import {
-  AnyAliasedArrayPropertyPathWithTable,
   AnyArrayPropertyPath,
-  AnyAliasedObjectPropertyPathWithTable,
   DrainOuterGeneric,
-  AnyArrayPropertyPathWithTable,
-  ExtractArrayItemPathType,
-  AnyObjectPropertyPathWithTable,
   ExtractPropertyPathType,
 } from '../util/type-utils.js'
 
