@@ -23,7 +23,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
   async getSchemas(): Promise<SchemaMetadata[]> {
     let rawSchemas = await this.#db
       .selectFrom('pg_catalog.pg_namespace')
-      .select('nspname')
+      // .select('nspname')
       .$castTo<RawSchemaMetadata>()
       .execute()
 

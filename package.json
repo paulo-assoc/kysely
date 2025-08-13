@@ -82,7 +82,8 @@
     "Igal Klebanov <igalklebanov@gmail.com>"
   ],
   "dependencies": {
-    "@azure/cosmos": "^4.3.0"
+    "@azure/cosmos": "^4.3.0",
+    "@types/geojson": "^7946.0.16"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.17.0",

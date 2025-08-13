@@ -3,7 +3,11 @@ import { DeleteResult } from '../query-builder/delete-result.js'
 import { UpdateResult } from '../query-builder/update-result.js'
 import { KyselyTypeError } from './type-error.js'
 import { MergeResult } from '../query-builder/merge-result.js'
-import * as TestDatabase from 'better-sqlite3'
+import { Kysely } from '../kysely.js'
+import { sql } from '../raw-builder/sql.js'
+import { Point } from 'geojson'
+import { SelectExpression } from '../parser/select-parser.js'
+import { AliasedExpressionOrFactory } from '../parser/expression-parser.js'
 
 /**
  * Given a database type and a union of table names in that db, returns
@@ -126,9 +130,21 @@ export type ExtractPropertyPathType<T, P extends string> = T extends any
       : DirectExtract<T, P>
   : never
 
+// export type AnyPropertyPathWithTable<DB, TB extends keyof DB> = {
+//   [T in TB]: `${T & string}.${AnyPropertyPath<DB, TB> & string}`
+// }[TB]
+
 export type AnyPropertyPathWithTable<DB, TB extends keyof DB> = {
-  [T in TB]: `${T & string}.${AnyPropertyPath<DB, TB> & string}`
+  [T in TB]: `${T & string}.${AnyPropertyPath<DB, T> & string}`
 }[TB]
+
+/**
+ * Just like {@link AnyPropertyPathWithTable} but with a ` as <string>` suffix.
+ */
+export type AnyAliasedPropertyPathWithTable<
+  DB,
+  TB extends keyof DB,
+> = `${AnyPropertyPathWithTable<DB, TB>} as ${string}`
 
 export type AnyArrayPropertyPath<
   DB,
@@ -168,7 +184,7 @@ export type ExtractArrayItemType<
   DB,
   T extends keyof DB,
   P extends string,
-> = P extends `${infer Key}[0].${infer Rest}`
+> = P extends `${infer Key}[${number}].${infer Rest}`
   ? Key extends keyof DB[T]
     ? DB[T][Key] extends (infer U)[] | undefined
       ? U extends object
@@ -176,7 +192,7 @@ export type ExtractArrayItemType<
         : never
       : never
     : never
-  : P extends `${infer Key}[0]`
+  : P extends `${infer Key}[${number}]`
     ? Key extends keyof DB[T]
       ? DB[T][Key] extends (infer U)[] | undefined
         ? U
@@ -194,21 +210,79 @@ export type ExtractArrayItemTypeWithTable<
   P extends string,
 > = P extends `${TB & string}.${infer Rest}`
   ? ExtractArrayItemType<DB, TB, Rest>
-  : never
+  : P extends TB & string
+    ? DB[TB] extends (infer U)[] | undefined
+      ? U
+      : never
+    : never
 
-export type AnyArrayPropertyPathWithTable<DB, TB extends keyof any> =
-  | {
-      [T in TB]: T extends keyof DB
-        ? `${T & string}.${AnyArrayPropertyPath<DB, T> & string}`
-        : never
-    }[TB]
-  | {
-      [A in keyof DB]: A extends string
-        ? DB[A] extends DB[keyof DB]
-          ? `${A & string}.${AnyArrayPropertyPath<DB, A> & string}`
-          : never
-        : never
-    }[keyof DB]
+// export type AnyArrayPropertyPathWithTable<DB, TB extends keyof any> =
+//   | {
+//       [T in TB]: T extends keyof DB
+//         ? DB[T] extends any[] | undefined
+//           ? T & string // Include the table alias if it's an array
+//           : `${T & string}.${AnyArrayPropertyPath<DB, T> & string}`
+//         : never
+//     }[TB]
+//   | {
+//       [A in keyof DB]: A extends string
+//         ? DB[A] extends DB[keyof DB]
+//           ? `${A & string}.${AnyArrayPropertyPath<DB, A> & string}`
+//           : never
+//         : never
+//     }[keyof DB]
+
+// LKG
+export type AnyArrayPropertyPathWithTable<DB, TB extends keyof DB> = {
+  [T in TB]: T extends keyof DB
+    ? DB[T] extends any[] // | undefined
+      ? T & string // Include the table alias if it's an array
+      : `${T & string}.${AnyArrayPropertyPath<DB, T> & string}`
+    : never
+}[TB]
+
+// export type AnyArrayPropertyPathWithTable<DB, TB extends keyof DB> = {
+//   [T in TB]: `${T & string}.${AnyArrayPropertyPath<DB, TB> & string}`
+// }[TB]
+
+// export type AnyObjectPropertyPath<
+//   DB,
+//   T extends keyof DB,
+//   Depth extends number = 5,
+//   Path extends string = '',
+// > = Depth extends 0
+//   ? never
+//   : {
+//       [K in keyof DB[T]]:
+//         | (NonUndefined<DB[T][K]> extends object
+//             ? Path extends ''
+//               ? `${K & string}`
+//               : `${Path}.${K & string}`
+//             : never)
+//         | (DB[T][K] extends (infer U)[] | undefined
+//             ? NonUndefined<U> extends object
+//               ?
+//                   | (Path extends ''
+//                       ? `${K & string}[${number}]`
+//                       : `${Path}.${K & string}[${number}]`)
+//                   | AnyObjectPropertyPath<
+//                       { _: NonUndefined<U> },
+//                       '_',
+//                       Decrement[Depth],
+//                       Path extends ''
+//                         ? `${K & string}[${number}]`
+//                         : `${Path}.${K & string}[${number}]`
+//                     >
+//               : never
+//             : NonUndefined<DB[T][K]> extends object
+//               ? AnyObjectPropertyPath<
+//                   { _: NonUndefined<DB[T][K]> },
+//                   '_',
+//                   Decrement[Depth],
+//                   Path extends '' ? `${K & string}` : `${Path}.${K & string}`
+//                 >
+//               : never)
+//     }[keyof DB[T]]
 
 export type AnyObjectPropertyPath<
   DB,
@@ -218,50 +292,44 @@ export type AnyObjectPropertyPath<
 > = Depth extends 0
   ? never
   : {
-      [K in keyof DB[T]]:
-        | (NonUndefined<DB[T][K]> extends object
-            ? Path extends ''
-              ? `${K & string}`
-              : `${Path}.${K & string}`
-            : never)
-        | (DB[T][K] extends (infer U)[] | undefined
-            ? NonUndefined<U> extends object
-              ?
-                  | (Path extends ''
-                      ? `${K & string}[${number}]`
-                      : `${Path}.${K & string}[${number}]`)
-                  | AnyObjectPropertyPath<
-                      { _: NonUndefined<U> },
-                      '_',
-                      Decrement[Depth],
-                      Path extends ''
-                        ? `${K & string}[${number}]`
-                        : `${Path}.${K & string}[${number}]`
-                    >
+      [K in keyof DB[T]]: NonUndefined<DB[T][K]> extends object
+        ? NonUndefined<DB[T][K]> extends Date
+          ? never
+          : NonUndefined<DB[T][K]> extends any[] | undefined
+            ? DB[T][K] extends (infer U)[] | undefined
+              ? U extends object
+                ? U extends Date
+                  ? never
+                  :
+                      | (Path extends ''
+                          ? `${K & string}[${number}]`
+                          : `${Path}.${K & string}[${number}]`)
+                      | AnyObjectPropertyPath<
+                          { _: NonUndefined<U> },
+                          '_',
+                          Decrement[Depth],
+                          Path extends ''
+                            ? `${K & string}[${number}]`
+                            : `${Path}.${K & string}[${number}]`
+                        >
+                : never
               : never
-            : NonUndefined<DB[T][K]> extends object
-              ? AnyObjectPropertyPath<
-                  { _: NonUndefined<DB[T][K]> },
-                  '_',
-                  Decrement[Depth],
-                  Path extends '' ? `${K & string}` : `${Path}.${K & string}`
-                >
-              : never)
+            :
+                | (Path extends '' ? `${K & string}` : `${Path}.${K & string}`)
+                | AnyObjectPropertyPath<
+                    { _: NonUndefined<DB[T][K]> },
+                    '_',
+                    Decrement[Depth],
+                    Path extends '' ? `${K & string}` : `${Path}.${K & string}`
+                  >
+        : never
     }[keyof DB[T]]
 
-export type AnyObjectPropertyPathWithTable<DB, TB extends keyof any> =
-  | {
-      [T in TB]: T extends keyof DB
-        ? `${T & string}.${AnyObjectPropertyPath<DB, T> & string}`
-        : never
-    }[TB]
-  | {
-      [A in keyof DB]: A extends string
-        ? DB[A] extends DB[keyof DB]
-          ? `${A & string}.${AnyObjectPropertyPath<DB, A> & string}`
-          : never
-        : never
-    }[keyof DB]
+export type AnyObjectPropertyPathWithTable<DB, TB extends keyof any> = {
+  [T in TB]: T extends keyof DB
+    ? `${T & string}.${AnyObjectPropertyPath<DB, T> & string}`
+    : never
+}[TB]
 
 /**
  * Just like {@link AnyObjectPropertyPathWithTable} but with a ` as <string>` suffix.
@@ -280,45 +348,29 @@ export type AnyMatchingObjectPropertyPath<
 > = Depth extends 0
   ? never
   : {
-      [K in keyof DB[T]]:  // Include path if DB[T][K] is an object (not an array) that extends PartialM<M>
-        | (NonUndefined<DB[T][K]> extends object
-            ? NonUndefined<DB[T][K]> extends any[] | undefined
-              ? never // Exclude array paths
-              : NonUndefined<DB[T][K]> extends PartialKeyOfT<M>
-                ? Path extends ''
-                  ? `${K & string}`
-                  : `${Path}.${K & string}`
-                : never
-            : never)
-        | (DB[T][K] extends (infer U)[] | undefined
-            ? NonUndefined<U> extends object
-              ? // Include array item path if U extends PartialM<M>
-                | (NonUndefined<U> extends PartialKeyOfT<M>
-                      ? Path extends ''
-                        ? `${K & string}[${number}]`
-                        : `${Path}.${K & string}[${number}]`
-                      : never)
-                  // Recurse into array items
-                  | AnyMatchingObjectPropertyPath<
-                      { _: NonUndefined<U> },
+      [K in keyof DB[T]]: NonUndefined<DB[T][K]> extends object
+        ? NonUndefined<DB[T][K]> extends any[] | undefined
+          ? never // Exclude arrays
+          : NonUndefined<DB[T][K]> extends PartialKeyOfT<M>
+            ? Path extends ''
+              ? `${K & string}`
+              : `${Path}.${K & string}`
+            : never
+        :
+            | never
+            | (NonUndefined<DB[T][K]> extends object
+                ? NonUndefined<DB[T][K]> extends any[] | undefined
+                  ? never // Exclude array recursion
+                  : AnyMatchingObjectPropertyPath<
+                      { _: NonUndefined<DB[T][K]> },
                       '_',
                       M,
                       Decrement[Depth],
                       Path extends ''
-                        ? `${K & string}[${number}]`
-                        : `${Path}.${K & string}[${number}]`
+                        ? `${K & string}`
+                        : `${Path}.${K & string}`
                     >
-              : never
-            : NonUndefined<DB[T][K]> extends object
-              ? // Recurse into object properties
-                AnyMatchingObjectPropertyPath<
-                  { _: NonUndefined<DB[T][K]> },
-                  '_',
-                  M,
-                  Decrement[Depth],
-                  Path extends '' ? `${K & string}` : `${Path}.${K & string}`
-                >
-              : never)
+                : never)
     }[keyof DB[T]]
 
 /**
@@ -328,6 +380,14 @@ export type AnyAliasedArrayPropertyPathWithTable<
   DB,
   TB extends keyof DB,
 > = `${AnyArrayPropertyPathWithTable<DB, TB>} as ${string}`
+
+export type AnyMatchingObjectPropertyPathWithTable<
+  DB,
+  TB extends keyof DB,
+  M,
+> = {
+  [T in TB]: `${T & string}.${AnyMatchingObjectPropertyPath<DB, TB, M> & string}`
+}[TB]
 
 /**
  * Just like {@link AnyColumn} but with a ` as <string>` suffix.
@@ -486,30 +546,30 @@ type PartialKeyOfT<T> = { [K in keyof T]?: T[K] }
 // Utility type to exclude undefined from a type
 type NonUndefined<T> = T extends undefined ? never : T
 
-interface TestDatabase {
-  user: {
-    id: number
-    name: string
-    numbers?: number[]
-    nested: {
-      id: number
-      items: string[]
-      deeper?: {
-        id: number
-        values?: boolean[]
-        other: number
-        evenDeeper: {
-          id: number
-          more: number[]
-        }
-      }
-      arrayOfObjects: { id: number; values: string[]; other: number }[]
-    }
-  }
-  settings: {
-    otherArray: { data: number[]; extra: string }[]
-  }
-}
+// interface TestDatabase {
+//   user: {
+//     id: number
+//     name: string
+//     numbers?: number[]
+//     nested: {
+//       id: number
+//       items: string[]
+//       deeper?: {
+//         id: number
+//         values?: boolean[]
+//         other: number
+//         evenDeeper: {
+//           id: number
+//           more: number[]
+//         }
+//       }
+//       arrayOfObjects: { id: number; values: string[]; other: number }[]
+//     }
+//   }
+//   settings: {
+//     otherArray: { data: number[]; extra: string }[]
+//   }
+// }
 
 // For testing purposes, to ensure the types work as expected
 // type ArrayProps = AnyArrayPropertyPath<TestDatabase, 'user'>
@@ -636,3 +696,472 @@ interface TestDatabase {
 // interface TestDatabase {
 //   families: Family
 // }
+
+export interface BaseEntity {
+  id: string
+  schema: string
+  tenantId?: string
+  excludedAt?: Date
+  _ts?: number
+}
+
+interface Nested {
+  level1: {
+    id1: string
+    name1: string
+    level2: {
+      id2: string
+      name2: string
+      level3IsAnArray: {
+        id3: string
+        name3: string
+        colors: string[]
+        level4: {
+          id4: string
+          name4: string
+        }
+      }[]
+      level3a: {
+        id3a: string
+        name3a: string
+      }
+    }
+  }
+}
+
+interface Order extends BaseEntity {
+  schema: string
+  orderId: string
+  userId: string
+  total: number
+  items: {
+    amount: number
+    category: string
+    taxes: {
+      type: string
+      rate: number
+    }[]
+    productId: string
+    quantity: number
+  }[]
+  tags: { name: string }[]
+  customer: {
+    firstName: string
+    lastName: string
+    address: {
+      street: string
+      city: string
+      state: string
+      zip: string
+    }
+    phoneNumbers: string[]
+  }
+}
+
+export interface Person extends BaseEntity {
+  schema: string
+  name: string
+  email: string
+  age: number
+  active: boolean
+  lastLogin: Date | null
+  address: {
+    number: number
+    street: string
+    city: string
+    coordinates: {
+      lat: number
+      lon: number
+    }
+  }
+  location: { type: 'Point' | 'Polygon'; coordinates: number[] }
+  orders: Order[]
+}
+
+export interface Family extends BaseEntity {
+  lastName?: string
+  parents: Parent[]
+  children: Children[]
+  address: Address
+  creationDate: string
+  isRegistered: boolean
+  deletedOn?: Date
+}
+
+export interface Parent {
+  firstName?: string
+  familyName?: string
+  givenName?: string
+  colors?: string[]
+}
+
+export interface Children {
+  firstName?: string
+  gender: string
+  grade: number
+  pets?: Pet[]
+  familyName?: string
+  givenName?: string
+}
+
+export interface Pet {
+  givenName: string
+  breed: string
+  age: number
+}
+
+export interface Address {
+  state: string
+  county: string
+  city: string
+}
+
+// Define the database schema. By convention, the property names (item collections) should be plural.
+interface Database {
+  persons: Person
+  orders: Order
+  families: Family
+  nested: Nested
+}
+
+async function JoinTest(db: Kysely<Database>) {
+  test('select all tests', async () => {
+    const result1 = db.selectFrom('persons as p').selectAll().compile()
+
+    const result2 = db
+      .selectFrom('orders.customer.phoneNumbers as p')
+      .selectAll()
+      .compile()
+
+    const result3 = db
+      .selectFrom('orders.items[0] as firstItem')
+      .selectAll()
+      .compile()
+  })
+
+  test('alias test', async () => {
+    const result = db
+      .selectFrom('families as f')
+      .select(['f.id', 'f.address.city'])
+      .where('f.address.city', '=', 'Dallas')
+      .compile()
+  })
+
+  test('deep select test', async () => {
+    const result1 = db
+      .selectFrom('nested as n')
+      .select('n.level1.level2.level3IsAnArray[0].level4.name4')
+      .compile()
+
+    const result2 = db
+      .selectFrom('nested as n')
+      .select('n.level1.level2.level3IsAnArray[0].colors')
+      .compile()
+  })
+
+  test('order by clause test', async () => {
+    const result = db
+      .selectFrom('families as f')
+      .select(['f.id', 'f.address.city'])
+      .orderBy('f.address.city', 'asc')
+      .compile()
+  })
+
+  test('aggregate function test', async () => {
+    const result = db
+      .selectFrom('families as f')
+      .select((eb) => eb.fn.count<number>('f.id').as('dallas_count'))
+      .where('f.address.city', '=', 'Dallas')
+      .compile()
+  })
+
+  test('in clause test', async () => {
+    const states = ['NY', 'WA', 'CA', 'PA', 'OH', 'OR', 'MI', 'WI']
+    const result = db
+      .selectFrom('families as f')
+      .select(['f.id', 'f.lastName', 'f.address'])
+      .where('f.address.state', 'in', states)
+      .compile()
+  })
+
+  test('value select test', async () => {
+    const result = db
+      .selectFrom('families as f')
+      .select((eb) => eb.val('Hello World').as('some_value'))
+      .compile()
+  })
+
+  test('select arithmetic expression test', async () => {
+    const result = db
+      .selectFrom('orders as o')
+      .join('i in o.items')
+      .select(
+        sql<number>`(i.quantity * i.unitPrice) * (1 - i.discount)`.as('amount'),
+      )
+      .compile()
+  })
+
+  test('parameterized where test', async () => {
+    const city = 'Dallas',
+      state = 'TX'
+    const result = db
+      .selectFrom('families as f')
+      .selectAll()
+      .where('f.address.city', '=', city)
+      .where('f.address.state', '=', state)
+      .compile()
+  })
+
+  test('limit clause test', async () => {
+    const result = db
+      .selectFrom('families as f')
+      .selectAll()
+      .orderBy('f.address.city')
+      .limit(10)
+      .compile()
+  })
+
+  test('arrayContains function tests', async () => {
+    const result1 = db
+      .selectFrom('families as f')
+      .selectAll()
+      .where((eb) => eb.fn.arrayContains('f.children[4].pets', { age: 5 }))
+      .compile()
+
+    const result2 = db
+      .selectFrom('orders.tags as t')
+      .selectAll()
+      .where((eb) => eb.fn.arrayContains('t', { name: 'electronics' }))
+      .compile()
+
+    const result3 = db
+      .selectFrom('orders.customer.phoneNumbers as p')
+      .selectAll()
+      // .where((eb) => eb.fn.arrayContains('p', { name: 'electronics' }))
+      .compile()
+  })
+
+  test('distance function test', async () => {
+    const geo: Point = { type: 'Point', coordinates: [31.9, -4.8] }
+    const result = db
+      .selectFrom('persons as p')
+      .select((eb) => eb.fn.distance('p.location', geo).as('distance'))
+      .where((eb) => eb.fn.distance('p.location', geo), '<', 30_000)
+      .compile()
+  })
+
+  test('join test', async () => {
+    const result = db
+      .selectFrom('orders as o')
+      .join('i in o.items')
+      .select((eb) => eb.fn.sum('i.amount').as('totalAmount'))
+      .where('o.total', '>=', 10_000)
+      .where('i.category', '=', 'electronics')
+      .compile()
+  })
+
+  // Cosmos DB does not support a HAVING clause but can be simulated by using a subquery.
+  test('group by having simulation test', async () => {
+    const subquery = db
+      .selectFrom('orders as o')
+      .join('i in o.items')
+      .groupBy('i.category')
+      .select((eb) => [
+        'i.category',
+        eb.fn.sum<number>('i.amount').as('totalAmount'),
+      ])
+
+    const result = db
+      .selectFrom(subquery.as('grouped'))
+      .where('grouped.totalAmount', '>', 250)
+      .select(['grouped.category', 'grouped.totalAmount'])
+      .compile()
+  })
+
+  test('group by with multiple joins test', async () => {
+    const result = db
+      .selectFrom('orders as o')
+      .join('i in o.items')
+      .join('t in o.tags')
+      .groupBy('i.category')
+      .select((eb) => [
+        'i.category',
+        eb.fn.sum<number>('i.amount').as('totalAmount'),
+        't.name',
+      ])
+      .compile()
+  })
+
+  test('group by multiple columns test', async () => {
+    const result = db
+      .selectFrom('orders as o')
+      .join('i in o.items')
+      .groupBy(['i.category', 'i.productId'])
+      .select((eb) => [
+        'i.category',
+        'i.productId',
+        eb.fn.sum<number>('i.amount').as('totalAmount'),
+      ])
+      .compile()
+  })
+
+  test('join with group by and where clause test', async () => {
+    const result = db
+      .selectFrom('orders as o')
+      .join('i in o.items')
+      .where('o.total', '>', 100)
+      .groupBy('i.category')
+      .select((eb) => [
+        'i.category',
+        eb.fn.count<number>('i.productId').as('productCount'),
+      ])
+      .compile()
+  })
+
+  test('join with deeply nested array test', async () => {
+    const result = db
+      .selectFrom('orders as o')
+      .join('i in o.items[5].taxes')
+      .join('t in o.tags')
+      .groupBy('t.name')
+      .select(['t.name', (eb) => eb.fn.avg<number>('i.rate').as('totalAmount')])
+      .compile()
+  })
+
+  test('subquery test', async () => {
+    const subquery = db
+      .selectFrom('families as f')
+      .where('f.address.city', '=', 'Dallas')
+      .select((eb) => [eb.fn.count<number>('f.id').as('familyCount')])
+
+    const result = db
+      .selectFrom(subquery.as('grouped'))
+      .select(['grouped.familyCount'])
+      .compile()
+  })
+
+  test('discriminator and logical deletion test', async () => {
+    const result = db
+      .selectFrom('families as f')
+      .where(({ eb, or }) =>
+        or([
+          eb('f.address.city', '=', 'Dallas'),
+          eb('f.address.city', '=', 'Austin'),
+        ]),
+      )
+      .select(['f.id', 'f.address.city'])
+      .compile()
+  })
+
+  test('group by having simulation test with discriminator and logical deletion', async () => {
+    const subquery = db
+      .selectFrom('orders as o')
+      .join('i in o.items')
+      .groupBy('i.category')
+      .select((eb) => [
+        'i.category',
+        eb.fn.sum<number>('i.amount').as('totalAmount'),
+      ])
+
+    const result = db
+      .selectFrom(subquery.as('grouped'))
+      .where('grouped.totalAmount', '>', 250)
+      .select(['grouped.category', 'grouped.totalAmount'])
+      .compile()
+  })
+
+  test('select from nested object test', async () => {
+    const result = db
+      .selectFrom('orders.items[0] as i')
+      .select('i.taxes')
+      .orderBy('i.taxes[0].type')
+      .compile()
+
+    const result1 = db
+      .selectFrom('orders.items[0].taxes[3] as t')
+      .select('t.type')
+      .compile()
+  })
+
+  test('select from nested object test', async () => {
+    const result = db
+      .selectFrom('orders.customer as c')
+      .select('c.firstName')
+      .compile()
+  })
+
+  test('join test with deep path select', async () => {
+    const result1 = db
+      .selectFrom('orders as o')
+      .join('i in o.items')
+      .select('i.taxes[5] as t')
+      .compile()
+
+    const result2 = db
+      .selectFrom('orders as o')
+      .join('i in o.items')
+      .select('i.taxes as taxes')
+      .compile()
+
+    const result3 = db
+      .selectFrom('orders as o')
+      .join('i in o.items')
+      .select('i.taxes[0].type as taxType')
+      .compile()
+
+    const result4 = db
+      .selectFrom('orders as o')
+      .join('i in o.items')
+      .select('i.taxes[0].type')
+      .compile()
+
+    const result5 = db
+      .selectFrom('orders as o')
+      .join('i in o.items')
+      .select('i.taxes[0] as firstTax') //TODO: Shouldn't an alias be required when selecting an array element?
+      .compile()
+
+    const result6 = db
+      .selectFrom('orders as o')
+      .join('i in o.items')
+      .select('i.productId')
+      .compile()
+  })
+
+  type PropertyPath = AnyPropertyPath<Database, 'orders'>
+  type PropertyPathWithTable = AnyPropertyPathWithTable<Database, 'orders'>
+  type AliasedArrayPropertyPathWithTable = AnyAliasedArrayPropertyPathWithTable<
+    Database,
+    'orders'
+  >
+  type AliasedObjectPropertyPathWithTable =
+    AnyAliasedObjectPropertyPathWithTable<Database, 'orders'>
+  type AliasedPropertyPathWithTable = AnyAliasedPropertyPathWithTable<
+    Database,
+    'orders'
+  >
+
+  type s1 = SelectExpression<Database, 'orders'>
+  type s2 = AnyAliasedColumnWithTable<Database, 'orders'>
+  type s3 = AnyAliasedColumn<Database, 'orders'> //
+  type s5 = AnyAliasedPropertyPath<Database, 'orders'>
+  type s6 = AnyAliasedPropertyPathWithTable<Database, 'orders'>
+  type s7 = AnyArrayPropertyPathWithTable<Database, 'orders'>
+  type s8 = AnyPropertyPath<Database, 'orders'> //
+  type s9 = AliasedExpressionOrFactory<Database, 'orders'> //?
+  type s10 = AnyAliasedArrayPropertyPathWithTable<Database, 'orders'> //
+
+  // Diagnostic type to inspect SelectExpression for the joined query
+  type DiagnosticSelectExpression = SelectExpression<
+    Database & { o: Order } & { i: ArrayItemType<Order['items']> },
+    'o' | 'i'
+  >
+
+  // Diagnostic type to check assignability
+  type DiagnosticIsAssignable =
+    'i.taxes[0].type' extends DiagnosticSelectExpression ? true : false // Should be DiagnosticIsAssignable = true
+  type DiagnosticIsAliasedAssignable =
+    'i.taxes[0].type as taxType' extends DiagnosticSelectExpression
+      ? true // Should be DiagnosticIsAliasedAssignable = true
+      : false
+}

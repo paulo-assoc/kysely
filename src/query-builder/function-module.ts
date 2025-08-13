@@ -21,6 +21,7 @@ import { parseSelectAll } from '../parser/select-parser.js'
 import { KyselyTypeError } from '../util/type-error.js'
 import {
   AnyArrayPropertyPathWithTable,
+  AnyMatchingObjectPropertyPathWithTable,
   ExtractArrayItemTypeWithTable,
   IsNever,
 } from '../util/type-utils.js'
@@ -30,6 +31,7 @@ import { isString } from '../util/object-utils.js'
 import { parseTable } from '../parser/table-parser.js'
 import { Selectable } from '../util/column-type.js'
 import { sql } from '../raw-builder/sql.js'
+import type { GeoJsonObject } from 'geojson'
 
 /**
  * Helpers for type safe SQL function calls.
@@ -768,6 +770,13 @@ export interface FunctionModule<DB, TB extends keyof DB> {
     property: P,
     value: Partial<ExtractArrayItemTypeWithTable<DB, TB, P>>,
   ): Expression<boolean>
+
+  distance<
+    P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>,
+  >(
+    property: P,
+    geo: GeoJsonObject,
+  ): ExpressionWrapper<DB, TB, number>
 }
 
 export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
@@ -868,6 +877,17 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         FunctionNode.create('ARRAY_CONTAINS', [
           parseReferenceExpression(property), // Parse property as a reference
           sql`${value}`.toOperationNode(), // Treat value as a literal
+        ]),
+      )
+    },
+
+    distance<
+      P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>,
+    >(property: P, geo: GeoJsonObject) {
+      return new ExpressionWrapper<DB, TB, number>(
+        FunctionNode.create('ST_DISTANCE', [
+          parseReferenceExpression(property), // Parse property as a reference
+          sql`${geo}`.toOperationNode(), // Treat value as a literal
         ]),
       )
     },

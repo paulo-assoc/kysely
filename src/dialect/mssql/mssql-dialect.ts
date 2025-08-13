@@ -7,7 +7,7 @@ import { Dialect } from '../dialect.js'
 import { MssqlAdapter } from './mssql-adapter.js'
 import { MssqlDialectConfig } from './mssql-dialect-config.js'
 import { MssqlDriver } from './mssql-driver.js'
-import { MssqlIntrospector } from './mssql-introspector.js'
+// import { MssqlIntrospector } from './mssql-introspector.js'
 import { MssqlQueryCompiler } from './mssql-query-compiler.js'
 
 /**
@@ -69,6 +69,11 @@ export class MssqlDialect implements Dialect {
   }
 
   createIntrospector(db: Kysely<any>): DatabaseIntrospector {
-    return new MssqlIntrospector(db)
+    return {
+      getSchemas: async () => [],
+      getTables: async () => [],
+      getMetadata: async () => ({ tables: [] }),
+    }
+    // return new MssqlIntrospector(db)
   }
 }

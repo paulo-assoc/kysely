@@ -1,4 +1,11 @@
+import { Point } from 'geojson'
 import { Kysely, sql } from '..'
+import {
+  AnyAliasedArrayPropertyPathWithTable,
+  AnyAliasedObjectPropertyPathWithTable,
+  AnyPropertyPath,
+  AnyPropertyPathWithTable,
+} from '../../../dist/cjs/util/type-utils'
 // import { expectType, expectError } from 'tsd'
 
 export interface BaseEntity {
@@ -7,6 +14,30 @@ export interface BaseEntity {
   tenantId?: string
   excludedAt?: Date
   _ts?: number
+}
+
+interface Nested {
+  level1: {
+    id1: string
+    name1: string
+    level2: {
+      id2: string
+      name2: string
+      level3IsAnArray: {
+        id3: string
+        name3: string
+        colors: string[]
+        level4: {
+          id4: string
+          name4: string
+        }
+      }[]
+      level3a: {
+        id3a: string
+        name3a: string
+      }
+    }
+  }
 }
 
 interface Order extends BaseEntity {
@@ -34,8 +65,17 @@ interface Order extends BaseEntity {
       state: string
       zip: string
     }
-    phone: string
+    phoneNumbers: string[]
   }
+}
+
+interface Order2 {
+  orderId: string
+  items: {
+    taxes: {
+      type: string
+    }[]
+  }[]
 }
 
 export interface Person extends BaseEntity {
@@ -100,12 +140,19 @@ export interface Address {
 interface Database {
   persons: Person
   orders: Order
+  orders2: Order2
   families: Family
+  nested: Nested
 }
 
 async function JoinTest(db: Kysely<Database>) {
-  test('select all test', async () => {
-    const result = await db.selectFrom('persons as p').selectAll().compile()
+  test('select all tests', async () => {
+    const result1 = db.selectFrom('persons as p').selectAll().compile()
+
+    const result2 = db
+      .selectFrom('orders.customer.phoneNumbers as p')
+      .selectAll()
+      .compile()
   })
 
   test('alias test', async () => {
@@ -178,22 +225,34 @@ async function JoinTest(db: Kysely<Database>) {
       .compile()
   })
 
-  test('array contains tests', async () => {
+  test('arrayContains function tests', async () => {
     const result1 = db
       .selectFrom('families as f')
       .selectAll()
       .where((eb) => eb.fn.arrayContains('f.children[0].pets', { age: 5 }))
       .compile()
+
+    const result2 = db
+      .selectFrom('orders.tags as t')
+      .selectAll()
+      .where((eb) => eb.fn.arrayContains('t', { name: 'electronics' }))
+      .compile()
+
+    const result3 = db
+      .selectFrom('orders.customer.phoneNumbers as p')
+      .selectAll()
+      // .where((eb) => eb.fn.arrayContains('p', { name: 'electronics' }))
+      .compile()
   })
 
-  // test('distance function test', async () => {
-  //   const geo: Point = { type: 'Point', coordinates: [31.9, -4.8] };
-  //   const result = db
-  //     .selectFrom('families as f')
-  //     .select(eb => distance(eb, 'location', geo).as('distance'))
-  //     .where(eb => distance(eb, 'location', geo), '<', 30_000)
-  //     .compile();
-  // });
+  test('distance function test', async () => {
+    const geo: Point = { type: 'Point', coordinates: [31.9, -4.8] }
+    const result = db
+      .selectFrom('persons as p')
+      .select((eb) => eb.fn.distance('p.location', geo).as('distance'))
+      .where((eb) => eb.fn.distance('p.location', geo), '<', 30_000)
+      .compile()
+  })
 
   test('join test', async () => {
     const result = db
@@ -315,7 +374,7 @@ async function JoinTest(db: Kysely<Database>) {
       .compile()
   })
 
-  test('select from nested array test', async () => {
+  test('select from nested object test', async () => {
     const result = db
       .selectFrom('orders.items[0] as i')
       .select('i.taxes')
@@ -334,4 +393,36 @@ async function JoinTest(db: Kysely<Database>) {
       .select('c.firstName')
       .compile()
   })
+
+  test('join test with deep path select', async () => {
+    const case1 = db
+      .selectFrom('orders as o')
+      .join('i in o.items')
+      .select('i.taxes')
+      .compile()
+
+    const case2 = db
+      .selectFrom('orders as o')
+      .join('i in o.items')
+      .select('i.taxes[0].type')
+      .compile()
+  })
+
+  type T1 = AnyPropertyPath<Database, 'orders2'>
+  type T2 = AnyPropertyPathWithTable<Database, 'orders2'>
+
+  type AnyAliasedArray = AnyAliasedArrayPropertyPathWithTable<
+    Database,
+    'orders'
+  >
+
+  type AnyAliasedObjects = AnyAliasedObjectPropertyPathWithTable<
+    Database,
+    'nested'
+  >
+
+  type AnyAliasedObjects2 = AnyAliasedObjectPropertyPathWithTable<
+    Database,
+    'orders'
+  >
 }

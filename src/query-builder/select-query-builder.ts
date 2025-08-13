@@ -2808,7 +2808,7 @@ class AliasedSelectQueryBuilderImpl<
   }
 }
 
-//TODO: Remove this after the current solution is tested throroughly.
+//TODO: Remove these after the current solution is tested thoroughly.
 // export type SelectQueryBuilderWithJoin<
 //   DB,
 //   TB extends keyof DB,
@@ -2842,6 +2842,24 @@ class AliasedSelectQueryBuilderImpl<
 //       : never
 //     : never
 //   : never
+
+// export type SelectQueryBuilderWithJoin<
+//   DB,
+//   TB extends keyof DB,
+//   O,
+//   TE extends `${string} in ${string}`,
+// > = TE extends `${infer A} in ${infer T}`
+//   ? T extends `${infer Table}.${infer Path}`
+//     ? Table extends keyof DB
+//       ? ExtractPropertyPathType<DB[Table], Path> extends infer ArrayType
+//         ? ArrayType extends any[]
+//           ? InnerJoinedBuilder<DB, TB, O, A, ArrayItemType<ArrayType>>
+//           : never
+//         : never
+//       : never
+//     : never
+//   : never
+
 export type SelectQueryBuilderWithJoin<
   DB,
   TB extends keyof DB,
@@ -2853,7 +2871,7 @@ export type SelectQueryBuilderWithJoin<
       ? ExtractPropertyPathType<DB[Table], Path> extends infer ArrayType
         ? ArrayType extends any[]
           ? InnerJoinedBuilder<DB, TB, O, A, ArrayItemType<ArrayType>>
-          : never
+          : InnerJoinedBuilder<DB, TB, O, A, ArrayType>
         : never
       : never
     : never

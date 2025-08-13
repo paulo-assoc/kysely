@@ -2,14 +2,16 @@ import { isFunction, isReadonlyArray, isString } from '../util/object-utils.js'
 import { AliasedSelectQueryBuilder } from '../query-builder/select-query-builder.js'
 import { SelectionNode } from '../operation-node/selection-node.js'
 import {
-  AnyAliasedColumn,
+  AnyAliasedArrayPropertyPathWithTable,
   AnyAliasedColumnWithTable,
   AnyAliasedPropertyPath,
+  AnyAliasedPropertyPathWithTable,
+  AnyArrayPropertyPathWithTable,
   AnyColumn,
   AnyColumnWithTable,
-  AnyPropertyPath,
   AnyPropertyPathWithTable,
   DrainOuterGeneric,
+  ExtractColumnType,
   ExtractPropertyPathType,
 } from '../util/type-utils.js'
 import { parseAliasedStringReference } from './reference-parser.js'
@@ -29,14 +31,18 @@ import {
   ExpressionBuilder,
 } from '../expression/expression-builder.js'
 
+// This is not fully functional. Type errors in select into a join alias beyond the top-level property:
+// Fails: db.selectFrom('orders2 as o').join('i in o.items').select('i.taxes[0].type as taxType')
+// Works: db.selectFrom('orders2 as o').join('i in o.items').select('i.taxes as taxes')
 export type SelectExpression<DB, TB extends keyof DB> =
   | AnyAliasedColumnWithTable<DB, TB>
-  | AnyAliasedColumn<DB, TB>
+  // | AnyAliasedColumn<DB, TB> // not needed?
   | AnyColumnWithTable<DB, TB>
-  | AnyColumn<DB, TB>
+  // | AnyColumn<DB, TB> // not needed?
   | AnyAliasedPropertyPath<DB, TB>
   | AnyPropertyPathWithTable<DB, TB>
-  | AnyPropertyPath<DB, TB>
+  | AnyAliasedPropertyPathWithTable<DB, TB>
+  | AnyArrayPropertyPathWithTable<DB, TB> // redundant?; subset of AnyPropertyPathWithTable?
   | DynamicReferenceBuilder<any>
   | AliasedExpressionOrFactory<DB, TB>
 
@@ -47,19 +53,11 @@ export type SelectCallback<DB, TB extends keyof DB> = (
 /**
  * Turns a SelectExpression or a union of them into a selection object.
  */
-export type Selection<
-  DB,
-  TB extends keyof DB,
-  SE,
-  // Inline version of DrainOuterGeneric for performance reasons.
-  // Don't replace with DrainOuterGeneric!
-> = [DB] extends [unknown]
-  ? {
-      [E in FlattenSelectExpression<SE> as ExtractAliasFromSelectExpression<E>]: SelectType<
-        ExtractTypeFromSelectExpression<DB, TB, E>
-      >
-    }
-  : {}
+export type Selection<DB, TB extends keyof DB, SE> = {
+  [E in FlattenSelectExpression<SE> as ExtractAliasFromSelectExpression<E>]: SelectType<
+    ExtractTypeFromSelectExpression<DB, TB, E>
+  >
+}
 
 /**
  * Turns a SelectCallback into a selection object.
@@ -94,20 +92,51 @@ type ExtractAliasFromSelectExpression<SE> = SE extends string
         ? ExtractAliasFromStringSelectExpression<RA>
         : never
 
-type ExtractAliasFromStringSelectExpression<SE extends string> =
-  SE extends `${string}.${string}.${string} as ${infer A}`
-    ? A
-    : SE extends `${string}.${string} as ${infer A}`
-      ? A
-      : SE extends `${string} as ${infer A}`
-        ? A
-        : SE extends `${string}.${string}.${infer C}`
-          ? C
-          : SE extends `${string}.${infer C}`
-            ? C
-            : SE
+// LKG
+// type ExtractAliasFromStringSelectExpression<SE extends string> =
+//   SE extends `${string}.${string}.${string} as ${infer A}`
+//     ? A
+//     : SE extends `${string}.${string} as ${infer A}`
+//       ? A
+//       : SE extends `${string} as ${infer A}`
+//         ? A
+//         : SE extends `${string}.${string}.${infer C}`
+//           ? C
+//           : SE extends `${string}.${infer C}`
+//             ? C
+//             : SE
 
-type ExtractTypeFromSelectExpression<
+// Suggested by Grok
+type ExtractAliasFromStringSelectExpression<SE extends string> =
+  SE extends `${string} as ${infer A}`
+    ? A
+    : SE extends `${string}.${infer C}`
+      ? C extends `${string}[${number}].${infer Rest}`
+        ? Rest extends `${string}.${infer Last}`
+          ? Last
+          : Rest
+        : C
+      : SE
+
+// type ExtractTypeFromSelectExpression<
+//   DB,
+//   TB extends keyof DB,
+//   SE,
+// > = SE extends string
+//   ? ExtractTypeFromStringSelectExpression<DB, TB, SE>
+//   : SE extends AliasedSelectQueryBuilder<infer O, any>
+//     ? O[keyof O] | null
+//     : SE extends (eb: any) => AliasedSelectQueryBuilder<infer O, any>
+//       ? O[keyof O] | null
+//       : SE extends AliasedExpression<infer O, any>
+//         ? O
+//         : SE extends (eb: any) => AliasedExpression<infer O, any>
+//           ? O
+//           : SE extends DynamicReferenceBuilder<infer RA>
+//             ? ExtractTypeFromStringSelectExpression<DB, TB, RA> | undefined
+//             : never
+
+export type ExtractTypeFromSelectExpression<
   DB,
   TB extends keyof DB,
   SE,
@@ -126,15 +155,51 @@ type ExtractTypeFromSelectExpression<
             : never
 
 // This is the new version that works correctly with nested objects
+// export type ExtractTypeFromStringSelectExpression<
+//   DB,
+//   TB extends keyof DB,
+//   SE extends string,
+// > = SE extends `${infer PE extends string} as ${string}`
+//   ? ExtractPropertyPathType<DB[TB], PE>
+//   : SE extends `${infer PE extends string}`
+//     ? ExtractPropertyPathType<DB[TB], PE>
+//     : never
+
+// export type ExtractTypeFromStringSelectExpression<
+//   DB,
+//   TB extends keyof DB,
+//   SE extends string,
+// > = SE extends `${infer T}.${infer P} as ${string}`
+//   ? T extends TB
+//     ? ExtractPropertyPathType<DB[T], P>
+//     : never
+//   : SE extends `${infer T}.${infer P}`
+//     ? T extends TB
+//       ? ExtractPropertyPathType<DB[T], P>
+//       : never
+//     : SE extends AnyColumn<DB, TB>
+//       ? ExtractColumnType<DB, TB, SE>
+//       : never
+
 export type ExtractTypeFromStringSelectExpression<
   DB,
   TB extends keyof DB,
   SE extends string,
-> = SE extends `${infer PE extends string} as ${string}`
-  ? ExtractPropertyPathType<DB[TB], PE>
-  : SE extends `${infer PE extends string}`
-    ? ExtractPropertyPathType<DB[TB], PE>
-    : never
+> = SE extends `${infer T}.${infer P} as ${string}`
+  ? T extends TB
+    ? ExtractPropertyPathType<DB[T], P>
+    : T extends keyof DB
+      ? ExtractPropertyPathType<DB[T], P>
+      : never
+  : SE extends `${infer T}.${infer P}`
+    ? T extends TB
+      ? ExtractPropertyPathType<DB[T], P>
+      : T extends keyof DB
+        ? ExtractPropertyPathType<DB[T], P>
+        : never
+    : SE extends AnyColumn<DB, TB>
+      ? ExtractColumnType<DB, TB, SE>
+      : never
 
 // This is the original version that was not working correctly with nested objects
 // type ExtractTypeFromStringSelectExpression<

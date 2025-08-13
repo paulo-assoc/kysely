@@ -98,7 +98,7 @@ export * from './dialect/mssql/mssql-adapter.js'
 export * from './dialect/mssql/mssql-dialect-config.js'
 export * from './dialect/mssql/mssql-dialect.js'
 export * from './dialect/mssql/mssql-driver.js'
-export * from './dialect/mssql/mssql-introspector.js'
+// export * from './dialect/mssql/mssql-introspector.js'
 export * from './dialect/mssql/mssql-query-compiler.js'
 
 export * from './query-compiler/default-query-compiler.js'
@@ -227,7 +227,6 @@ export * from './util/streamable.js'
 export * from './util/log.js'
 export {
   AnyAliasedColumn,
-  AnyAliasedColumnWithTable,
   AnyColumn,
   AnyColumnWithTable,
   AnyPropertyPath,

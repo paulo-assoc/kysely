@@ -179,7 +179,8 @@ export type OutputExpression<
   ODB = OutputDatabase<DB, TB, OP>,
   OTB extends keyof ODB = keyof ODB,
 > =
-  | AnyAliasedColumnWithTable<ODB, OTB>
+  | AnyAliasedColumnWithTable<ODB, OTB> //?
+  //| AnyAliasedColumn<ODB, OTB>
   | AnyColumnWithTable<ODB, OTB>
   | AliasedExpressionOrFactory<ODB, OTB>
 

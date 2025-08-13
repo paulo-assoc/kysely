@@ -23,7 +23,7 @@ export class MysqlIntrospector implements DatabaseIntrospector {
   async getSchemas(): Promise<SchemaMetadata[]> {
     let rawSchemas = await this.#db
       .selectFrom('information_schema.schemata')
-      .select('schema_name')
+      // .select('schema_name')
       .$castTo<RawSchemaMetadata>()
       .execute()
 
