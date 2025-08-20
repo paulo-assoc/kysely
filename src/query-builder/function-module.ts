@@ -31,7 +31,7 @@ import { isString } from '../util/object-utils.js'
 import { parseTable } from '../parser/table-parser.js'
 import { Selectable } from '../util/column-type.js'
 import { sql } from '../raw-builder/sql.js'
-import type { GeoJsonObject } from 'geojson'
+import type { GeoJsonObject, MultiPolygon, Polygon } from 'geojson'
 
 /**
  * Helpers for type safe SQL function calls.
@@ -766,17 +766,127 @@ export interface FunctionModule<DB, TB extends keyof DB> {
     T extends TB ? Selectable<DB[T]> : T extends Expression<infer O> ? O : never
   >
 
+  /**
+   * Calls the ARRAY_CONTAINS function to determine whether the specified array property contains the given value.
+   */
   arrayContains<P extends AnyArrayPropertyPathWithTable<DB, TB>>(
     property: P,
     value: Partial<ExtractArrayItemTypeWithTable<DB, TB, P>>,
   ): Expression<boolean>
 
+  /**
+   * Calls the ARRAY_CONTAINS_ANY function to determine whether the specified array property contains any of the given values.
+   */
+  arrayContainsAny<P extends AnyArrayPropertyPathWithTable<DB, TB>>(
+    property: P,
+    ...values: Partial<ExtractArrayItemTypeWithTable<DB, TB, P>>[]
+  ): Expression<boolean>
+
+  /**
+   * Calls the ARRAY_CONTAINS_ALL function to determine whether the specified array property contains all of the given values.
+   */
+  arrayContainsAll<P extends AnyArrayPropertyPathWithTable<DB, TB>>(
+    property: P,
+    ...values: Partial<ExtractArrayItemTypeWithTable<DB, TB, P>>[]
+  ): Expression<boolean>
+
+  /**
+   * Calls the ST_AREA function to calculate the total area of a GeoJSON Polygon or MultiPolygon property.
+   */
+  area<
+    P extends AnyMatchingObjectPropertyPathWithTable<
+      DB,
+      TB,
+      Polygon | MultiPolygon
+    >,
+  >(
+    property: P,
+  ): ExpressionWrapper<DB, TB, number>
+
+  /**
+   * Calls the ST_ISVALID function to determine whether the specified GeoJSON property is valid.
+   */
+  isValid<
+    P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>,
+  >(
+    property: P,
+  ): ExpressionWrapper<DB, TB, boolean>
+
+  /**
+   * Calls the ST_ISVALIDDETAILED function to determine whether the specified GeoJSON property is valid, and if invalid, the reason.
+   */
+  isValidDetailed<
+    P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>,
+  >(
+    property: P,
+  ): ExpressionWrapper<
+    DB,
+    TB,
+    {
+      valid: boolean
+      reason?: string
+    }
+  >
+
+  /**
+   * Calls the ST_DISTANCE function to calculate the distance between the GeoJSON object (GeoJSON Point, Polygon, or LineString expression) specified in the first argument is within the GeoJSON object in the second argument.
+   */
   distance<
     P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>,
   >(
     property: P,
     geo: GeoJsonObject,
   ): ExpressionWrapper<DB, TB, number>
+
+  /**
+   * Calls the ST_DISTANCE function with swapped parameters (geo first, property second).
+   */
+  distance<
+    P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>,
+  >(
+    geo: GeoJsonObject,
+    property: P,
+  ): ExpressionWrapper<DB, TB, number>
+
+  /**
+   * Calls the ST_WITHIN function to determine whether the GeoJSON object (GeoJSON Point, Polygon, or LineString expression) specified in the first argument is within the GeoJSON object in the second argument.
+   */
+  within<
+    P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>,
+  >(
+    property: P,
+    geo: GeoJsonObject,
+  ): ExpressionWrapper<DB, TB, boolean>
+
+  /**
+   * Calls the ST_WITHIN function with swapped parameters (geo first, property second).
+   */
+  within<
+    P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>,
+  >(
+    geo: GeoJsonObject,
+    property: P,
+  ): ExpressionWrapper<DB, TB, boolean>
+
+  /**
+   * Calls the ST_INTERSECTS function determines whether the GeoJSON object (Point, Polygon, MultiPolygon, or LineString) specified in the first argument intersects the GeoJSON object in the second argument.
+   */
+  intersects<
+    P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>,
+  >(
+    property: P,
+    geo: GeoJsonObject,
+  ): ExpressionWrapper<DB, TB, boolean>
+
+  /**
+   * Calls the ST_INTERSECTS function with swapped parameters (geo first, property second).
+   */
+  intersects<
+    P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>,
+  >(
+    geo: GeoJsonObject,
+    property: P,
+  ): ExpressionWrapper<DB, TB, boolean>
 }
 
 export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
@@ -881,15 +991,171 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       )
     },
 
-    distance<
-      P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>,
-    >(property: P, geo: GeoJsonObject) {
-      return new ExpressionWrapper<DB, TB, number>(
-        FunctionNode.create('ST_DISTANCE', [
+    arrayContainsAny<P extends AnyArrayPropertyPathWithTable<DB, TB>>(
+      property: P,
+      ...values: Partial<ExtractArrayItemTypeWithTable<DB, TB, P>>[]
+    ): Expression<boolean> {
+      return new ExpressionWrapper(
+        FunctionNode.create('ARRAY_CONTAINS_ANY', [
           parseReferenceExpression(property), // Parse property as a reference
-          sql`${geo}`.toOperationNode(), // Treat value as a literal
+          sql`${values}`.toOperationNode(), // Treat values array as a literal
         ]),
       )
+    },
+
+    arrayContainsAll<P extends AnyArrayPropertyPathWithTable<DB, TB>>(
+      property: P,
+      ...values: Partial<ExtractArrayItemTypeWithTable<DB, TB, P>>[]
+    ): Expression<boolean> {
+      return new ExpressionWrapper(
+        FunctionNode.create('ARRAY_CONTAINS_ALL', [
+          parseReferenceExpression(property), // Parse property as a reference
+          sql`${values}`.toOperationNode(), // Treat values array as a literal
+        ]),
+      )
+    },
+
+    area<
+      P extends AnyMatchingObjectPropertyPathWithTable<
+        DB,
+        TB,
+        Polygon | MultiPolygon
+      >,
+    >(property: P) {
+      return new ExpressionWrapper<DB, TB, number>(
+        FunctionNode.create('ST_AREA', [
+          parseReferenceExpression(property), // Parse property as a reference
+        ]),
+      )
+    },
+
+    isValid<
+      P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>,
+    >(property: P) {
+      return new ExpressionWrapper<DB, TB, boolean>(
+        FunctionNode.create('ST_ISVALID', [
+          parseReferenceExpression(property), // Parse property as a reference
+        ]),
+      )
+    },
+
+    isValidDetailed<
+      P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>,
+    >(property: P) {
+      return new ExpressionWrapper<
+        DB,
+        TB,
+        {
+          valid: boolean
+          reason?: string
+        }
+      >(
+        FunctionNode.create('ST_ISVALIDDETAILED', [
+          parseReferenceExpression(property), // Parse property as a reference
+        ]),
+      )
+    },
+
+    distance<
+      P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>,
+    >(
+      spatial1: P | GeoJsonObject,
+      spatial2: P | GeoJsonObject,
+    ): ExpressionWrapper<DB, TB, number> {
+      let property: P
+      let geo: GeoJsonObject
+
+      // Determine parameter order based on argument types
+      if (isString(spatial1)) {
+        // First argument is property (string reference)
+        property = spatial1 as P
+        geo = spatial2 as GeoJsonObject
+        return new ExpressionWrapper<DB, TB, number>(
+          FunctionNode.create('ST_DISTANCE', [
+            parseReferenceExpression(property), // Parse property as a reference
+            sql`${geo}`.toOperationNode(), // Treat geo as a literal
+          ]),
+        )
+      } else {
+        // First argument is GeoJsonObject
+        geo = spatial1 as GeoJsonObject
+        property = spatial2 as P
+
+        return new ExpressionWrapper<DB, TB, number>(
+          FunctionNode.create('ST_DISTANCE', [
+            sql`${geo}`.toOperationNode(), // Treat geo as a literal
+            parseReferenceExpression(property), // Parse property as a reference
+          ]),
+        )
+      }
+    },
+
+    within<
+      P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>,
+    >(
+      spatial1: P | GeoJsonObject,
+      spatial2: P | GeoJsonObject,
+    ): ExpressionWrapper<DB, TB, boolean> {
+      let property: P
+      let geo: GeoJsonObject
+
+      // Determine parameter order based on argument types
+      if (isString(spatial1)) {
+        // First argument is property (string reference)
+        property = spatial1 as P
+        geo = spatial2 as GeoJsonObject
+        return new ExpressionWrapper<DB, TB, boolean>(
+          FunctionNode.create('ST_WITHIN', [
+            parseReferenceExpression(property), // Parse property as a reference
+            sql`${geo}`.toOperationNode(), // Treat geo as a literal
+          ]),
+        )
+      } else {
+        // First argument is GeoJsonObject
+        geo = spatial1 as GeoJsonObject
+        property = spatial2 as P
+
+        return new ExpressionWrapper<DB, TB, boolean>(
+          FunctionNode.create('ST_WITHIN', [
+            sql`${geo}`.toOperationNode(), // Treat geo as a literal
+            parseReferenceExpression(property), // Parse property as a reference
+          ]),
+        )
+      }
+    },
+
+    intersects<
+      P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>,
+    >(
+      spatial1: P | GeoJsonObject,
+      spatial2: P | GeoJsonObject,
+    ): ExpressionWrapper<DB, TB, boolean> {
+      let property: P
+      let geo: GeoJsonObject
+
+      // Determine parameter order based on argument types
+      if (isString(spatial1)) {
+        // First argument is property (string reference)
+        property = spatial1 as P
+        geo = spatial2 as GeoJsonObject
+        return new ExpressionWrapper<DB, TB, boolean>(
+          FunctionNode.create('ST_INTERSECTS', [
+            parseReferenceExpression(property), // Parse property as a reference
+            sql`${geo}`.toOperationNode(), // Treat geo as a literal
+          ]),
+        )
+      } else {
+        // First argument is GeoJsonObject
+        geo = spatial1 as GeoJsonObject
+        property = spatial2 as P
+
+        return new ExpressionWrapper<DB, TB, boolean>(
+          FunctionNode.create('ST_INTERSECTS', [
+            sql`${geo}`.toOperationNode(), // Treat geo as a literal
+            parseReferenceExpression(property), // Parse property as a reference
+          ]),
+        )
+      }
     },
   })
 }
