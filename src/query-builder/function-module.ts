@@ -1240,7 +1240,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       column: RE,
     ): ExpressionWrapper<DB, TB, string> {
       return new ExpressionWrapper(
-        FunctionNode.create('REVERSE', [parseReferenceExpression(column)]),
+        FunctionNode.create('reverse', [parseReferenceExpression(column)]),
       )
     },
 
@@ -1337,7 +1337,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       column: RE,
     ): ExpressionWrapper<DB, TB, string> {
       return new ExpressionWrapper(
-        FunctionNode.create('UPPER', [parseReferenceExpression(column)]),
+        FunctionNode.create('upper', [parseReferenceExpression(column)]),
       )
     },
 
@@ -1505,7 +1505,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         property = spatial1 as P
         geo = spatial2 as GeoJsonObject
         return new ExpressionWrapper<DB, TB, boolean>(
-          FunctionNode.create('ST_WITHIN', [
+          FunctionNode.create('st_within', [
             parseReferenceExpression(property), // Parse property as a reference
             sql`${geo}`.toOperationNode(), // Treat geo as a literal
           ]),
@@ -1516,7 +1516,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         property = spatial2 as P
 
         return new ExpressionWrapper<DB, TB, boolean>(
-          FunctionNode.create('ST_WITHIN', [
+          FunctionNode.create('st_within', [
             sql`${geo}`.toOperationNode(), // Treat geo as a literal
             parseReferenceExpression(property), // Parse property as a reference
           ]),
@@ -1539,7 +1539,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         property = spatial1 as P
         geo = spatial2 as GeoJsonObject
         return new ExpressionWrapper<DB, TB, boolean>(
-          FunctionNode.create('ST_INTERSECTS', [
+          FunctionNode.create('st_intersects', [
             parseReferenceExpression(property), // Parse property as a reference
             sql`${geo}`.toOperationNode(), // Treat geo as a literal
           ]),
@@ -1550,7 +1550,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         property = spatial2 as P
 
         return new ExpressionWrapper<DB, TB, boolean>(
-          FunctionNode.create('ST_INTERSECTS', [
+          FunctionNode.create('st_intersects', [
             sql`${geo}`.toOperationNode(), // Treat geo as a literal
             parseReferenceExpression(property), // Parse property as a reference
           ]),
