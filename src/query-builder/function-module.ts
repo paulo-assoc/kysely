@@ -766,6 +766,32 @@ export interface FunctionModule<DB, TB extends keyof DB> {
     T extends TB ? Selectable<DB[T]> : T extends Expression<infer O> ? O : never
   >
 
+  // String functions
+
+  // Vector functions
+
+  vectorDistance<
+    P extends AnyArrayPropertyPathWithTable<DB, TB>,
+    M extends {
+      distanceFunction: 'cosine' | 'euclidean' | 'inner-product'
+      dataType: 'float32' | 'int8' | 'uint8'
+      searchListSizeMultiplier: number
+      quantizedVectorListMultiplier: number
+    } = {
+      distanceFunction: 'cosine'
+      dataType: 'float32'
+      searchListSizeMultiplier: 10
+      quantizedVectorListMultiplier: 5
+    },
+  >(
+    vectorProperty: P,
+    queryVector: number[],
+    useIndex?: boolean,
+    options?: M,
+  ): ExpressionWrapper<DB, TB, number>
+
+  // Array functions
+
   /**
    * Calls the ARRAY_CONTAINS function to determine whether the specified array property contains the given value.
    */
@@ -789,6 +815,8 @@ export interface FunctionModule<DB, TB extends keyof DB> {
     property: P,
     ...values: Partial<ExtractArrayItemTypeWithTable<DB, TB, P>>[]
   ): Expression<boolean>
+
+  // Spatial functions
 
   /**
    * Calls the ST_AREA function to calculate the total area of a GeoJSON Polygon or MultiPolygon property.
@@ -976,6 +1004,44 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         FunctionNode.create('to_json', [
           isString(table) ? parseTable(table) : table.toOperationNode(),
         ]),
+      )
+    },
+
+    vectorDistance<
+      P extends AnyArrayPropertyPathWithTable<DB, TB>,
+      O extends {
+        distanceFunction: 'cosine' | 'euclidean' | 'inner-product'
+        dataType: 'float32' | 'int8' | 'uint8'
+        searchListSizeMultiplier: number
+        quantizedVectorListMultiplier: number
+      } = {
+        distanceFunction: 'cosine'
+        dataType: 'float32'
+        searchListSizeMultiplier: 10
+        quantizedVectorListMultiplier: 5
+      },
+    >(
+      vectorProperty: P,
+      queryVector: number[],
+      useIndex?: boolean,
+      options?: O,
+    ): ExpressionWrapper<DB, TB, number> {
+      const args = [
+        parseReferenceExpression(vectorProperty),
+        sql`${queryVector}`.toOperationNode(),
+      ]
+
+      if (useIndex) {
+        args.push(sql`true`.toOperationNode())
+      } else {
+        args.push(sql`false`.toOperationNode())
+      }
+      if (options) {
+        args.push(sql`${options}`.toOperationNode())
+      }
+
+      return new ExpressionWrapper<DB, TB, number>(
+        FunctionNode.create('VectorDistance', args),
       )
     },
 
