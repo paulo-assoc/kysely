@@ -7,7 +7,10 @@ import {
 } from '../operation-node/operation-node.js'
 import { ReferenceNode } from '../operation-node/reference-node.js'
 import { SelectAllNode } from '../operation-node/select-all-node.js'
-import { SelectionNode } from '../operation-node/selection-node.js'
+import {
+  SelectionNode,
+  ValueSelectionNode,
+} from '../operation-node/selection-node.js'
 import { TableNode } from '../operation-node/table-node.js'
 import { AndNode } from './and-node.js'
 import { JoinNode } from './join-node.js'
@@ -100,6 +103,7 @@ import { RefreshMaterializedViewNode } from './refresh-materialized-view-node.js
 import { OrActionNode } from './or-action-node.js'
 import { CollateNode } from './collate-node.js'
 import { RenameConstraintNode } from './rename-constraint-node.js'
+import { SelectValueNode } from './select-value-node.js'
 
 export abstract class OperationNodeVisitor {
   protected readonly nodeStack: OperationNode[] = []
@@ -120,6 +124,8 @@ export abstract class OperationNodeVisitor {
     TableNode: this.visitTable.bind(this),
     FromNode: this.visitFrom.bind(this),
     SelectAllNode: this.visitSelectAll.bind(this),
+    SelectValueNode: this.visitSelectValue.bind(this),
+    ValueSelectionNode: this.visitValueSelection.bind(this),
     AndNode: this.visitAnd.bind(this),
     OrNode: this.visitOr.bind(this),
     ValueNode: this.visitValue.bind(this),
@@ -217,6 +223,7 @@ export abstract class OperationNodeVisitor {
 
   protected abstract visitSelectQuery(node: SelectQueryNode): void
   protected abstract visitSelection(node: SelectionNode): void
+  protected abstract visitValueSelection(node: ValueSelectionNode): void
   protected abstract visitColumn(node: ColumnNode): void
   protected abstract visitAlias(node: AliasNode): void
   protected abstract visitTable(node: TableNode): void
@@ -278,6 +285,7 @@ export abstract class OperationNodeVisitor {
   ): void
   protected abstract visitDataType(node: DataTypeNode): void
   protected abstract visitSelectAll(node: SelectAllNode): void
+  protected abstract visitSelectValue(node: SelectValueNode): void
   protected abstract visitIdentifier(node: IdentifierNode): void
   protected abstract visitSchemableIdentifier(
     node: SchemableIdentifierNode,

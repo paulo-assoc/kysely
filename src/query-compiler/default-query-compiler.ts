@@ -34,7 +34,10 @@ import { ReferencesNode } from '../operation-node/references-node.js'
 import { ReturningNode } from '../operation-node/returning-node.js'
 import { SelectAllNode } from '../operation-node/select-all-node.js'
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
-import { SelectionNode } from '../operation-node/selection-node.js'
+import {
+  SelectionNode,
+  ValueSelectionNode,
+} from '../operation-node/selection-node.js'
 import { TableNode } from '../operation-node/table-node.js'
 import { PrimaryKeyConstraintNode } from '../operation-node/primary-key-constraint-node.js'
 import { UniqueConstraintNode } from '../operation-node/unique-constraint-node.js'
@@ -117,6 +120,7 @@ import { logOnce } from '../util/log-once.js'
 import { CollateNode } from '../operation-node/collate-node.js'
 import { QueryId } from '../util/query-id.js'
 import { RenameConstraintNode } from '../operation-node/rename-constraint-node.js'
+import { SelectValueNode } from '../operation-node/select-value-node.js'
 
 const LIT_WRAP_REGEX = /'/g
 
@@ -262,6 +266,11 @@ export class DefaultQueryCompiler
 
   protected override visitSelection(node: SelectionNode): void {
     this.visitNode(node.selection)
+  }
+
+  protected override visitValueSelection(node: ValueSelectionNode): void {
+    this.append('value ')
+    this.visitNode(node.expression)
   }
 
   protected override visitColumn(node: ColumnNode): void {
@@ -486,6 +495,10 @@ export class DefaultQueryCompiler
 
   protected override visitSelectAll(_: SelectAllNode): void {
     this.append('*')
+  }
+
+  protected override visitSelectValue(_: SelectValueNode): void {
+    this.append('value')
   }
 
   protected override visitIdentifier(node: IdentifierNode): void {

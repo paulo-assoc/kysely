@@ -4,7 +4,8 @@ import { IdentifierNode } from './identifier-node.js'
 import { OperationNode, OperationNodeKind } from './operation-node.js'
 import { ReferenceNode } from './reference-node.js'
 import { SelectAllNode } from './select-all-node.js'
-import { SelectionNode } from './selection-node.js'
+import { SelectValueNode } from './select-value-node.js'
+import { SelectionNode, ValueSelectionNode } from './selection-node.js'
 import { TableNode } from './table-node.js'
 import { AndNode } from './and-node.js'
 import { JoinNode } from './join-node.js'
@@ -154,6 +155,7 @@ export class OperationNodeTransformer {
     TableNode: this.transformTable.bind(this),
     FromNode: this.transformFrom.bind(this),
     SelectAllNode: this.transformSelectAll.bind(this),
+    SelectValueNode: this.transformSelectValue.bind(this),
     AndNode: this.transformAnd.bind(this),
     OrNode: this.transformOr.bind(this),
     ValueNode: this.transformValue.bind(this),
@@ -242,6 +244,7 @@ export class OperationNodeTransformer {
     OutputNode: this.transformOutput.bind(this),
     OrActionNode: this.transformOrAction.bind(this),
     CollateNode: this.transformCollate.bind(this),
+    ValueSelectionNode: this.transformValueSelection.bind(this),
   })
 
   transformNode<T extends OperationNode | undefined>(
@@ -299,6 +302,17 @@ export class OperationNodeTransformer {
       setOperations: this.transformNodeList(node.setOperations, queryId),
       fetch: this.transformNode(node.fetch, queryId),
       top: this.transformNode(node.top, queryId),
+    })
+  }
+
+  protected transformValueSelection(
+    node: ValueSelectionNode,
+    queryId?: QueryId,
+  ): ValueSelectionNode {
+    return requireAllProps<ValueSelectionNode>({
+      kind: 'ValueSelectionNode',
+      value: this.transformNode(node.value, queryId),
+      expression: this.transformNode(node.expression, queryId),
     })
   }
 
@@ -1297,6 +1311,14 @@ export class OperationNodeTransformer {
     node: SelectAllNode,
     _queryId?: QueryId,
   ): SelectAllNode {
+    // An Object.freezed leaf node. No need to clone.
+    return node
+  }
+
+  protected transformSelectValue(
+    node: SelectValueNode,
+    _queryId?: QueryId,
+  ): SelectValueNode {
     // An Object.freezed leaf node. No need to clone.
     return node
   }

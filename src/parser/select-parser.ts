@@ -14,7 +14,10 @@ import {
   ExtractColumnType,
   ExtractPropertyPathType,
 } from '../util/type-utils.js'
-import { parseAliasedStringReference } from './reference-parser.js'
+import {
+  parseAliasedStringReference,
+  parseStringReference,
+} from './reference-parser.js'
 import {
   DynamicReferenceBuilder,
   isDynamicReferenceBuilder,
@@ -324,6 +327,20 @@ function parseSelectExpression(
     return SelectionNode.create(selection.toOperationNode())
   } else {
     return SelectionNode.create(parseAliasedExpression(selection))
+  }
+}
+
+export function parseSelectValueExpression(
+  selection: SelectExpression<any, any>,
+): SelectionNode[] {
+  if (isString(selection)) {
+    return [SelectionNode.createValueSelection(parseStringReference(selection))]
+  } else if (isDynamicReferenceBuilder(selection)) {
+    return [SelectionNode.createValueSelection(selection.toOperationNode())]
+  } else {
+    return [
+      SelectionNode.createValueSelection(parseAliasedExpression(selection)), //TODO: This should never get called. selectValue doesn't support aliased expressions.
+    ]
   }
 }
 

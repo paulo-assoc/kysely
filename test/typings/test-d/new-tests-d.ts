@@ -1,5 +1,5 @@
 import { Point } from 'geojson'
-import { Kysely, sql } from '..'
+import { Expression, ExpressionBuilder, Kysely, sql } from '..'
 import {
   AnyAliasedArrayPropertyPathWithTable,
   AnyAliasedObjectPropertyPathWithTable,
@@ -56,6 +56,7 @@ interface Order extends BaseEntity {
     quantity: number
   }[]
   tags: { name: string }[]
+  colors: string[]
   customer: {
     firstName: string
     lastName: string
@@ -149,6 +150,11 @@ async function JoinTest(db: Kysely<Database>) {
   test('select all tests', async () => {
     const result1 = db.selectFrom('persons as p').selectAll().compile()
 
+    const result1a = await db
+      .selectFrom('persons as p')
+      .selectValue('p.age')
+      .compile()
+
     const result2 = db
       .selectFrom('orders.customer.phoneNumbers as p')
       .selectAll()
@@ -239,9 +245,34 @@ async function JoinTest(db: Kysely<Database>) {
       .compile()
 
     const result3 = db
+      .selectFrom('orders.tags as t')
+      .selectAll()
+      .where((eb) => eb.fn.arrayContains('t', { name: 'electronics' }))
+      .compile()
+
+    const result4 = db
       .selectFrom('orders.customer.phoneNumbers as p')
       .selectAll()
-      // .where((eb) => eb.fn.arrayContains('p', { name: 'electronics' }))
+      .where((eb) => eb.fn.arrayContains('p', '213-867-8309'))
+      .compile()
+
+    const createColorsPredicate = (
+      eb: ExpressionBuilder<
+        Database & {
+          o: Order
+        },
+        'o'
+      >,
+      colors: string[],
+    ) => {
+      return eb.or(
+        colors.map((color) => eb.fn.arrayContains(`o.colors`, color)),
+      )
+    }
+
+    const result5 = db
+      .selectFrom('orders as o')
+      .where((eb) => createColorsPredicate(eb, ['red', 'blue']))
       .compile()
   })
 

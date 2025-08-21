@@ -10,6 +10,8 @@ export type OperationNodeKind =
   | 'AliasNode'
   | 'FromNode'
   | 'SelectAllNode'
+  | 'SelectValueNode'
+  | 'ValueSelectionNode'
   | 'AndNode'
   | 'OrNode'
   | 'ParensNode'

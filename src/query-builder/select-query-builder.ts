@@ -16,6 +16,8 @@ import {
   AllSelection,
   SelectCallback,
   CallbackSelection,
+  ExtractTypeFromSelectExpression,
+  parseSelectValueExpression,
 } from '../parser/select-parser.js'
 import {
   parseReferenceExpressionOrList,
@@ -35,6 +37,7 @@ import {
   SimplifySingleResult,
   SqlBool,
   ExtractPropertyPathType,
+  AnyPropertyPathWithTable,
 } from '../util/type-utils.js'
 import {
   DirectedOrderByStringReference,
@@ -385,6 +388,10 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   select<SE extends SelectExpression<DB, TB>>(
     selection: SE,
   ): SelectQueryBuilder<DB, TB, O & Selection<DB, TB, SE>>
+
+  selectValue<SE extends AnyPropertyPathWithTable<DB, TB>>( // selectValue uses AnyPropertyPathWithTable rather than SelectExpression because the type returned is a value not an object with a property that can be aliased.
+    selection: SE,
+  ): SelectQueryBuilder<DB, TB, ExtractTypeFromSelectExpression<DB, TB, SE>>
 
   /**
    * Adds `distinct on` expressions to the select clause.
@@ -2246,6 +2253,22 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
       queryNode: SelectQueryNode.cloneWithSelections(
         this.#props.queryNode,
         parseSelectArg(selection),
+      ),
+    })
+  }
+
+  selectValue<SE extends AnyPropertyPathWithTable<DB, TB>>(
+    selection: SE,
+  ): SelectQueryBuilder<DB, TB, ExtractTypeFromSelectExpression<DB, TB, SE>> {
+    return new SelectQueryBuilderImpl<
+      DB,
+      TB,
+      ExtractTypeFromSelectExpression<DB, TB, SE>
+    >({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithSelections(
+        this.#props.queryNode,
+        parseSelectValueExpression(selection),
       ),
     })
   }
