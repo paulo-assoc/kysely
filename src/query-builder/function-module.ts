@@ -768,6 +768,100 @@ export interface FunctionModule<DB, TB extends keyof DB> {
 
   // String functions
 
+  contains<RE extends StringReference<DB, TB>>(
+    column: RE,
+    searchString: string,
+    ignoreCase?: boolean,
+  ): ExpressionWrapper<DB, TB, boolean>
+
+  endsWith<RE extends StringReference<DB, TB>>(
+    column: RE,
+    searchString: string,
+    ignoreCase?: boolean,
+  ): ExpressionWrapper<DB, TB, boolean>
+
+  indexOf<RE extends StringReference<DB, TB>>(
+    column: RE,
+    searchString: string,
+    startIndex?: number,
+  ): ExpressionWrapper<DB, TB, number>
+
+  left<RE extends StringReference<DB, TB>>(
+    column: RE,
+    length: number,
+  ): ExpressionWrapper<DB, TB, string>
+
+  len<RE extends StringReference<DB, TB>>(
+    column: RE,
+  ): ExpressionWrapper<DB, TB, number>
+
+  lower<RE extends StringReference<DB, TB>>(
+    column: RE,
+  ): ExpressionWrapper<DB, TB, string>
+
+  ltrim<RE extends StringReference<DB, TB>>(
+    column: RE,
+    trimStr?: string,
+  ): ExpressionWrapper<DB, TB, string>
+
+  regexMatch<RE extends StringReference<DB, TB>>(
+    column: RE,
+    pattern: string,
+    modifiers?: string,
+  ): ExpressionWrapper<DB, TB, boolean>
+
+  replace<RE extends StringReference<DB, TB>>(
+    column: RE,
+    searchStr: string,
+    replaceStr: string,
+  ): ExpressionWrapper<DB, TB, string>
+
+  replicate<RE extends StringReference<DB, TB>>(
+    column: RE,
+    count: number,
+  ): ExpressionWrapper<DB, TB, string>
+
+  reverse<RE extends StringReference<DB, TB>>(
+    column: RE,
+  ): ExpressionWrapper<DB, TB, string>
+
+  right<RE extends StringReference<DB, TB>>(
+    column: RE,
+    length: number,
+  ): ExpressionWrapper<DB, TB, string>
+
+  rtrim<RE extends StringReference<DB, TB>>(
+    column: RE,
+    trimStr?: string,
+  ): ExpressionWrapper<DB, TB, string>
+
+  startsWith<RE extends StringReference<DB, TB>>(
+    column: RE,
+    searchString: string,
+    ignoreCase?: boolean,
+  ): ExpressionWrapper<DB, TB, boolean>
+
+  stringEquals<RE extends StringReference<DB, TB>>(
+    column: RE,
+    compareString: string,
+    ignoreCase?: boolean,
+  ): ExpressionWrapper<DB, TB, boolean>
+
+  substring<RE extends StringReference<DB, TB>>(
+    column: RE,
+    start: number,
+    length?: number,
+  ): ExpressionWrapper<DB, TB, string>
+
+  trim<RE extends StringReference<DB, TB>>(
+    column: RE,
+    trimStr?: string,
+  ): ExpressionWrapper<DB, TB, string>
+
+  upper<RE extends StringReference<DB, TB>>(
+    column: RE,
+  ): ExpressionWrapper<DB, TB, string>
+
   // Vector functions
 
   vectorDistance<
@@ -1007,6 +1101,246 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       )
     },
 
+    contains<RE extends StringReference<DB, TB>>(
+      column: RE,
+      searchString: string,
+      ignoreCase?: boolean,
+    ): ExpressionWrapper<DB, TB, boolean> {
+      const args = [
+        parseReferenceExpression(column),
+        sql`${searchString}`.toOperationNode(),
+      ]
+
+      if (ignoreCase !== undefined) {
+        args.push(sql`${ignoreCase}`.toOperationNode())
+      }
+
+      return new ExpressionWrapper(FunctionNode.create('contains', args))
+    },
+
+    endsWith<RE extends StringReference<DB, TB>>(
+      column: RE,
+      searchString: string,
+      ignoreCase?: boolean,
+    ): ExpressionWrapper<DB, TB, boolean> {
+      const args = [
+        parseReferenceExpression(column),
+        sql`${searchString}`.toOperationNode(),
+      ]
+
+      if (ignoreCase !== undefined) {
+        args.push(sql`${ignoreCase}`.toOperationNode())
+      }
+
+      return new ExpressionWrapper(FunctionNode.create('endswith', args))
+    },
+
+    indexOf<RE extends StringReference<DB, TB>>(
+      column: RE,
+      searchString: string,
+      startIndex?: number,
+    ): ExpressionWrapper<DB, TB, number> {
+      const args = [
+        parseReferenceExpression(column),
+        sql`${searchString}`.toOperationNode(),
+      ]
+
+      if (startIndex !== undefined) {
+        args.push(sql`${startIndex}`.toOperationNode())
+      }
+
+      return new ExpressionWrapper(FunctionNode.create('index_of', args))
+    },
+
+    left<RE extends StringReference<DB, TB>>(
+      column: RE,
+      length: number,
+    ): ExpressionWrapper<DB, TB, string> {
+      const args = [
+        parseReferenceExpression(column),
+        sql`${length}`.toOperationNode(),
+      ]
+
+      return new ExpressionWrapper(FunctionNode.create('left', args))
+    },
+
+    len<RE extends StringReference<DB, TB>>( // there is a readonly 'length' property in the prototype of a function (ie, fn), so we have to use 'len'.
+      column: RE,
+    ): ExpressionWrapper<DB, TB, number> {
+      return new ExpressionWrapper(
+        FunctionNode.create('length', [parseReferenceExpression(column)]),
+      )
+    },
+
+    lower<RE extends StringReference<DB, TB>>(
+      column: RE,
+    ): ExpressionWrapper<DB, TB, string> {
+      return new ExpressionWrapper(
+        FunctionNode.create('lower', [parseReferenceExpression(column)]),
+      )
+    },
+
+    ltrim<RE extends StringReference<DB, TB>>(
+      column: RE,
+      trimStr?: string,
+    ): ExpressionWrapper<DB, TB, string> {
+      const args = [parseReferenceExpression(column)]
+
+      if (trimStr !== undefined) {
+        args.push(sql`${trimStr}`.toOperationNode())
+      }
+
+      return new ExpressionWrapper(FunctionNode.create('ltrim', args))
+    },
+
+    regexMatch<RE extends StringReference<DB, TB>>(
+      column: RE,
+      pattern: string,
+      modifiers?: string,
+    ): ExpressionWrapper<DB, TB, boolean> {
+      const args = [
+        parseReferenceExpression(column),
+        sql`${pattern}`.toOperationNode(),
+      ]
+
+      if (modifiers !== undefined) {
+        args.push(sql`${modifiers}`.toOperationNode())
+      }
+
+      return new ExpressionWrapper(FunctionNode.create('regexmatch', args))
+    },
+
+    replace<RE extends StringReference<DB, TB>>(
+      column: RE,
+      searchStr: string,
+      replaceStr: string,
+    ): ExpressionWrapper<DB, TB, string> {
+      const args = [
+        parseReferenceExpression(column),
+        sql`${searchStr}`.toOperationNode(),
+        sql`${replaceStr}`.toOperationNode(),
+      ]
+
+      return new ExpressionWrapper(FunctionNode.create('replace', args))
+    },
+
+    replicate<RE extends StringReference<DB, TB>>(
+      column: RE,
+      count: number,
+    ): ExpressionWrapper<DB, TB, string> {
+      const args = [
+        parseReferenceExpression(column),
+        sql`${count}`.toOperationNode(),
+      ]
+
+      return new ExpressionWrapper(FunctionNode.create('replicate', args))
+    },
+
+    reverse<RE extends StringReference<DB, TB>>(
+      column: RE,
+    ): ExpressionWrapper<DB, TB, string> {
+      return new ExpressionWrapper(
+        FunctionNode.create('REVERSE', [parseReferenceExpression(column)]),
+      )
+    },
+
+    right<RE extends StringReference<DB, TB>>(
+      column: RE,
+      length: number,
+    ): ExpressionWrapper<DB, TB, string> {
+      const args = [
+        parseReferenceExpression(column),
+        sql`${length}`.toOperationNode(),
+      ]
+
+      return new ExpressionWrapper(FunctionNode.create('right', args))
+    },
+
+    rtrim<RE extends StringReference<DB, TB>>(
+      column: RE,
+      trimStr?: string,
+    ): ExpressionWrapper<DB, TB, string> {
+      const args = [parseReferenceExpression(column)]
+
+      if (trimStr !== undefined) {
+        args.push(sql`${trimStr}`.toOperationNode())
+      }
+
+      return new ExpressionWrapper(FunctionNode.create('rtrim', args))
+    },
+
+    startsWith<RE extends StringReference<DB, TB>>(
+      column: RE,
+      searchString: string,
+      ignoreCase?: boolean,
+    ): ExpressionWrapper<DB, TB, boolean> {
+      const args = [
+        parseReferenceExpression(column),
+        sql`${searchString}`.toOperationNode(),
+      ]
+
+      if (ignoreCase !== undefined) {
+        args.push(sql`${ignoreCase}`.toOperationNode())
+      }
+
+      return new ExpressionWrapper(FunctionNode.create('startswith', args))
+    },
+
+    stringEquals<RE extends StringReference<DB, TB>>(
+      column: RE,
+      compareString: string,
+      ignoreCase?: boolean,
+    ): ExpressionWrapper<DB, TB, boolean> {
+      const args = [
+        parseReferenceExpression(column),
+        sql`${compareString}`.toOperationNode(),
+      ]
+
+      if (ignoreCase !== undefined) {
+        args.push(sql`${ignoreCase}`.toOperationNode())
+      }
+
+      return new ExpressionWrapper(FunctionNode.create('stringequals', args))
+    },
+
+    substring<RE extends StringReference<DB, TB>>(
+      column: RE,
+      start: number,
+      length?: number,
+    ): ExpressionWrapper<DB, TB, string> {
+      const args = [
+        parseReferenceExpression(column),
+        sql`${start}`.toOperationNode(),
+      ]
+
+      if (length !== undefined) {
+        args.push(sql`${length}`.toOperationNode())
+      }
+
+      return new ExpressionWrapper(FunctionNode.create('substring', args))
+    },
+
+    trim<RE extends StringReference<DB, TB>>(
+      column: RE,
+      trimStr?: string,
+    ): ExpressionWrapper<DB, TB, string> {
+      const args = [parseReferenceExpression(column)]
+
+      if (trimStr !== undefined) {
+        args.push(sql`${trimStr}`.toOperationNode())
+      }
+
+      return new ExpressionWrapper(FunctionNode.create('trim', args))
+    },
+
+    upper<RE extends StringReference<DB, TB>>(
+      column: RE,
+    ): ExpressionWrapper<DB, TB, string> {
+      return new ExpressionWrapper(
+        FunctionNode.create('UPPER', [parseReferenceExpression(column)]),
+      )
+    },
+
     vectorDistance<
       P extends AnyArrayPropertyPathWithTable<DB, TB>,
       O extends {
@@ -1041,7 +1375,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       }
 
       return new ExpressionWrapper<DB, TB, number>(
-        FunctionNode.create('VectorDistance', args),
+        FunctionNode.create('vectordistance', args),
       )
     },
 
@@ -1050,7 +1384,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       value: Partial<ExtractArrayItemTypeWithTable<DB, TB, P>>,
     ): Expression<boolean> {
       return new ExpressionWrapper(
-        FunctionNode.create('ARRAY_CONTAINS', [
+        FunctionNode.create('array_contains', [
           parseReferenceExpression(property), // Parse property as a reference
           sql`${value}`.toOperationNode(), // Treat value as a literal
         ]),
@@ -1062,7 +1396,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       ...values: Partial<ExtractArrayItemTypeWithTable<DB, TB, P>>[]
     ): Expression<boolean> {
       return new ExpressionWrapper(
-        FunctionNode.create('ARRAY_CONTAINS_ANY', [
+        FunctionNode.create('array_contains_any', [
           parseReferenceExpression(property), // Parse property as a reference
           sql`${values}`.toOperationNode(), // Treat values array as a literal
         ]),
@@ -1074,7 +1408,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       ...values: Partial<ExtractArrayItemTypeWithTable<DB, TB, P>>[]
     ): Expression<boolean> {
       return new ExpressionWrapper(
-        FunctionNode.create('ARRAY_CONTAINS_ALL', [
+        FunctionNode.create('array_contains_all', [
           parseReferenceExpression(property), // Parse property as a reference
           sql`${values}`.toOperationNode(), // Treat values array as a literal
         ]),
@@ -1089,7 +1423,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       >,
     >(property: P) {
       return new ExpressionWrapper<DB, TB, number>(
-        FunctionNode.create('ST_AREA', [
+        FunctionNode.create('st_area', [
           parseReferenceExpression(property), // Parse property as a reference
         ]),
       )
@@ -1099,7 +1433,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>,
     >(property: P) {
       return new ExpressionWrapper<DB, TB, boolean>(
-        FunctionNode.create('ST_ISVALID', [
+        FunctionNode.create('st_isvalid', [
           parseReferenceExpression(property), // Parse property as a reference
         ]),
       )
@@ -1116,7 +1450,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
           reason?: string
         }
       >(
-        FunctionNode.create('ST_ISVALIDDETAILED', [
+        FunctionNode.create('st_isvaliddetailed', [
           parseReferenceExpression(property), // Parse property as a reference
         ]),
       )
@@ -1137,7 +1471,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         property = spatial1 as P
         geo = spatial2 as GeoJsonObject
         return new ExpressionWrapper<DB, TB, number>(
-          FunctionNode.create('ST_DISTANCE', [
+          FunctionNode.create('st_distance', [
             parseReferenceExpression(property), // Parse property as a reference
             sql`${geo}`.toOperationNode(), // Treat geo as a literal
           ]),
@@ -1148,7 +1482,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         property = spatial2 as P
 
         return new ExpressionWrapper<DB, TB, number>(
-          FunctionNode.create('ST_DISTANCE', [
+          FunctionNode.create('st_distance', [
             sql`${geo}`.toOperationNode(), // Treat geo as a literal
             parseReferenceExpression(property), // Parse property as a reference
           ]),
