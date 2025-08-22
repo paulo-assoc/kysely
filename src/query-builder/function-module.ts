@@ -769,98 +769,98 @@ export interface FunctionModule<DB, TB extends keyof DB> {
   // Math functions
 
   abs<RE extends ReferenceExpression<DB, TB>>(
-    column: RE,
+    column: number | RE,
   ): ExpressionWrapper<DB, TB, number>
 
   acos<RE extends ReferenceExpression<DB, TB>>(
-    column: RE,
+    column: number | RE,
   ): ExpressionWrapper<DB, TB, number>
 
   asin<RE extends ReferenceExpression<DB, TB>>(
-    column: RE,
+    column: number | RE,
   ): ExpressionWrapper<DB, TB, number>
 
   atan<RE extends ReferenceExpression<DB, TB>>(
-    column: RE,
+    column: number | RE,
   ): ExpressionWrapper<DB, TB, number>
 
   ceiling<RE extends ReferenceExpression<DB, TB>>(
-    column: RE,
+    column: number | RE,
   ): ExpressionWrapper<DB, TB, number>
 
   cos<RE extends ReferenceExpression<DB, TB>>(
-    column: RE,
+    column: number | RE,
   ): ExpressionWrapper<DB, TB, number>
 
   cot<RE extends ReferenceExpression<DB, TB>>(
-    column: RE,
+    column: number | RE,
   ): ExpressionWrapper<DB, TB, number>
 
   degrees<RE extends ReferenceExpression<DB, TB>>(
-    column: RE,
+    column: number | RE,
   ): ExpressionWrapper<DB, TB, number>
 
   exp<RE extends ReferenceExpression<DB, TB>>(
-    column: RE,
+    column: number | RE,
   ): ExpressionWrapper<DB, TB, number>
 
   floor<RE extends ReferenceExpression<DB, TB>>(
-    column: RE,
+    column: number | RE,
   ): ExpressionWrapper<DB, TB, number>
 
   log<RE extends ReferenceExpression<DB, TB>>(
-    column: RE,
+    column: number | RE,
     base?: number,
   ): ExpressionWrapper<DB, TB, number>
 
   log10<RE extends ReferenceExpression<DB, TB>>(
-    column: RE,
+    column: number | RE,
   ): ExpressionWrapper<DB, TB, number>
 
   numberBin<RE extends ReferenceExpression<DB, TB>>(
-    column: RE,
+    column: number | RE,
     binSize?: number,
   ): ExpressionWrapper<DB, TB, number>
 
   pi(): ExpressionWrapper<DB, TB, number>
 
   power<RE extends ReferenceExpression<DB, TB>>(
-    base: RE,
+    base: number | RE,
     exponent: number | RE,
   ): ExpressionWrapper<DB, TB, number>
 
   radians<RE extends ReferenceExpression<DB, TB>>(
-    column: RE,
+    column: number | RE,
   ): ExpressionWrapper<DB, TB, number>
 
   rand(): ExpressionWrapper<DB, TB, number>
 
   round<RE extends ReferenceExpression<DB, TB>>(
-    column: RE,
+    column: number | RE,
   ): ExpressionWrapper<DB, TB, number>
 
   sign<RE extends ReferenceExpression<DB, TB>>(
-    column: RE,
+    column: number | RE,
   ): ExpressionWrapper<DB, TB, number>
 
   sin<RE extends ReferenceExpression<DB, TB>>(
-    column: RE,
+    column: number | RE,
   ): ExpressionWrapper<DB, TB, number>
 
   sqrt<RE extends ReferenceExpression<DB, TB>>(
-    column: RE,
+    column: number | RE,
   ): ExpressionWrapper<DB, TB, number>
 
   square<RE extends ReferenceExpression<DB, TB>>(
-    column: RE,
+    column: number | RE,
   ): ExpressionWrapper<DB, TB, number>
 
   tan<RE extends ReferenceExpression<DB, TB>>(
-    column: RE,
+    column: number | RE,
   ): ExpressionWrapper<DB, TB, number>
 
   trunc<RE extends ReferenceExpression<DB, TB>>(
-    column: RE,
+    column: number | RE,
   ): ExpressionWrapper<DB, TB, number>
 
   // String functions
@@ -1281,90 +1281,134 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
     },
 
     abs<RE extends ReferenceExpression<DB, TB>>(
-      column: RE,
+      column: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('abs', [parseReferenceExpression(column)]),
+        FunctionNode.create('abs', [
+          isString(column)
+            ? parseReferenceExpression(column)
+            : sql`${column}`.toOperationNode(),
+        ]),
       )
     },
 
     acos<RE extends ReferenceExpression<DB, TB>>(
-      column: RE,
+      column: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('acos', [parseReferenceExpression(column)]),
+        FunctionNode.create('acos', [
+          isString(column)
+            ? parseReferenceExpression(column)
+            : sql`${column}`.toOperationNode(),
+        ]),
       )
     },
 
     asin<RE extends ReferenceExpression<DB, TB>>(
-      column: RE,
+      column: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('asin', [parseReferenceExpression(column)]),
+        FunctionNode.create('asin', [
+          isString(column)
+            ? parseReferenceExpression(column)
+            : sql`${column}`.toOperationNode(),
+        ]),
       )
     },
 
     atan<RE extends ReferenceExpression<DB, TB>>(
-      column: RE,
+      column: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('atan', [parseReferenceExpression(column)]),
+        FunctionNode.create('atan', [
+          isString(column)
+            ? parseReferenceExpression(column)
+            : sql`${column}`.toOperationNode(),
+        ]),
       )
     },
 
     ceiling<RE extends ReferenceExpression<DB, TB>>(
-      column: RE,
+      column: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('ceiling', [parseReferenceExpression(column)]),
+        FunctionNode.create('ceiling', [
+          isString(column)
+            ? parseReferenceExpression(column)
+            : sql`${column}`.toOperationNode(),
+        ]),
       )
     },
 
     cos<RE extends ReferenceExpression<DB, TB>>(
-      column: RE,
+      column: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('cos', [parseReferenceExpression(column)]),
+        FunctionNode.create('cos', [
+          isString(column)
+            ? parseReferenceExpression(column)
+            : sql`${column}`.toOperationNode(),
+        ]),
       )
     },
 
     cot<RE extends ReferenceExpression<DB, TB>>(
-      column: RE,
+      column: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('cot', [parseReferenceExpression(column)]),
+        FunctionNode.create('cot', [
+          isString(column)
+            ? parseReferenceExpression(column)
+            : sql`${column}`.toOperationNode(),
+        ]),
       )
     },
 
     degrees<RE extends ReferenceExpression<DB, TB>>(
-      column: RE,
+      column: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('degrees', [parseReferenceExpression(column)]),
+        FunctionNode.create('degrees', [
+          isString(column)
+            ? parseReferenceExpression(column)
+            : sql`${column}`.toOperationNode(),
+        ]),
       )
     },
 
     exp<RE extends ReferenceExpression<DB, TB>>(
-      column: RE,
+      column: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('exp', [parseReferenceExpression(column)]),
+        FunctionNode.create('exp', [
+          isString(column)
+            ? parseReferenceExpression(column)
+            : sql`${column}`.toOperationNode(),
+        ]),
       )
     },
 
     floor<RE extends ReferenceExpression<DB, TB>>(
-      column: RE,
+      column: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('floor', [parseReferenceExpression(column)]),
+        FunctionNode.create('floor', [
+          isString(column)
+            ? parseReferenceExpression(column)
+            : sql`${column}`.toOperationNode(),
+        ]),
       )
     },
 
     log<RE extends ReferenceExpression<DB, TB>>(
-      column: RE,
+      column: number | RE,
       base?: number,
     ): ExpressionWrapper<DB, TB, number> {
-      const args = [parseReferenceExpression(column)]
+      const args = [
+        isString(column)
+          ? parseReferenceExpression(column)
+          : sql`${column}`.toOperationNode(),
+      ]
 
       if (base !== undefined) {
         args.push(sql`${base}`.toOperationNode())
@@ -1374,18 +1418,26 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
     },
 
     log10<RE extends ReferenceExpression<DB, TB>>(
-      column: RE,
+      column: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('log10', [parseReferenceExpression(column)]),
+        FunctionNode.create('log10', [
+          isString(column)
+            ? parseReferenceExpression(column)
+            : sql`${column}`.toOperationNode(),
+        ]),
       )
     },
 
     numberBin<RE extends ReferenceExpression<DB, TB>>(
-      column: RE,
+      column: number | RE,
       binSize?: number,
     ): ExpressionWrapper<DB, TB, number> {
-      const args = [parseReferenceExpression(column)]
+      const args = [
+        isString(column)
+          ? parseReferenceExpression(column)
+          : sql`${column}`.toOperationNode(),
+      ]
 
       if (binSize !== undefined) {
         args.push(sql`${binSize}`.toOperationNode())
@@ -1399,12 +1451,14 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
     },
 
     power<RE extends ReferenceExpression<DB, TB>>(
-      base: RE,
+      base: number | RE,
       exponent: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
         FunctionNode.create('power', [
-          parseReferenceExpression(base),
+          isString(base)
+            ? parseReferenceExpression(base)
+            : sql`${base}`.toOperationNode(),
           isString(exponent)
             ? parseReferenceExpression(exponent)
             : sql`${exponent}`.toOperationNode(),
@@ -1413,10 +1467,14 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
     },
 
     radians<RE extends ReferenceExpression<DB, TB>>(
-      column: RE,
+      column: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('radians', [parseReferenceExpression(column)]),
+        FunctionNode.create('radians', [
+          isString(column)
+            ? parseReferenceExpression(column)
+            : sql`${column}`.toOperationNode(),
+        ]),
       )
     },
 
@@ -1425,58 +1483,86 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
     },
 
     round<RE extends ReferenceExpression<DB, TB>>(
-      column: RE,
+      column: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('round', [parseReferenceExpression(column)]),
+        FunctionNode.create('round', [
+          isString(column)
+            ? parseReferenceExpression(column)
+            : sql`${column}`.toOperationNode(),
+        ]),
       )
     },
 
     sign<RE extends ReferenceExpression<DB, TB>>(
-      column: RE,
+      column: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('sign', [parseReferenceExpression(column)]),
+        FunctionNode.create('sign', [
+          isString(column)
+            ? parseReferenceExpression(column)
+            : sql`${column}`.toOperationNode(),
+        ]),
       )
     },
 
     sin<RE extends ReferenceExpression<DB, TB>>(
-      column: RE,
+      column: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('sin', [parseReferenceExpression(column)]),
+        FunctionNode.create('sin', [
+          isString(column)
+            ? parseReferenceExpression(column)
+            : sql`${column}`.toOperationNode(),
+        ]),
       )
     },
 
     sqrt<RE extends ReferenceExpression<DB, TB>>(
-      column: RE,
+      column: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('sqrt', [parseReferenceExpression(column)]),
+        FunctionNode.create('sqrt', [
+          isString(column)
+            ? parseReferenceExpression(column)
+            : sql`${column}`.toOperationNode(),
+        ]),
       )
     },
 
     square<RE extends ReferenceExpression<DB, TB>>(
-      column: RE,
+      column: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('square', [parseReferenceExpression(column)]),
+        FunctionNode.create('square', [
+          isString(column)
+            ? parseReferenceExpression(column)
+            : sql`${column}`.toOperationNode(),
+        ]),
       )
     },
 
     tan<RE extends ReferenceExpression<DB, TB>>(
-      column: RE,
+      column: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('tan', [parseReferenceExpression(column)]),
+        FunctionNode.create('tan', [
+          isString(column)
+            ? parseReferenceExpression(column)
+            : sql`${column}`.toOperationNode(),
+        ]),
       )
     },
 
     trunc<RE extends ReferenceExpression<DB, TB>>(
-      column: RE,
+      column: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('trunc', [parseReferenceExpression(column)]),
+        FunctionNode.create('trunc', [
+          isString(column)
+            ? parseReferenceExpression(column)
+            : sql`${column}`.toOperationNode(),
+        ]),
       )
     },
 
