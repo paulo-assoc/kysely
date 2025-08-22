@@ -175,23 +175,20 @@ export function parseJSONReference(
 }
 
 export function parseStringReference(ref: string): ReferenceNode {
-  const COLUMN_SEPARATOR = '.'
+  const SEPARATOR = '.'
 
-  if (!ref.includes(COLUMN_SEPARATOR)) {
+  if (!ref.includes(SEPARATOR)) {
     return ReferenceNode.create(ColumnNode.create(ref))
   }
 
-  const parts = ref.split(COLUMN_SEPARATOR).map(trim)
+  const parts = ref.split(SEPARATOR).map(trim)
 
-  if (parts.length === 3) {
-    return parseStringReferenceWithTableAndSchema(parts)
-  }
+  // Split the ref into two parts: the first part (the table name or alias) is up to the first period, and the rest is the second part (the property path).
+  // eg, persons.address.city or p.address.city
+  const [firstPart, ...restParts] = ref.split(SEPARATOR)
+  const secondPart = restParts.join(SEPARATOR)
 
-  if (parts.length === 2) {
-    return parseStringReferenceWithTable(parts)
-  }
-
-  throw new Error(`invalid column reference ${ref}`)
+  return parseStringReferenceWithTable([firstPart, secondPart])
 }
 
 export function parseAliasedStringReference(
