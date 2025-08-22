@@ -1276,7 +1276,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       O extends number | string | null = number | string,
       C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>,
     >(column: C): AggregateFunctionBuilder<DB, TB, O> {
-      return agg('avg', [column])
+      return agg('AVG', [column])
     },
 
     coalesce(...values: any[]): ExpressionWrapper<DB, TB, any> {
@@ -1287,35 +1287,35 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       O extends number | string | bigint,
       C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>,
     >(column: C): AggregateFunctionBuilder<DB, TB, O> {
-      return agg('count', [column])
+      return agg('COUNT', [column])
     },
 
     countAll(table?: string): any {
       return new AggregateFunctionBuilder({
         aggregateFunctionNode: AggregateFunctionNode.create(
-          'count',
+          'COUNT',
           parseSelectAll(table),
         ),
       })
     },
 
     max(column: any): any {
-      return agg('max', [column])
+      return agg('MAX', [column])
     },
 
     min(column: any): any {
-      return agg('min', [column])
+      return agg('MIN', [column])
     },
 
     sum<
       O extends number | string | bigint | null = number | string | bigint,
       C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>,
     >(column: C): AggregateFunctionBuilder<DB, TB, O> {
-      return agg('sum', [column])
+      return agg('SUM', [column])
     },
 
     any<RE extends ReferenceExpression<DB, TB>>(column: RE): any {
-      return fn('any', [column])
+      return fn('ANY', [column])
     },
 
     jsonAgg(table: string | Expression<unknown>): any {
@@ -1338,7 +1338,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       column: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('abs', [
+        FunctionNode.create('ABS', [
           isString(column)
             ? parseReferenceExpression(column)
             : sql`${column}`.toOperationNode(),
@@ -1350,7 +1350,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       column: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('acos', [
+        FunctionNode.create('ACOS', [
           isString(column)
             ? parseReferenceExpression(column)
             : sql`${column}`.toOperationNode(),
@@ -1362,7 +1362,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       column: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('asin', [
+        FunctionNode.create('ASIN', [
           isString(column)
             ? parseReferenceExpression(column)
             : sql`${column}`.toOperationNode(),
@@ -1374,7 +1374,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       column: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('atan', [
+        FunctionNode.create('ATAN', [
           isString(column)
             ? parseReferenceExpression(column)
             : sql`${column}`.toOperationNode(),
@@ -1386,7 +1386,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       column: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('ceiling', [
+        FunctionNode.create('CEILING', [
           isString(column)
             ? parseReferenceExpression(column)
             : sql`${column}`.toOperationNode(),
@@ -1398,7 +1398,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       column: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('cos', [
+        FunctionNode.create('COS', [
           isString(column)
             ? parseReferenceExpression(column)
             : sql`${column}`.toOperationNode(),
@@ -1410,7 +1410,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       column: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('cot', [
+        FunctionNode.create('COT', [
           isString(column)
             ? parseReferenceExpression(column)
             : sql`${column}`.toOperationNode(),
@@ -1422,7 +1422,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       column: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('degrees', [
+        FunctionNode.create('DEGREES', [
           isString(column)
             ? parseReferenceExpression(column)
             : sql`${column}`.toOperationNode(),
@@ -1434,7 +1434,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       column: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('exp', [
+        FunctionNode.create('EXP', [
           isString(column)
             ? parseReferenceExpression(column)
             : sql`${column}`.toOperationNode(),
@@ -1446,7 +1446,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       column: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('floor', [
+        FunctionNode.create('FLOOR', [
           isString(column)
             ? parseReferenceExpression(column)
             : sql`${column}`.toOperationNode(),
@@ -1640,14 +1640,14 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         args.push(sql`${base}`.toOperationNode())
       }
 
-      return new ExpressionWrapper(FunctionNode.create('log', args))
+      return new ExpressionWrapper(FunctionNode.create('LOG', args))
     },
 
     log10<RE extends ReferenceExpression<DB, TB>>(
       column: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('log10', [
+        FunctionNode.create('LOG10', [
           isString(column)
             ? parseReferenceExpression(column)
             : sql`${column}`.toOperationNode(),
@@ -1669,11 +1669,11 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         args.push(sql`${binSize}`.toOperationNode())
       }
 
-      return new ExpressionWrapper(FunctionNode.create('numberbin', args))
+      return new ExpressionWrapper(FunctionNode.create('NumberBin', args))
     },
 
     pi(): ExpressionWrapper<DB, TB, number> {
-      return new ExpressionWrapper(FunctionNode.create('pi', []))
+      return new ExpressionWrapper(FunctionNode.create('PI', []))
     },
 
     power<RE extends ReferenceExpression<DB, TB>>(
@@ -1681,7 +1681,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       exponent: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('power', [
+        FunctionNode.create('POWER', [
           isString(base)
             ? parseReferenceExpression(base)
             : sql`${base}`.toOperationNode(),
@@ -1696,7 +1696,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       column: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('radians', [
+        FunctionNode.create('RADIANS', [
           isString(column)
             ? parseReferenceExpression(column)
             : sql`${column}`.toOperationNode(),
@@ -1705,14 +1705,14 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
     },
 
     rand(): ExpressionWrapper<DB, TB, number> {
-      return new ExpressionWrapper(FunctionNode.create('rand', []))
+      return new ExpressionWrapper(FunctionNode.create('RAND', []))
     },
 
     round<RE extends ReferenceExpression<DB, TB>>(
       column: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('round', [
+        FunctionNode.create('ROUND', [
           isString(column)
             ? parseReferenceExpression(column)
             : sql`${column}`.toOperationNode(),
@@ -1724,7 +1724,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       column: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('sign', [
+        FunctionNode.create('SIGN', [
           isString(column)
             ? parseReferenceExpression(column)
             : sql`${column}`.toOperationNode(),
@@ -1736,7 +1736,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       column: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('sin', [
+        FunctionNode.create('SIN', [
           isString(column)
             ? parseReferenceExpression(column)
             : sql`${column}`.toOperationNode(),
@@ -1748,7 +1748,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       column: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('sqrt', [
+        FunctionNode.create('SQRT', [
           isString(column)
             ? parseReferenceExpression(column)
             : sql`${column}`.toOperationNode(),
@@ -1760,7 +1760,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       column: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('square', [
+        FunctionNode.create('SQUARE', [
           isString(column)
             ? parseReferenceExpression(column)
             : sql`${column}`.toOperationNode(),
@@ -1772,7 +1772,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       column: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('tan', [
+        FunctionNode.create('TAN', [
           isString(column)
             ? parseReferenceExpression(column)
             : sql`${column}`.toOperationNode(),
@@ -1784,7 +1784,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       column: number | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('trunc', [
+        FunctionNode.create('TRUNC', [
           isString(column)
             ? parseReferenceExpression(column)
             : sql`${column}`.toOperationNode(),
@@ -1806,7 +1806,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         args.push(sql`${ignoreCase}`.toOperationNode())
       }
 
-      return new ExpressionWrapper(FunctionNode.create('contains', args))
+      return new ExpressionWrapper(FunctionNode.create('CONTAINS', args))
     },
 
     endsWith<RE extends StringReference<DB, TB>>(
@@ -1823,7 +1823,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         args.push(sql`${ignoreCase}`.toOperationNode())
       }
 
-      return new ExpressionWrapper(FunctionNode.create('endswith', args))
+      return new ExpressionWrapper(FunctionNode.create('ENDSWITH', args))
     },
 
     indexOf<RE extends StringReference<DB, TB>>(
@@ -1840,7 +1840,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         args.push(sql`${startIndex}`.toOperationNode())
       }
 
-      return new ExpressionWrapper(FunctionNode.create('index_of', args))
+      return new ExpressionWrapper(FunctionNode.create('INDEX_OF', args))
     },
 
     left<RE extends StringReference<DB, TB>>(
@@ -1852,14 +1852,14 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         sql`${length}`.toOperationNode(),
       ]
 
-      return new ExpressionWrapper(FunctionNode.create('left', args))
+      return new ExpressionWrapper(FunctionNode.create('LEFT', args))
     },
 
     len<RE extends StringReference<DB, TB>>( // there is a readonly 'length' property in the prototype of a function (ie, fn), so we have to use 'len'.
       column: RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('length', [parseReferenceExpression(column)]),
+        FunctionNode.create('LENGTH', [parseReferenceExpression(column)]),
       )
     },
 
@@ -1867,7 +1867,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       column: RE,
     ): ExpressionWrapper<DB, TB, string> {
       return new ExpressionWrapper(
-        FunctionNode.create('lower', [parseReferenceExpression(column)]),
+        FunctionNode.create('LOWER', [parseReferenceExpression(column)]),
       )
     },
 
@@ -1881,7 +1881,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         args.push(sql`${trimStr}`.toOperationNode())
       }
 
-      return new ExpressionWrapper(FunctionNode.create('ltrim', args))
+      return new ExpressionWrapper(FunctionNode.create('LTRIM', args))
     },
 
     regexMatch<RE extends StringReference<DB, TB>>(
@@ -1898,7 +1898,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         args.push(sql`${modifiers}`.toOperationNode())
       }
 
-      return new ExpressionWrapper(FunctionNode.create('regexmatch', args))
+      return new ExpressionWrapper(FunctionNode.create('REGEXMATCH', args))
     },
 
     replace<RE extends StringReference<DB, TB>>(
@@ -1912,7 +1912,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         sql`${replaceStr}`.toOperationNode(),
       ]
 
-      return new ExpressionWrapper(FunctionNode.create('replace', args))
+      return new ExpressionWrapper(FunctionNode.create('REPLACE', args))
     },
 
     replicate<RE extends StringReference<DB, TB>>(
@@ -1924,14 +1924,14 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         sql`${count}`.toOperationNode(),
       ]
 
-      return new ExpressionWrapper(FunctionNode.create('replicate', args))
+      return new ExpressionWrapper(FunctionNode.create('REPLICATE', args))
     },
 
     reverse<RE extends StringReference<DB, TB>>(
       column: RE,
     ): ExpressionWrapper<DB, TB, string> {
       return new ExpressionWrapper(
-        FunctionNode.create('reverse', [parseReferenceExpression(column)]),
+        FunctionNode.create('REVERSE', [parseReferenceExpression(column)]),
       )
     },
 
@@ -1944,7 +1944,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         sql`${length}`.toOperationNode(),
       ]
 
-      return new ExpressionWrapper(FunctionNode.create('right', args))
+      return new ExpressionWrapper(FunctionNode.create('RIGHT', args))
     },
 
     rtrim<RE extends StringReference<DB, TB>>(
@@ -1957,7 +1957,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         args.push(sql`${trimStr}`.toOperationNode())
       }
 
-      return new ExpressionWrapper(FunctionNode.create('rtrim', args))
+      return new ExpressionWrapper(FunctionNode.create('RTRIM', args))
     },
 
     startsWith<RE extends StringReference<DB, TB>>(
@@ -1974,7 +1974,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         args.push(sql`${ignoreCase}`.toOperationNode())
       }
 
-      return new ExpressionWrapper(FunctionNode.create('startswith', args))
+      return new ExpressionWrapper(FunctionNode.create('STARTSWITH', args))
     },
 
     stringEquals<RE extends StringReference<DB, TB>>(
@@ -1991,7 +1991,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         args.push(sql`${ignoreCase}`.toOperationNode())
       }
 
-      return new ExpressionWrapper(FunctionNode.create('stringequals', args))
+      return new ExpressionWrapper(FunctionNode.create('STRINGEQUALS', args))
     },
 
     substring<RE extends StringReference<DB, TB>>(
@@ -2008,7 +2008,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         args.push(sql`${length}`.toOperationNode())
       }
 
-      return new ExpressionWrapper(FunctionNode.create('substring', args))
+      return new ExpressionWrapper(FunctionNode.create('SUBSTRING', args))
     },
 
     trim<RE extends StringReference<DB, TB>>(
@@ -2021,14 +2021,14 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         args.push(sql`${trimStr}`.toOperationNode())
       }
 
-      return new ExpressionWrapper(FunctionNode.create('trim', args))
+      return new ExpressionWrapper(FunctionNode.create('TRIM', args))
     },
 
     upper<RE extends StringReference<DB, TB>>(
       column: RE,
     ): ExpressionWrapper<DB, TB, string> {
       return new ExpressionWrapper(
-        FunctionNode.create('upper', [parseReferenceExpression(column)]),
+        FunctionNode.create('UPPER', [parseReferenceExpression(column)]),
       )
     },
 
@@ -2038,7 +2038,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       dateTime: Date | RE,
     ): ExpressionWrapper<DB, TB, string> {
       return new ExpressionWrapper(
-        FunctionNode.create('datetimeadd', [
+        FunctionNode.create('DateTimeAdd', [
           sql`${dateTimePart}`.toOperationNode(),
 
           isString(numericExpression)
@@ -2078,7 +2078,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         )
       }
 
-      return new ExpressionWrapper(FunctionNode.create('datetimebin', args))
+      return new ExpressionWrapper(FunctionNode.create('DateTimeBin', args))
     },
 
     dateTimeDiff<RE extends ReferenceExpression<DB, TB>>(
@@ -2087,7 +2087,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       endDateTime: Date | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('datetimediff', [
+        FunctionNode.create('DateTimeDiff', [
           sql`${dateTimePart}`.toOperationNode(),
 
           typeof startDateTime === 'string' // ie, an RE not a Date object
@@ -2133,7 +2133,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       }
 
       return new ExpressionWrapper(
-        FunctionNode.create('datetimefromparts', args),
+        FunctionNode.create('DateTimeFromParts', args),
       )
     },
 
@@ -2142,7 +2142,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       dateTime: Date | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('datetimepart', [
+        FunctionNode.create('DateTimePart', [
           sql`${dateTimePart}`.toOperationNode(),
 
           isString(dateTime) // ie, an RE not a Date object
@@ -2156,7 +2156,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       dateTime: Date | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('datetimetoticks', [
+        FunctionNode.create('DateTimeToTicks', [
           isString(dateTime) // ie, an RE not a Date object
             ? parseReferenceExpression(dateTime)
             : sql`${(dateTime as Date).toISOString()}`.toOperationNode(),
@@ -2168,7 +2168,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       dateTime: Date | RE,
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('datetimetotimestamp', [
+        FunctionNode.create('DateTimeToTimestamp', [
           isString(dateTime) // ie, an RE not a Date object
             ? parseReferenceExpression(dateTime)
             : sql`${(dateTime as Date).toISOString()}`.toOperationNode(),
@@ -2178,41 +2178,41 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
 
     getCurrentDateTime(): ExpressionWrapper<DB, TB, string> {
       return new ExpressionWrapper(
-        FunctionNode.create('getcurrentdatetime', []),
+        FunctionNode.create('GetCurrentDateTime', []),
       )
     },
 
     getCurrentDateTimeStatic(): ExpressionWrapper<DB, TB, string> {
       return new ExpressionWrapper(
-        FunctionNode.create('getcurrentdatetimestatic', []),
+        FunctionNode.create('GetCurrentDateTimeStatic', []),
       )
     },
 
     getCurrentTicks(): ExpressionWrapper<DB, TB, number> {
-      return new ExpressionWrapper(FunctionNode.create('getcurrentticks', []))
+      return new ExpressionWrapper(FunctionNode.create('GetCurrentTicks', []))
     },
 
     getCurrentTicksStatic(): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('getcurrentticksstatic', []),
+        FunctionNode.create('GetCurrentTicksStatic', []),
       )
     },
 
     getCurrentTimestamp(): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('getcurrenttimestamp', []),
+        FunctionNode.create('GetCurrentTimestamp', []),
       )
     },
 
     getCurrentTimestampStatic(): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('getcurrenttimestampstatic', []),
+        FunctionNode.create('GetCurrentTimestampStatic', []),
       )
     },
 
     ticksToDateTime(ticks: number): ExpressionWrapper<DB, TB, string> {
       return new ExpressionWrapper(
-        FunctionNode.create('tickstodatetime', [
+        FunctionNode.create('TicksToDateTime', [
           sql`${ticks}`.toOperationNode(),
         ]),
       )
@@ -2220,7 +2220,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
 
     timestampToDateTime(timestamp: number): ExpressionWrapper<DB, TB, string> {
       return new ExpressionWrapper(
-        FunctionNode.create('timestamptodatetime', [
+        FunctionNode.create('TimestampToDateTime', [
           sql`${timestamp}`.toOperationNode(),
         ]),
       )
@@ -2231,7 +2231,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       searchString: string,
     ): ExpressionWrapper<DB, TB, boolean> {
       return new ExpressionWrapper(
-        FunctionNode.create('fulltextcontains', [
+        FunctionNode.create('FullTextContains', [
           parseReferenceExpression(property),
           sql`${searchString}`.toOperationNode(),
         ]),
@@ -2244,7 +2244,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       ...additionalSearchStrings: string[]
     ): ExpressionWrapper<DB, TB, boolean> {
       return new ExpressionWrapper(
-        FunctionNode.create('fulltextcontainsall', [
+        FunctionNode.create('FullTextContainsAll', [
           parseReferenceExpression(property),
           sql`${[searchString, ...additionalSearchStrings]}`.toOperationNode(),
         ]),
@@ -2257,7 +2257,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       ...additionalSearchStrings: string[]
     ): ExpressionWrapper<DB, TB, boolean> {
       return new ExpressionWrapper(
-        FunctionNode.create('fulltextcontainsany', [
+        FunctionNode.create('FullTextContainsAny', [
           parseReferenceExpression(property),
           sql`${[searchString, ...additionalSearchStrings]}`.toOperationNode(),
         ]),
@@ -2270,7 +2270,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       ...additionalSearchStrings: string[]
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('fulltextscore', [
+        FunctionNode.create('FullTextScore', [
           parseReferenceExpression(property),
           sql`${[searchString, ...additionalSearchStrings]}`.toOperationNode(),
         ]),
@@ -2311,7 +2311,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       }
 
       return new ExpressionWrapper<DB, TB, number>(
-        FunctionNode.create('vectordistance', args),
+        FunctionNode.create('VectorDistance', args),
       )
     },
 
@@ -2320,7 +2320,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       value: Partial<ExtractArrayItemTypeWithTable<DB, TB, P>>,
     ): Expression<boolean> {
       return new ExpressionWrapper(
-        FunctionNode.create('array_contains', [
+        FunctionNode.create('ARRAY_CONTAINS', [
           parseReferenceExpression(property), // Parse property as a reference
           sql`${value}`.toOperationNode(), // Treat value as a literal
         ]),
@@ -2332,7 +2332,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       ...values: Partial<ExtractArrayItemTypeWithTable<DB, TB, P>>[]
     ): Expression<boolean> {
       return new ExpressionWrapper(
-        FunctionNode.create('array_contains_any', [
+        FunctionNode.create('ARRAY_CONTAINS_ANY', [
           parseReferenceExpression(property), // Parse property as a reference
           sql`${values}`.toOperationNode(), // Treat values array as a literal
         ]),
@@ -2344,7 +2344,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       ...values: Partial<ExtractArrayItemTypeWithTable<DB, TB, P>>[]
     ): Expression<boolean> {
       return new ExpressionWrapper(
-        FunctionNode.create('array_contains_all', [
+        FunctionNode.create('ARRAY_CONTAINS_ALL', [
           parseReferenceExpression(property), // Parse property as a reference
           sql`${values}`.toOperationNode(), // Treat values array as a literal
         ]),
@@ -2359,7 +2359,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       >,
     >(property: P) {
       return new ExpressionWrapper<DB, TB, number>(
-        FunctionNode.create('st_area', [
+        FunctionNode.create('ST_AREA', [
           parseReferenceExpression(property), // Parse property as a reference
         ]),
       )
@@ -2369,7 +2369,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>,
     >(property: P) {
       return new ExpressionWrapper<DB, TB, boolean>(
-        FunctionNode.create('st_isvalid', [
+        FunctionNode.create('ST_ISVALID', [
           parseReferenceExpression(property), // Parse property as a reference
         ]),
       )
@@ -2386,7 +2386,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
           reason?: string
         }
       >(
-        FunctionNode.create('st_isvaliddetailed', [
+        FunctionNode.create('ST_ISVALIDDETAILED', [
           parseReferenceExpression(property), // Parse property as a reference
         ]),
       )
@@ -2407,7 +2407,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         property = spatial1 as P
         geo = spatial2 as GeoJsonObject
         return new ExpressionWrapper<DB, TB, number>(
-          FunctionNode.create('st_distance', [
+          FunctionNode.create('ST_DISTANCE', [
             parseReferenceExpression(property), // Parse property as a reference
             sql`${geo}`.toOperationNode(), // Treat geo as a literal
           ]),
@@ -2418,7 +2418,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         property = spatial2 as P
 
         return new ExpressionWrapper<DB, TB, number>(
-          FunctionNode.create('st_distance', [
+          FunctionNode.create('ST_DISTANCE', [
             sql`${geo}`.toOperationNode(), // Treat geo as a literal
             parseReferenceExpression(property), // Parse property as a reference
           ]),
@@ -2441,7 +2441,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         property = spatial1 as P
         geo = spatial2 as GeoJsonObject
         return new ExpressionWrapper<DB, TB, boolean>(
-          FunctionNode.create('st_within', [
+          FunctionNode.create('ST_WITHIN', [
             parseReferenceExpression(property), // Parse property as a reference
             sql`${geo}`.toOperationNode(), // Treat geo as a literal
           ]),
@@ -2452,7 +2452,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         property = spatial2 as P
 
         return new ExpressionWrapper<DB, TB, boolean>(
-          FunctionNode.create('st_within', [
+          FunctionNode.create('ST_WITHIN', [
             sql`${geo}`.toOperationNode(), // Treat geo as a literal
             parseReferenceExpression(property), // Parse property as a reference
           ]),
