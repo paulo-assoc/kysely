@@ -808,6 +808,60 @@ export interface FunctionModule<DB, TB extends keyof DB> {
     column: number | RE,
   ): ExpressionWrapper<DB, TB, number>
 
+  intAdd<RE extends ReferenceExpression<DB, TB>>(
+    expr1: number | RE,
+    expr2: number | RE,
+  ): ExpressionWrapper<DB, TB, number>
+
+  intBitAnd<RE extends ReferenceExpression<DB, TB>>(
+    expr1: number | RE,
+    expr2: number | RE,
+  ): ExpressionWrapper<DB, TB, number>
+
+  intBitLeftShift<RE extends ReferenceExpression<DB, TB>>(
+    expr1: number | RE,
+    expr2: number | RE,
+  ): ExpressionWrapper<DB, TB, number>
+
+  intBitNot<RE extends ReferenceExpression<DB, TB>>(
+    expr: number | RE,
+  ): ExpressionWrapper<DB, TB, number>
+
+  intBitOr<RE extends ReferenceExpression<DB, TB>>(
+    expr1: number | RE,
+    expr2: number | RE,
+  ): ExpressionWrapper<DB, TB, number>
+
+  intBitRightShift<RE extends ReferenceExpression<DB, TB>>(
+    expr1: number | RE,
+    expr2: number | RE,
+  ): ExpressionWrapper<DB, TB, number>
+
+  intBitXor<RE extends ReferenceExpression<DB, TB>>(
+    expr1: number | RE,
+    expr2: number | RE,
+  ): ExpressionWrapper<DB, TB, number>
+
+  intDiv<RE extends ReferenceExpression<DB, TB>>(
+    expr1: number | RE,
+    expr2: number | RE,
+  ): ExpressionWrapper<DB, TB, number>
+
+  intMod<RE extends ReferenceExpression<DB, TB>>(
+    expr1: number | RE,
+    expr2: number | RE,
+  ): ExpressionWrapper<DB, TB, number>
+
+  intMul<RE extends ReferenceExpression<DB, TB>>(
+    expr1: number | RE,
+    expr2: number | RE,
+  ): ExpressionWrapper<DB, TB, number>
+
+  intSub<RE extends ReferenceExpression<DB, TB>>(
+    expr1: number | RE,
+    expr2: number | RE,
+  ): ExpressionWrapper<DB, TB, number>
+
   log<RE extends ReferenceExpression<DB, TB>>(
     column: number | RE,
     base?: number,
@@ -1396,6 +1450,178 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
           isString(column)
             ? parseReferenceExpression(column)
             : sql`${column}`.toOperationNode(),
+        ]),
+      )
+    },
+
+    intAdd<RE extends ReferenceExpression<DB, TB>>(
+      expr1: number | RE,
+      expr2: number | RE,
+    ): ExpressionWrapper<DB, TB, number> {
+      return new ExpressionWrapper(
+        FunctionNode.create('intAdd', [
+          isString(expr1)
+            ? parseReferenceExpression(expr1)
+            : sql`${expr1}`.toOperationNode(),
+          isString(expr2)
+            ? parseReferenceExpression(expr2)
+            : sql`${expr2}`.toOperationNode(),
+        ]),
+      )
+    },
+
+    intBitAnd<RE extends ReferenceExpression<DB, TB>>(
+      expr1: number | RE,
+      expr2: number | RE,
+    ): ExpressionWrapper<DB, TB, number> {
+      return new ExpressionWrapper(
+        FunctionNode.create('intBitAnd', [
+          isString(expr1)
+            ? parseReferenceExpression(expr1)
+            : sql`${expr1}`.toOperationNode(),
+          isString(expr2)
+            ? parseReferenceExpression(expr2)
+            : sql`${expr2}`.toOperationNode(),
+        ]),
+      )
+    },
+
+    intBitLeftShift<RE extends ReferenceExpression<DB, TB>>(
+      expr1: number | RE,
+      expr2: number | RE,
+    ): ExpressionWrapper<DB, TB, number> {
+      return new ExpressionWrapper(
+        FunctionNode.create('intBitLeftShift', [
+          isString(expr1)
+            ? parseReferenceExpression(expr1)
+            : sql`${expr1}`.toOperationNode(),
+          isString(expr2)
+            ? parseReferenceExpression(expr2)
+            : sql`${expr2}`.toOperationNode(),
+        ]),
+      )
+    },
+
+    intBitNot<RE extends ReferenceExpression<DB, TB>>(
+      expr: number | RE,
+    ): ExpressionWrapper<DB, TB, number> {
+      return new ExpressionWrapper(
+        FunctionNode.create('intBitNot', [
+          isString(expr)
+            ? parseReferenceExpression(expr)
+            : sql`${expr}`.toOperationNode(),
+        ]),
+      )
+    },
+
+    intBitOr<RE extends ReferenceExpression<DB, TB>>(
+      expr1: number | RE,
+      expr2: number | RE,
+    ): ExpressionWrapper<DB, TB, number> {
+      return new ExpressionWrapper(
+        FunctionNode.create('intBitOr', [
+          isString(expr1)
+            ? parseReferenceExpression(expr1)
+            : sql`${expr1}`.toOperationNode(),
+          isString(expr2)
+            ? parseReferenceExpression(expr2)
+            : sql`${expr2}`.toOperationNode(),
+        ]),
+      )
+    },
+
+    intBitRightShift<RE extends ReferenceExpression<DB, TB>>(
+      expr1: number | RE,
+      expr2: number | RE,
+    ): ExpressionWrapper<DB, TB, number> {
+      return new ExpressionWrapper(
+        FunctionNode.create('intBitRightShift', [
+          isString(expr1)
+            ? parseReferenceExpression(expr1)
+            : sql`${expr1}`.toOperationNode(),
+          isString(expr2)
+            ? parseReferenceExpression(expr2)
+            : sql`${expr2}`.toOperationNode(),
+        ]),
+      )
+    },
+
+    intBitXor<RE extends ReferenceExpression<DB, TB>>(
+      expr1: number | RE,
+      expr2: number | RE,
+    ): ExpressionWrapper<DB, TB, number> {
+      return new ExpressionWrapper(
+        FunctionNode.create('intBitXor', [
+          isString(expr1)
+            ? parseReferenceExpression(expr1)
+            : sql`${expr1}`.toOperationNode(),
+          isString(expr2)
+            ? parseReferenceExpression(expr2)
+            : sql`${expr2}`.toOperationNode(),
+        ]),
+      )
+    },
+
+    intDiv<RE extends ReferenceExpression<DB, TB>>(
+      expr1: number | RE,
+      expr2: number | RE,
+    ): ExpressionWrapper<DB, TB, number> {
+      return new ExpressionWrapper(
+        FunctionNode.create('intDiv', [
+          isString(expr1)
+            ? parseReferenceExpression(expr1)
+            : sql`${expr1}`.toOperationNode(),
+          isString(expr2)
+            ? parseReferenceExpression(expr2)
+            : sql`${expr2}`.toOperationNode(),
+        ]),
+      )
+    },
+
+    intMod<RE extends ReferenceExpression<DB, TB>>(
+      expr1: number | RE,
+      expr2: number | RE,
+    ): ExpressionWrapper<DB, TB, number> {
+      return new ExpressionWrapper(
+        FunctionNode.create('intMod', [
+          isString(expr1)
+            ? parseReferenceExpression(expr1)
+            : sql`${expr1}`.toOperationNode(),
+          isString(expr2)
+            ? parseReferenceExpression(expr2)
+            : sql`${expr2}`.toOperationNode(),
+        ]),
+      )
+    },
+
+    intMul<RE extends ReferenceExpression<DB, TB>>(
+      expr1: number | RE,
+      expr2: number | RE,
+    ): ExpressionWrapper<DB, TB, number> {
+      return new ExpressionWrapper(
+        FunctionNode.create('intMul', [
+          isString(expr1)
+            ? parseReferenceExpression(expr1)
+            : sql`${expr1}`.toOperationNode(),
+          isString(expr2)
+            ? parseReferenceExpression(expr2)
+            : sql`${expr2}`.toOperationNode(),
+        ]),
+      )
+    },
+
+    intSub<RE extends ReferenceExpression<DB, TB>>(
+      expr1: number | RE,
+      expr2: number | RE,
+    ): ExpressionWrapper<DB, TB, number> {
+      return new ExpressionWrapper(
+        FunctionNode.create('intSub', [
+          isString(expr1)
+            ? parseReferenceExpression(expr1)
+            : sql`${expr1}`.toOperationNode(),
+          isString(expr2)
+            ? parseReferenceExpression(expr2)
+            : sql`${expr2}`.toOperationNode(),
         ]),
       )
     },
