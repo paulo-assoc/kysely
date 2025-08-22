@@ -959,6 +959,66 @@ export interface FunctionModule<DB, TB extends keyof DB> {
     column: RE,
   ): ExpressionWrapper<DB, TB, string>
 
+  // Date and Time functions
+
+  dateTimeAdd<RE extends ReferenceExpression<DB, TB>>(
+    dateTimePart: 'yyyy' | 'MM' | 'dd' | 'hh' | 'mm' | 'ss' | 'ms',
+    numericExpression: number,
+    dateTime: Date | RE,
+  ): ExpressionWrapper<DB, TB, string>
+
+  dateTimeBin<RE extends ReferenceExpression<DB, TB>>(
+    dateTime: Date | RE,
+    dateTimePart: 'yyyy' | 'MM' | 'dd' | 'hh' | 'mm' | 'ss' | 'ms',
+    binSize?: number,
+    binStartDateTime?: Date | RE,
+  ): ExpressionWrapper<DB, TB, string>
+
+  dateTimeDiff<RE extends ReferenceExpression<DB, TB>>(
+    dateTimePart: 'yyyy' | 'MM' | 'dd' | 'hh' | 'mm' | 'ss' | 'ms',
+    startDateTime: Date | RE,
+    endDateTime: Date | RE,
+  ): ExpressionWrapper<DB, TB, number>
+
+  dateTimeFromParts(
+    year: number,
+    month: number,
+    day: number,
+    hour?: number,
+    minute?: number,
+    second?: number,
+    secondFraction?: number,
+  ): ExpressionWrapper<DB, TB, string>
+
+  dateTimePart<RE extends ReferenceExpression<DB, TB>>(
+    dateTimePart: 'yyyy' | 'MM' | 'dd' | 'hh' | 'mm' | 'ss' | 'ms',
+    dateTime: Date | RE,
+  ): ExpressionWrapper<DB, TB, number>
+
+  dateTimeToTicks<RE extends ReferenceExpression<DB, TB>>(
+    dateTime: Date | RE,
+  ): ExpressionWrapper<DB, TB, number>
+
+  dateTimeToTimestamp<RE extends ReferenceExpression<DB, TB>>(
+    dateTime: Date | RE,
+  ): ExpressionWrapper<DB, TB, number>
+
+  getCurrentDateTime(): ExpressionWrapper<DB, TB, string>
+
+  getCurrentDateTimeStatic(): ExpressionWrapper<DB, TB, string>
+
+  getCurrentTicks(): ExpressionWrapper<DB, TB, number>
+
+  getCurrentTicksStatic(): ExpressionWrapper<DB, TB, number>
+
+  getCurrentTimestamp(): ExpressionWrapper<DB, TB, number>
+
+  getCurrentTimestampStatic(): ExpressionWrapper<DB, TB, number>
+
+  ticksToDateTime(ticks: number): ExpressionWrapper<DB, TB, string>
+
+  timestampToDateTime(timestamp: number): ExpressionWrapper<DB, TB, string>
+
   // Full Text Search functions
 
   fullTextContains<RE extends StringReference<DB, TB>>(
@@ -1345,9 +1405,9 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       return new ExpressionWrapper(
         FunctionNode.create('power', [
           parseReferenceExpression(base),
-          typeof exponent === 'number'
-            ? sql`${exponent}`.toOperationNode()
-            : parseReferenceExpression(exponent),
+          isString(exponent)
+            ? parseReferenceExpression(exponent)
+            : sql`${exponent}`.toOperationNode(),
         ]),
       )
     },
@@ -1657,6 +1717,200 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
     ): ExpressionWrapper<DB, TB, string> {
       return new ExpressionWrapper(
         FunctionNode.create('upper', [parseReferenceExpression(column)]),
+      )
+    },
+
+    dateTimeAdd<RE extends ReferenceExpression<DB, TB>>(
+      dateTimePart: 'yyyy' | 'MM' | 'dd' | 'hh' | 'mm' | 'ss' | 'ms',
+      numericExpression: number,
+      dateTime: Date | RE,
+    ): ExpressionWrapper<DB, TB, string> {
+      return new ExpressionWrapper(
+        FunctionNode.create('datetimeadd', [
+          sql`${dateTimePart}`.toOperationNode(),
+
+          isString(numericExpression)
+            ? parseReferenceExpression(numericExpression)
+            : sql`${numericExpression}`.toOperationNode(),
+
+          isString(dateTime) // ie, an RE not a Date object
+            ? parseReferenceExpression(dateTime)
+            : sql`${(dateTime as Date).toISOString()}`.toOperationNode(),
+        ]),
+      )
+    },
+
+    dateTimeBin<RE extends ReferenceExpression<DB, TB>>(
+      dateTime: Date | RE,
+      dateTimePart: 'yyyy' | 'MM' | 'dd' | 'hh' | 'mm' | 'ss' | 'ms',
+      binSize?: number,
+      binStartDateTime?: Date | RE,
+    ): ExpressionWrapper<DB, TB, string> {
+      const args = [
+        isString(dateTime)
+          ? parseReferenceExpression(dateTime)
+          : sql`${(dateTime as Date).toISOString()}`.toOperationNode(),
+
+        sql`${dateTimePart}`.toOperationNode(),
+      ]
+
+      if (binSize !== undefined) {
+        args.push(sql`${binSize}`.toOperationNode())
+      }
+
+      if (binStartDateTime !== undefined) {
+        args.push(
+          typeof binStartDateTime === 'string'
+            ? parseReferenceExpression(binStartDateTime)
+            : sql`${(binStartDateTime as Date).toISOString()}`.toOperationNode(),
+        )
+      }
+
+      return new ExpressionWrapper(FunctionNode.create('datetimebin', args))
+    },
+
+    dateTimeDiff<RE extends ReferenceExpression<DB, TB>>(
+      dateTimePart: 'yyyy' | 'MM' | 'dd' | 'hh' | 'mm' | 'ss' | 'ms',
+      startDateTime: Date | RE,
+      endDateTime: Date | RE,
+    ): ExpressionWrapper<DB, TB, number> {
+      return new ExpressionWrapper(
+        FunctionNode.create('datetimediff', [
+          sql`${dateTimePart}`.toOperationNode(),
+
+          typeof startDateTime === 'string' // ie, an RE not a Date object
+            ? parseReferenceExpression(startDateTime)
+            : sql`${(startDateTime as Date).toISOString()}`.toOperationNode(),
+
+          typeof endDateTime === 'string' // ie, an RE not a Date object
+            ? parseReferenceExpression(endDateTime)
+            : sql`${(endDateTime as Date).toISOString()}`.toOperationNode(),
+        ]),
+      )
+    },
+
+    dateTimeFromParts(
+      year: number,
+      month: number,
+      day: number,
+      hour?: number,
+      minute?: number,
+      second?: number,
+      secondFraction?: number,
+    ): ExpressionWrapper<DB, TB, string> {
+      const args = [
+        sql`${year}`.toOperationNode(),
+        sql`${month}`.toOperationNode(),
+        sql`${day}`.toOperationNode(),
+      ]
+
+      if (hour !== undefined) {
+        args.push(sql`${hour}`.toOperationNode())
+      }
+
+      if (minute !== undefined) {
+        args.push(sql`${minute}`.toOperationNode())
+      }
+
+      if (second !== undefined) {
+        args.push(sql`${second}`.toOperationNode())
+      }
+
+      if (secondFraction !== undefined) {
+        args.push(sql`${secondFraction}`.toOperationNode())
+      }
+
+      return new ExpressionWrapper(
+        FunctionNode.create('datetimefromparts', args),
+      )
+    },
+
+    dateTimePart<RE extends ReferenceExpression<DB, TB>>(
+      dateTimePart: 'yyyy' | 'MM' | 'dd' | 'hh' | 'mm' | 'ss' | 'ms',
+      dateTime: Date | RE,
+    ): ExpressionWrapper<DB, TB, number> {
+      return new ExpressionWrapper(
+        FunctionNode.create('datetimepart', [
+          sql`${dateTimePart}`.toOperationNode(),
+
+          isString(dateTime) // ie, an RE not a Date object
+            ? parseReferenceExpression(dateTime)
+            : sql`${(dateTime as Date).toISOString()}`.toOperationNode(),
+        ]),
+      )
+    },
+
+    dateTimeToTicks<RE extends ReferenceExpression<DB, TB>>(
+      dateTime: Date | RE,
+    ): ExpressionWrapper<DB, TB, number> {
+      return new ExpressionWrapper(
+        FunctionNode.create('datetimetoticks', [
+          isString(dateTime) // ie, an RE not a Date object
+            ? parseReferenceExpression(dateTime)
+            : sql`${(dateTime as Date).toISOString()}`.toOperationNode(),
+        ]),
+      )
+    },
+
+    dateTimeToTimestamp<RE extends ReferenceExpression<DB, TB>>(
+      dateTime: Date | RE,
+    ): ExpressionWrapper<DB, TB, number> {
+      return new ExpressionWrapper(
+        FunctionNode.create('datetimetotimestamp', [
+          isString(dateTime) // ie, an RE not a Date object
+            ? parseReferenceExpression(dateTime)
+            : sql`${(dateTime as Date).toISOString()}`.toOperationNode(),
+        ]),
+      )
+    },
+
+    getCurrentDateTime(): ExpressionWrapper<DB, TB, string> {
+      return new ExpressionWrapper(
+        FunctionNode.create('getcurrentdatetime', []),
+      )
+    },
+
+    getCurrentDateTimeStatic(): ExpressionWrapper<DB, TB, string> {
+      return new ExpressionWrapper(
+        FunctionNode.create('getcurrentdatetimestatic', []),
+      )
+    },
+
+    getCurrentTicks(): ExpressionWrapper<DB, TB, number> {
+      return new ExpressionWrapper(FunctionNode.create('getcurrentticks', []))
+    },
+
+    getCurrentTicksStatic(): ExpressionWrapper<DB, TB, number> {
+      return new ExpressionWrapper(
+        FunctionNode.create('getcurrentticksstatic', []),
+      )
+    },
+
+    getCurrentTimestamp(): ExpressionWrapper<DB, TB, number> {
+      return new ExpressionWrapper(
+        FunctionNode.create('getcurrenttimestamp', []),
+      )
+    },
+
+    getCurrentTimestampStatic(): ExpressionWrapper<DB, TB, number> {
+      return new ExpressionWrapper(
+        FunctionNode.create('getcurrenttimestampstatic', []),
+      )
+    },
+
+    ticksToDateTime(ticks: number): ExpressionWrapper<DB, TB, string> {
+      return new ExpressionWrapper(
+        FunctionNode.create('tickstodatetime', [
+          sql`${ticks}`.toOperationNode(),
+        ]),
+      )
+    },
+
+    timestampToDateTime(timestamp: number): ExpressionWrapper<DB, TB, string> {
+      return new ExpressionWrapper(
+        FunctionNode.create('timestamptodatetime', [
+          sql`${timestamp}`.toOperationNode(),
+        ]),
       )
     },
 
