@@ -2,13 +2,13 @@ import { ExpressionWrapper } from '../expression/expression-wrapper.js'
 import { Expression } from '../expression/expression.js'
 import { AggregateFunctionNode } from '../operation-node/aggregate-function-node.js'
 import { FunctionNode } from '../operation-node/function-node.js'
-import {
-  ExtractTypeFromCoalesce1,
-  ExtractTypeFromCoalesce3,
-  ExtractTypeFromCoalesce2,
-  ExtractTypeFromCoalesce4,
-  ExtractTypeFromCoalesce5,
-} from '../parser/coalesce-parser.js'
+// import {
+//   ExtractTypeFromCoalesce1,
+//   ExtractTypeFromCoalesce3,
+//   ExtractTypeFromCoalesce2,
+//   ExtractTypeFromCoalesce4,
+//   ExtractTypeFromCoalesce5,
+// } from '../parser/coalesce-parser.js'
 import {
   ExtractTypeFromReferenceExpression,
   ReferenceExpression,
@@ -18,7 +18,7 @@ import {
   parseReferenceExpression,
 } from '../parser/reference-parser.js'
 import { parseSelectAll } from '../parser/select-parser.js'
-import { KyselyTypeError } from '../util/type-error.js'
+// import { KyselyTypeError } from '../util/type-error.js'
 import {
   AnyArrayPropertyPathWithTable,
   AnyMatchingObjectPropertyPathWithTable,
@@ -173,10 +173,10 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * from "person"
    * ```
    */
-  agg<O, RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>>(
-    name: string,
-    args?: ReadonlyArray<RE>,
-  ): AggregateFunctionBuilder<DB, TB, O>
+  // agg<O, RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>>(
+  //   name: string,
+  //   args?: ReadonlyArray<RE>,
+  // ): AggregateFunctionBuilder<DB, TB, O>
 
   /**
    * Calls the `avg` function for the column or expression given as the argument.
@@ -285,57 +285,57 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * select coalesce(avg("age"), 0) as "avg_age" from "person" where "first_name" = $1
    * ```
    */
-  coalesce<V1 extends ReferenceExpression<DB, TB>>(
-    v1: V1,
-  ): ExpressionWrapper<DB, TB, ExtractTypeFromCoalesce1<DB, TB, V1>>
+  // coalesce<V1 extends ReferenceExpression<DB, TB>>(
+  //   v1: V1,
+  // ): ExpressionWrapper<DB, TB, ExtractTypeFromCoalesce1<DB, TB, V1>>
 
-  coalesce<
-    V1 extends ReferenceExpression<DB, TB>,
-    V2 extends ReferenceExpression<DB, TB>,
-  >(
-    v1: V1,
-    v2: V2,
-  ): ExpressionWrapper<DB, TB, ExtractTypeFromCoalesce2<DB, TB, V1, V2>>
+  // coalesce<
+  //   V1 extends ReferenceExpression<DB, TB>,
+  //   V2 extends ReferenceExpression<DB, TB>,
+  // >(
+  //   v1: V1,
+  //   v2: V2,
+  // ): ExpressionWrapper<DB, TB, ExtractTypeFromCoalesce2<DB, TB, V1, V2>>
 
-  coalesce<
-    V1 extends ReferenceExpression<DB, TB>,
-    V2 extends ReferenceExpression<DB, TB>,
-    V3 extends ReferenceExpression<DB, TB>,
-  >(
-    v1: V1,
-    v2: V2,
-    v3: V3,
-  ): ExpressionWrapper<DB, TB, ExtractTypeFromCoalesce3<DB, TB, V1, V2, V3>>
+  // coalesce<
+  //   V1 extends ReferenceExpression<DB, TB>,
+  //   V2 extends ReferenceExpression<DB, TB>,
+  //   V3 extends ReferenceExpression<DB, TB>,
+  // >(
+  //   v1: V1,
+  //   v2: V2,
+  //   v3: V3,
+  // ): ExpressionWrapper<DB, TB, ExtractTypeFromCoalesce3<DB, TB, V1, V2, V3>>
 
-  coalesce<
-    V1 extends ReferenceExpression<DB, TB>,
-    V2 extends ReferenceExpression<DB, TB>,
-    V3 extends ReferenceExpression<DB, TB>,
-    V4 extends ReferenceExpression<DB, TB>,
-  >(
-    v1: V1,
-    v2: V2,
-    v3: V3,
-    v4: V4,
-  ): ExpressionWrapper<DB, TB, ExtractTypeFromCoalesce4<DB, TB, V1, V2, V3, V4>>
+  // coalesce<
+  //   V1 extends ReferenceExpression<DB, TB>,
+  //   V2 extends ReferenceExpression<DB, TB>,
+  //   V3 extends ReferenceExpression<DB, TB>,
+  //   V4 extends ReferenceExpression<DB, TB>,
+  // >(
+  //   v1: V1,
+  //   v2: V2,
+  //   v3: V3,
+  //   v4: V4,
+  // ): ExpressionWrapper<DB, TB, ExtractTypeFromCoalesce4<DB, TB, V1, V2, V3, V4>>
 
-  coalesce<
-    V1 extends ReferenceExpression<DB, TB>,
-    V2 extends ReferenceExpression<DB, TB>,
-    V3 extends ReferenceExpression<DB, TB>,
-    V4 extends ReferenceExpression<DB, TB>,
-    V5 extends ReferenceExpression<DB, TB>,
-  >(
-    v1: V1,
-    v2: V2,
-    v3: V3,
-    v4: V4,
-    v5: V5,
-  ): ExpressionWrapper<
-    DB,
-    TB,
-    ExtractTypeFromCoalesce5<DB, TB, V1, V2, V3, V4, V5>
-  >
+  // coalesce<
+  //   V1 extends ReferenceExpression<DB, TB>,
+  //   V2 extends ReferenceExpression<DB, TB>,
+  //   V3 extends ReferenceExpression<DB, TB>,
+  //   V4 extends ReferenceExpression<DB, TB>,
+  //   V5 extends ReferenceExpression<DB, TB>,
+  // >(
+  //   v1: V1,
+  //   v2: V2,
+  //   v3: V3,
+  //   v4: V4,
+  //   v5: V5,
+  // ): ExpressionWrapper<
+  //   DB,
+  //   TB,
+  //   ExtractTypeFromCoalesce5<DB, TB, V1, V2, V3, V4, V5>
+  // >
 
   /**
    * Calls the `count` function for the column or expression given as the argument.
@@ -446,15 +446,15 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * from "toy" inner join "pet" on "pet"."id" = "toy"."pet_id"
    * ```
    */
-  countAll<O extends number | string | bigint, T extends TB = TB>(
-    table: T,
-  ): AggregateFunctionBuilder<DB, TB, O>
+  // countAll<O extends number | string | bigint, T extends TB = TB>(
+  //   table: T,
+  // ): AggregateFunctionBuilder<DB, TB, O>
 
-  countAll<O extends number | string | bigint>(): AggregateFunctionBuilder<
-    DB,
-    TB,
-    O
-  >
+  // countAll<O extends number | string | bigint>(): AggregateFunctionBuilder<
+  //   DB,
+  //   TB,
+  //   O
+  // >
 
   /**
    * Calls the `max` function for the column or expression given as the argument.
@@ -655,20 +655,20 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    *  $1 = any("person"."nicknames")
    * ```
    */
-  any<RE extends StringReference<DB, TB>>(
-    expr: RE,
-  ): Exclude<
-    ExtractTypeFromStringReference<DB, TB, RE>,
-    null
-  > extends ReadonlyArray<infer I>
-    ? ExpressionWrapper<DB, TB, I>
-    : KyselyTypeError<'any(expr) call failed: expr must be an array'>
+  // any<RE extends StringReference<DB, TB>>(
+  //   expr: RE,
+  // ): Exclude<
+  //   ExtractTypeFromStringReference<DB, TB, RE>,
+  //   null
+  // > extends ReadonlyArray<infer I>
+  //   ? ExpressionWrapper<DB, TB, I>
+  //   : KyselyTypeError<'any(expr) call failed: expr must be an array'>
 
-  any<T>(
-    subquery: SelectQueryBuilderExpression<Record<string, T>>,
-  ): ExpressionWrapper<DB, TB, T>
+  // any<T>(
+  //   subquery: SelectQueryBuilderExpression<Record<string, T>>,
+  // ): ExpressionWrapper<DB, TB, T>
 
-  any<T>(expr: Expression<ReadonlyArray<T>>): ExpressionWrapper<DB, TB, T>
+  // any<T>(expr: Expression<ReadonlyArray<T>>): ExpressionWrapper<DB, TB, T>
 
   /**
    * Creates a `json_agg` function call.
@@ -718,25 +718,25 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * group by "person"."first_name"
    * ```
    */
-  jsonAgg<T extends (TB & string) | Expression<unknown>>(
-    table: T,
-  ): AggregateFunctionBuilder<
-    DB,
-    TB,
-    T extends TB
-      ? Selectable<DB[T]>[]
-      : T extends Expression<infer O>
-        ? O[]
-        : never
-  >
+  // jsonAgg<T extends (TB & string) | Expression<unknown>>(
+  //   table: T,
+  // ): AggregateFunctionBuilder<
+  //   DB,
+  //   TB,
+  //   T extends TB
+  //     ? Selectable<DB[T]>[]
+  //     : T extends Expression<infer O>
+  //       ? O[]
+  //       : never
+  // >
 
-  jsonAgg<RE extends StringReference<DB, TB>>(
-    column: RE,
-  ): AggregateFunctionBuilder<
-    DB,
-    TB,
-    ExtractTypeFromStringReference<DB, TB, RE>[] | null
-  >
+  // jsonAgg<RE extends StringReference<DB, TB>>(
+  //   column: RE,
+  // ): AggregateFunctionBuilder<
+  //   DB,
+  //   TB,
+  //   ExtractTypeFromStringReference<DB, TB, RE>[] | null
+  // >
 
   /**
    * Creates a to_json function call.
@@ -758,13 +758,13 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * inner join "pet" on "pet"."owner_id" = "person"."id"
    * ```
    */
-  toJson<T extends (TB & string) | Expression<unknown>>(
-    table: T,
-  ): ExpressionWrapper<
-    DB,
-    TB,
-    T extends TB ? Selectable<DB[T]> : T extends Expression<infer O> ? O : never
-  >
+  // toJson<T extends (TB & string) | Expression<unknown>>(
+  //   table: T,
+  // ): ExpressionWrapper<
+  //   DB,
+  //   TB,
+  //   T extends TB ? Selectable<DB[T]> : T extends Expression<infer O> ? O : never
+  // >
 
   // Math functions
 
@@ -925,15 +925,33 @@ export interface FunctionModule<DB, TB extends keyof DB> {
     ignoreCase?: boolean,
   ): ExpressionWrapper<DB, TB, boolean>
 
+  containsRef<RE extends StringReference<DB, TB>>(
+    column: RE,
+    searchStringColumn: RE,
+    ignoreCase?: boolean,
+  ): ExpressionWrapper<DB, TB, boolean>
+
   endsWith<RE extends StringReference<DB, TB>>(
     column: RE,
     searchString: string,
     ignoreCase?: boolean,
   ): ExpressionWrapper<DB, TB, boolean>
 
+  endsWithRef<RE extends StringReference<DB, TB>>(
+    column: RE,
+    searchStringColumn: RE,
+    ignoreCase?: boolean,
+  ): ExpressionWrapper<DB, TB, boolean>
+
   indexOf<RE extends StringReference<DB, TB>>(
     column: RE,
     searchString: string,
+    startIndex?: number,
+  ): ExpressionWrapper<DB, TB, number>
+
+  indexOfRef<RE extends StringReference<DB, TB>>(
+    column: RE,
+    searchStringColumn: RE,
     startIndex?: number,
   ): ExpressionWrapper<DB, TB, number>
 
@@ -992,9 +1010,21 @@ export interface FunctionModule<DB, TB extends keyof DB> {
     ignoreCase?: boolean,
   ): ExpressionWrapper<DB, TB, boolean>
 
+  startsWithRef<RE extends StringReference<DB, TB>>(
+    column: RE,
+    searchStringColumn: RE,
+    ignoreCase?: boolean,
+  ): ExpressionWrapper<DB, TB, boolean>
+
   stringEquals<RE extends StringReference<DB, TB>>(
     column: RE,
     compareString: string,
+    ignoreCase?: boolean,
+  ): ExpressionWrapper<DB, TB, boolean>
+
+  stringEqualsRef<RE extends StringReference<DB, TB>>(
+    column: RE,
+    compareStringColumn: RE,
     ignoreCase?: boolean,
   ): ExpressionWrapper<DB, TB, boolean>
 
@@ -1149,13 +1179,12 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * Calls the ST_AREA function to calculate the total area of a GeoJSON Polygon or MultiPolygon property.
    */
   area<
-    P extends AnyMatchingObjectPropertyPathWithTable<
-      DB,
-      TB,
-      Polygon | MultiPolygon
-    >,
+    P extends
+      | AnyMatchingObjectPropertyPathWithTable<DB, TB, Polygon | MultiPolygon>
+      | Polygon
+      | MultiPolygon,
   >(
-    property: P,
+    polygon: P,
   ): ExpressionWrapper<DB, TB, number>
 
   /**
@@ -1171,7 +1200,9 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * Calls the ST_ISVALIDDETAILED function to determine whether the specified GeoJSON property is valid, and if invalid, the reason.
    */
   isValidDetailed<
-    P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>,
+    P extends
+      | AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>
+      | GeoJsonObject,
   >(
     property: P,
   ): ExpressionWrapper<
@@ -1314,25 +1345,25 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       return agg('SUM', [column])
     },
 
-    any<RE extends ReferenceExpression<DB, TB>>(column: RE): any {
-      return fn('ANY', [column])
-    },
+    // any<RE extends ReferenceExpression<DB, TB>>(column: RE): any {
+    //   return fn('ANY', [column])
+    // },
 
-    jsonAgg(table: string | Expression<unknown>): any {
-      return new AggregateFunctionBuilder({
-        aggregateFunctionNode: AggregateFunctionNode.create('json_agg', [
-          isString(table) ? parseTable(table) : table.toOperationNode(),
-        ]),
-      })
-    },
+    // jsonAgg(table: string | Expression<unknown>): any {
+    //   return new AggregateFunctionBuilder({
+    //     aggregateFunctionNode: AggregateFunctionNode.create('json_agg', [
+    //       isString(table) ? parseTable(table) : table.toOperationNode(),
+    //     ]),
+    //   })
+    // },
 
-    toJson(table: string | Expression<unknown>): any {
-      return new ExpressionWrapper(
-        FunctionNode.create('to_json', [
-          isString(table) ? parseTable(table) : table.toOperationNode(),
-        ]),
-      )
-    },
+    // toJson(table: string | Expression<unknown>): any {
+    //   return new ExpressionWrapper(
+    //     FunctionNode.create('to_json', [
+    //       isString(table) ? parseTable(table) : table.toOperationNode(),
+    //     ]),
+    //   )
+    // },
 
     abs<RE extends ReferenceExpression<DB, TB>>(
       column: number | RE,
@@ -1809,6 +1840,23 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       return new ExpressionWrapper(FunctionNode.create('CONTAINS', args))
     },
 
+    containsRef<RE extends StringReference<DB, TB>>(
+      column: RE,
+      searchStringColumn: RE,
+      ignoreCase?: boolean,
+    ): ExpressionWrapper<DB, TB, boolean> {
+      const args = [
+        parseReferenceExpression(column),
+        parseReferenceExpression(searchStringColumn),
+      ]
+
+      if (ignoreCase !== undefined) {
+        args.push(sql`${ignoreCase}`.toOperationNode())
+      }
+
+      return new ExpressionWrapper(FunctionNode.create('CONTAINS', args))
+    },
+
     endsWith<RE extends StringReference<DB, TB>>(
       column: RE,
       searchString: string,
@@ -1826,6 +1874,23 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       return new ExpressionWrapper(FunctionNode.create('ENDSWITH', args))
     },
 
+    endsWithRef<RE extends StringReference<DB, TB>>(
+      column: RE,
+      searchStringColumn: RE,
+      ignoreCase?: boolean,
+    ): ExpressionWrapper<DB, TB, boolean> {
+      const args = [
+        parseReferenceExpression(column),
+        parseReferenceExpression(searchStringColumn),
+      ]
+
+      if (ignoreCase !== undefined) {
+        args.push(sql`${ignoreCase}`.toOperationNode())
+      }
+
+      return new ExpressionWrapper(FunctionNode.create('ENDSWITH', args))
+    },
+
     indexOf<RE extends StringReference<DB, TB>>(
       column: RE,
       searchString: string,
@@ -1834,6 +1899,23 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       const args = [
         parseReferenceExpression(column),
         sql`${searchString}`.toOperationNode(),
+      ]
+
+      if (startIndex !== undefined) {
+        args.push(sql`${startIndex}`.toOperationNode())
+      }
+
+      return new ExpressionWrapper(FunctionNode.create('INDEX_OF', args))
+    },
+
+    indexOfRef<RE extends StringReference<DB, TB>>(
+      column: RE,
+      searchStringColumn: RE,
+      startIndex?: number,
+    ): ExpressionWrapper<DB, TB, number> {
+      const args = [
+        parseReferenceExpression(column),
+        parseReferenceExpression(searchStringColumn),
       ]
 
       if (startIndex !== undefined) {
@@ -1977,6 +2059,23 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       return new ExpressionWrapper(FunctionNode.create('STARTSWITH', args))
     },
 
+    startsWithRef<RE extends StringReference<DB, TB>>(
+      column: RE,
+      searchStringColumn: RE,
+      ignoreCase?: boolean,
+    ): ExpressionWrapper<DB, TB, boolean> {
+      const args = [
+        parseReferenceExpression(column),
+        parseReferenceExpression(searchStringColumn),
+      ]
+
+      if (ignoreCase !== undefined) {
+        args.push(sql`${ignoreCase}`.toOperationNode())
+      }
+
+      return new ExpressionWrapper(FunctionNode.create('STARTSWITH', args))
+    },
+
     stringEquals<RE extends StringReference<DB, TB>>(
       column: RE,
       compareString: string,
@@ -1985,6 +2084,23 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       const args = [
         parseReferenceExpression(column),
         sql`${compareString}`.toOperationNode(),
+      ]
+
+      if (ignoreCase !== undefined) {
+        args.push(sql`${ignoreCase}`.toOperationNode())
+      }
+
+      return new ExpressionWrapper(FunctionNode.create('STRINGEQUALS', args))
+    },
+
+    stringEqualsRef<RE extends StringReference<DB, TB>>(
+      column: RE,
+      compareStringColumn: RE,
+      ignoreCase?: boolean,
+    ): ExpressionWrapper<DB, TB, boolean> {
+      const args = [
+        parseReferenceExpression(column),
+        parseReferenceExpression(compareStringColumn),
       ]
 
       if (ignoreCase !== undefined) {
@@ -2352,32 +2468,48 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
     },
 
     area<
-      P extends AnyMatchingObjectPropertyPathWithTable<
-        DB,
-        TB,
-        Polygon | MultiPolygon
-      >,
-    >(property: P) {
+      P extends
+        | AnyMatchingObjectPropertyPathWithTable<DB, TB, Polygon | MultiPolygon>
+        | Polygon
+        | MultiPolygon,
+    >(polygon: P): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper<DB, TB, number>(
         FunctionNode.create('ST_AREA', [
-          parseReferenceExpression(property), // Parse property as a reference
+          isString(polygon)
+            ? parseReferenceExpression(polygon)
+            : sql`${polygon}`.toOperationNode(),
         ]),
       )
     },
 
     isValid<
-      P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>,
-    >(property: P) {
+      P extends
+        | AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>
+        | GeoJsonObject,
+    >(property: P): ExpressionWrapper<DB, TB, boolean> {
       return new ExpressionWrapper<DB, TB, boolean>(
         FunctionNode.create('ST_ISVALID', [
-          parseReferenceExpression(property), // Parse property as a reference
+          isString(property)
+            ? parseReferenceExpression(property)
+            : sql`${property}`.toOperationNode(),
         ]),
       )
     },
 
     isValidDetailed<
-      P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>,
-    >(property: P) {
+      P extends
+        | AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>
+        | GeoJsonObject,
+    >(
+      property: P,
+    ): ExpressionWrapper<
+      DB,
+      TB,
+      {
+        valid: boolean
+        reason?: string
+      }
+    > {
       return new ExpressionWrapper<
         DB,
         TB,
@@ -2387,7 +2519,9 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         }
       >(
         FunctionNode.create('ST_ISVALIDDETAILED', [
-          parseReferenceExpression(property), // Parse property as a reference
+          isString(property)
+            ? parseReferenceExpression(property)
+            : sql`${property}`.toOperationNode(),
         ]),
       )
     },
@@ -2475,7 +2609,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         property = spatial1 as P
         geo = spatial2 as GeoJsonObject
         return new ExpressionWrapper<DB, TB, boolean>(
-          FunctionNode.create('st_intersects', [
+          FunctionNode.create('ST_INTERSECTS', [
             parseReferenceExpression(property), // Parse property as a reference
             sql`${geo}`.toOperationNode(), // Treat geo as a literal
           ]),
@@ -2486,7 +2620,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         property = spatial2 as P
 
         return new ExpressionWrapper<DB, TB, boolean>(
-          FunctionNode.create('st_intersects', [
+          FunctionNode.create('ST_INTERSECTS', [
             sql`${geo}`.toOperationNode(), // Treat geo as a literal
             parseReferenceExpression(property), // Parse property as a reference
           ]),
