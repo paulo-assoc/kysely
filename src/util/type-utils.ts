@@ -100,15 +100,15 @@ export type AnyPropertyPath<
     ? never
     : {
         [K in keyof DB[TB]]: K extends string
-          ? DB[TB][K] extends Array<infer AV>
+          ? NonNullable<DB[TB][K]> extends Array<infer AV>
             ?
                 | K
                 | `${K}[${number}]`
                 | `${K}[${number}].${AnyPropertyPath<{ table: AV }, 'table', Decrement[Depth]>}`
-            : DB[TB][K] extends object
+            : NonNullable<DB[TB][K]> extends object
               ?
                   | K
-                  | `${K}.${AnyPropertyPath<{ table: DB[TB][K] }, 'table', Decrement[Depth]>}`
+                  | `${K}.${AnyPropertyPath<{ table: NonNullable<DB[TB][K]> }, 'table', Decrement[Depth]>}`
               : K
           : never
       }[keyof DB[TB]]
@@ -130,10 +130,6 @@ export type ExtractPropertyPathType<T, P extends string> = T extends any
       : DirectExtract<T, P>
   : never
 
-// export type AnyPropertyPathWithTable<DB, TB extends keyof DB> = {
-//   [T in TB]: `${T & string}.${AnyPropertyPath<DB, TB> & string}`
-// }[TB]
-
 export type AnyPropertyPathWithTable<DB, TB extends keyof DB> = {
   [T in TB]: `${T & string}.${AnyPropertyPath<DB, T> & string}`
 }[TB]
@@ -152,11 +148,11 @@ export type AnyArrayPropertyPath<
   Depth extends number = 5,
   Path extends string = '',
 > = Depth extends 0
-  ? never // Stop recursion when depth reaches 0
+  ? never
   : {
-      [K in keyof DB[T]]: DB[T][K] extends any[] | undefined // Check if DB[T][K] is an array or an array | undefined
-        ? // Include the array path and recurse into array items if objects
-          | (Path extends '' ? `${K & string}` : `${Path}.${K & string}`)
+      [K in keyof DB[T]]: DB[T][K] extends any[] | undefined
+        ?
+            | (Path extends '' ? `${K & string}` : `${Path}.${K & string}`)
             | (DB[T][K] extends (infer U)[] | undefined
                 ? U extends object
                   ? AnyArrayPropertyPath<
@@ -175,8 +171,8 @@ export type AnyArrayPropertyPath<
               '_',
               Decrement[Depth],
               Path extends '' ? `${K & string}` : `${Path}.${K & string}`
-            > // Recurse if object
-          : never // Exclude non-array, non-object properties
+            >
+          : never
     }[keyof DB[T]]
 
 // Helper type to extract the item type of an array property
@@ -189,7 +185,7 @@ export type ExtractArrayItemType<
     ? DB[T][Key] extends (infer U)[] | undefined
       ? U extends object
         ? ExtractArrayItemType<{ _: U }, '_', Rest>
-        : never
+        : U
       : never
     : never
   : P extends `${infer Key}[${number}]`
@@ -216,73 +212,13 @@ export type ExtractArrayItemTypeWithTable<
       : never
     : never
 
-// export type AnyArrayPropertyPathWithTable<DB, TB extends keyof any> =
-//   | {
-//       [T in TB]: T extends keyof DB
-//         ? DB[T] extends any[] | undefined
-//           ? T & string // Include the table alias if it's an array
-//           : `${T & string}.${AnyArrayPropertyPath<DB, T> & string}`
-//         : never
-//     }[TB]
-//   | {
-//       [A in keyof DB]: A extends string
-//         ? DB[A] extends DB[keyof DB]
-//           ? `${A & string}.${AnyArrayPropertyPath<DB, A> & string}`
-//           : never
-//         : never
-//     }[keyof DB]
-
-// LKG
 export type AnyArrayPropertyPathWithTable<DB, TB extends keyof DB> = {
   [T in TB]: T extends keyof DB
-    ? DB[T] extends any[] // | undefined
+    ? DB[T] extends any[] | undefined
       ? T & string // Include the table alias if it's an array
       : `${T & string}.${AnyArrayPropertyPath<DB, T> & string}`
     : never
 }[TB]
-
-// export type AnyArrayPropertyPathWithTable<DB, TB extends keyof DB> = {
-//   [T in TB]: `${T & string}.${AnyArrayPropertyPath<DB, TB> & string}`
-// }[TB]
-
-// export type AnyObjectPropertyPath<
-//   DB,
-//   T extends keyof DB,
-//   Depth extends number = 5,
-//   Path extends string = '',
-// > = Depth extends 0
-//   ? never
-//   : {
-//       [K in keyof DB[T]]:
-//         | (NonUndefined<DB[T][K]> extends object
-//             ? Path extends ''
-//               ? `${K & string}`
-//               : `${Path}.${K & string}`
-//             : never)
-//         | (DB[T][K] extends (infer U)[] | undefined
-//             ? NonUndefined<U> extends object
-//               ?
-//                   | (Path extends ''
-//                       ? `${K & string}[${number}]`
-//                       : `${Path}.${K & string}[${number}]`)
-//                   | AnyObjectPropertyPath<
-//                       { _: NonUndefined<U> },
-//                       '_',
-//                       Decrement[Depth],
-//                       Path extends ''
-//                         ? `${K & string}[${number}]`
-//                         : `${Path}.${K & string}[${number}]`
-//                     >
-//               : never
-//             : NonUndefined<DB[T][K]> extends object
-//               ? AnyObjectPropertyPath<
-//                   { _: NonUndefined<DB[T][K]> },
-//                   '_',
-//                   Decrement[Depth],
-//                   Path extends '' ? `${K & string}` : `${Path}.${K & string}`
-//                 >
-//               : never)
-//     }[keyof DB[T]]
 
 export type AnyObjectPropertyPath<
   DB,
@@ -546,157 +482,7 @@ type PartialKeyOfT<T> = { [K in keyof T]?: T[K] }
 // Utility type to exclude undefined from a type
 type NonUndefined<T> = T extends undefined ? never : T
 
-// interface TestDatabase {
-//   user: {
-//     id: number
-//     name: string
-//     numbers?: number[]
-//     nested: {
-//       id: number
-//       items: string[]
-//       deeper?: {
-//         id: number
-//         values?: boolean[]
-//         other: number
-//         evenDeeper: {
-//           id: number
-//           more: number[]
-//         }
-//       }
-//       arrayOfObjects: { id: number; values: string[]; other: number }[]
-//     }
-//   }
-//   settings: {
-//     otherArray: { data: number[]; extra: string }[]
-//   }
-// }
-
-// For testing purposes, to ensure the types work as expected
-// type ArrayProps = AnyArrayPropertyPath<TestDatabase, 'user'>
-// const useExample: ArrayProps = 'nested.arrayOfObjects[0].values'
-// type ObjectProps = AnyMatchingObjectPropertyPath<
-//   TestDatabase,
-//   'user',
-//   { id: number }
-// >
-// const objExample: ObjectProps = 'nested.arrayOfObjects[8]'
-// type SettingsArrayProps = AnyArrayPropertyPath<TestDatabase, 'settings'>
-// const settingsExample: SettingsArrayProps = 'otherArray[0].data'
-
-// // Used for type testing purposes
-// // const x: AnyPropertyPath<Database, 'families'> = 'parents[0].firstName'
-// // const c: ExtractPropertyPathType<Family, 'address'> = {
-// //   state: 'California',
-// //   county: 'Los Angeles',
-// //   city: 'Los Angeles',
-// // }
-
-// const t: ExtractPropertyPathType<Family, 'f.pedigree.region'> = ''
-// // 1. Direct property access
-// const testDirect: ExtractPropertyPathType<Family, 'id'> = '123' // string
-// const testDirectOptional: ExtractPropertyPathType<Family, 'lastName'> = 'Smith' // string | undefined
-
-// // 2. Nested property access
-// const testNested: ExtractPropertyPathType<Family, 'address.state'> = 'CA' // string
-// const testNestedOptional: ExtractPropertyPathType<Family, 'pedigree.region'> =
-//   'North' // string
-
-// // 3. Array items access
-// const testArray: ExtractPropertyPathType<Family, 'parents[0]'> = {
-//   firstName: 'John',
-// } // Parent
-// const testArrayNested: ExtractPropertyPathType<Family, 'parents[0].givenName'> =
-//   'John' // string
-// const testArrayDeep: ExtractPropertyPathType<
-//   Family,
-//   'children[0].pets[0].givenName'
-// > = 'Fluffy' // string
-
-// // 4. Ignoring irrelevant prefixes
-// const testIgnorePrefix: ExtractPropertyPathType<Family, 'f.pedigree.region'> =
-//   'South' // string
-// const testIgnoreMultiplePrefixes: ExtractPropertyPathType<
-//   Family,
-//   'a.b.c.pedigree.region'
-// > = 'East' // string
-// const testIgnorePrefixArray: ExtractPropertyPathType<
-//   Family,
-//   'ignorethis.parents[0].givenName'
-// > = 'Jane' // string
-
-// // 5. Invalid paths
-// const testInvalid: ExtractPropertyPathType<Family, 'nonexistent'> =
-//   undefined as never // never
-// const testInvalidNested: ExtractPropertyPathType<
-//   Family,
-//   'address.nonexistent'
-// > = undefined as never // never
-// const testInvalidArray: ExtractPropertyPathType<
-//   Family,
-//   'parents[0].nonexistent'
-// > = undefined as never // never
-
-// // 6. Additional tests
-// const testArrayProperty: ExtractPropertyPathType<Family, 'parents.length'> = 5 // number
-// const testOptionalArray: ExtractPropertyPathType<
-//   Family,
-//   'location.coordinates[0]'
-// > = 10 // number
-// const testMixedPath: ExtractPropertyPathType<
-//   Family,
-//   'address.state.nonexistent'
-// > = undefined as never // never
-
-// // Used for type testing purposes
-// export interface Family {
-//   id: string
-//   lastName?: string
-//   parents: Parent[]
-//   children: Children[]
-//   address: Address
-//   creationDate: string
-//   isRegistered: boolean
-//   location?: Location
-//   pedigree?: {
-//     region: string
-//   }
-// }
-
-// export interface Parent {
-//   firstName?: string
-//   familyName?: string
-//   givenName?: string
-//   colors?: string[]
-// }
-
-// export interface Children {
-//   firstName?: string
-//   gender: string
-//   grade: number
-//   pets?: Pet[]
-//   familyName?: string
-//   givenName?: string
-// }
-
-// export interface Pet {
-//   givenName: string
-// }
-
-// export interface Address {
-//   state: string
-//   county: string
-//   city: string
-// }
-
-// export interface Location {
-//   type: string
-//   coordinates: number[]
-// }
-
-// interface TestDatabase {
-//   families: Family
-// }
-
+//TODO: Move this to a separate file in test/typings
 export interface BaseEntity {
   id: string
   schema: string
@@ -734,7 +520,7 @@ interface Order extends BaseEntity {
   orderId: string
   userId: string
   total: number
-  items: {
+  items?: {
     amount: number
     category: string
     taxes: {
@@ -744,6 +530,7 @@ interface Order extends BaseEntity {
     productId: string
     quantity: number
   }[]
+  phoneNumbers?: string[]
   tags: { name: string }[]
   customer: {
     firstName: string
@@ -754,7 +541,7 @@ interface Order extends BaseEntity {
       state: string
       zip: string
     }
-    phoneNumbers: string[]
+    phoneNumbers?: string[]
   }
 }
 
@@ -767,9 +554,9 @@ export interface Person extends BaseEntity {
   lastLogin: Date | null
   address: {
     number: number
-    street: string
+    street?: string
     city: string
-    coordinates: {
+    coordinates?: {
       lat: number
       lon: number
     }
@@ -824,6 +611,8 @@ interface Database {
   nested: Nested
 }
 
+let a: AnyArrayPropertyPathWithTable<Database, 'orders'> = 'orders.phoneNumbers'
+
 async function JoinTest(db: Kysely<Database>) {
   test('select all tests', async () => {
     const result1 = db.selectFrom('persons as p').selectAll().compile()
@@ -835,6 +624,17 @@ async function JoinTest(db: Kysely<Database>) {
 
     const result3 = db
       .selectFrom('orders.items[0] as firstItem')
+      .selectAll()
+      .compile()
+
+    const result4 = db
+      .selectFrom('orders.customer.phoneNumbers as p')
+      .selectAll()
+      .compile()
+
+    const result5 = db
+      .selectFrom('orders.items[0] as firstItem')
+      .where('firstItem.taxes[0].type', '=', 'VAT')
       .selectAll()
       .compile()
   })
@@ -938,6 +738,12 @@ async function JoinTest(db: Kysely<Database>) {
       .selectFrom('orders.customer.phoneNumbers as p')
       .selectAll()
       // .where((eb) => eb.fn.arrayContains('p', { name: 'electronics' }))
+      .compile()
+
+    const result4 = db
+      .selectFrom('orders.customer.phoneNumbers as p')
+      .selectAll()
+      .where((eb) => eb.fn.arrayContains('p', '213-867-5309'))
       .compile()
   })
 
@@ -1090,6 +896,20 @@ async function JoinTest(db: Kysely<Database>) {
       .compile()
   })
 
+  test('select indexed-access off optional array test', async () => {
+    const result1 = db
+      .selectFrom('orders as o')
+      .select('o.items[0].quantity')
+      .compile()
+
+    const result2 = db
+      .selectFrom('orders as o')
+      .select((eb) =>
+        eb.fn.intBitOr('o.total', 'o.items[0].quantity').as('orValues'),
+      )
+      .compile()
+  })
+
   test('join test with deep path select', async () => {
     const result1 = db
       .selectFrom('orders as o')
@@ -1127,29 +947,6 @@ async function JoinTest(db: Kysely<Database>) {
       .select('i.productId')
       .compile()
   })
-
-  type PropertyPath = AnyPropertyPath<Database, 'orders'>
-  type PropertyPathWithTable = AnyPropertyPathWithTable<Database, 'orders'>
-  type AliasedArrayPropertyPathWithTable = AnyAliasedArrayPropertyPathWithTable<
-    Database,
-    'orders'
-  >
-  type AliasedObjectPropertyPathWithTable =
-    AnyAliasedObjectPropertyPathWithTable<Database, 'orders'>
-  type AliasedPropertyPathWithTable = AnyAliasedPropertyPathWithTable<
-    Database,
-    'orders'
-  >
-
-  type s1 = SelectExpression<Database, 'orders'>
-  type s2 = AnyAliasedColumnWithTable<Database, 'orders'>
-  type s3 = AnyAliasedColumn<Database, 'orders'> //
-  type s5 = AnyAliasedPropertyPath<Database, 'orders'>
-  type s6 = AnyAliasedPropertyPathWithTable<Database, 'orders'>
-  type s7 = AnyArrayPropertyPathWithTable<Database, 'orders'>
-  type s8 = AnyPropertyPath<Database, 'orders'> //
-  type s9 = AliasedExpressionOrFactory<Database, 'orders'> //?
-  type s10 = AnyAliasedArrayPropertyPathWithTable<Database, 'orders'> //
 
   // Diagnostic type to inspect SelectExpression for the joined query
   type DiagnosticSelectExpression = SelectExpression<

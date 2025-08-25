@@ -38,6 +38,7 @@ import {
   SqlBool,
   ExtractPropertyPathType,
   AnyPropertyPathWithTable,
+  AnyArrayPropertyPath,
 } from '../util/type-utils.js'
 import {
   DirectedOrderByStringReference,
@@ -91,6 +92,27 @@ import { JoinType } from '../operation-node/join-node.js'
 import { OrderByInterface } from './order-by-interface.js'
 import { FeedOptions, FeedResponse } from '@azure/cosmos'
 import { FeedResult } from '../driver/database-connection.js'
+
+export type JoinArrayProperty<
+  DB,
+  TB extends keyof DB,
+  P extends string,
+  A extends string,
+> = P extends `${infer T}.${infer Rest}`
+  ? T extends TB
+    ? Rest extends AnyArrayPropertyPath<DB, T>
+      ? SelectQueryBuilder<
+          DB &
+            ShallowRecord<
+              A,
+              ArrayItemType<ExtractPropertyPathType<DB[T], Rest>>
+            >,
+          TB | A,
+          {}
+        >
+      : never
+    : never
+  : never
 
 export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   extends WhereInterface<DB, TB>,
@@ -2831,73 +2853,13 @@ class AliasedSelectQueryBuilderImpl<
   }
 }
 
-//TODO: Remove these after the current solution is tested thoroughly.
-// export type SelectQueryBuilderWithJoin<
-//   DB,
-//   TB extends keyof DB,
-//   O,
-//   TE extends `${string} in ${AnyArrayPropertyPathWithTable<DB, TB>}`,
-// > = TE extends `${infer A} in ${infer T}`
-//   ? T extends `${infer JA}.${infer JP}`
-//     ? JA extends keyof DB
-//       ? JP extends keyof DB[JA]
-//         ? DB[JA][JP] extends any[]
-//           ? InnerJoinedBuilder<DB, TB, O, A, ArrayElementType<DB[JA][JP]>>
-//           : never
-//         : never
-//       : never
-//     : never
-//   : never
-
-// export type SelectQueryBuilderWithJoin<
-//   DB,
-//   TB extends keyof DB,
-//   O,
-//   TE extends `${string} in ${string}`,
-// > = TE extends `${infer A} in ${infer T}`
-//   ? T extends `${infer JA}.${infer JP}`
-//     ? JA extends keyof DB
-//       ? JP extends keyof DB[JA]
-//         ? DB[JA][JP] extends any[]
-//           ? InnerJoinedBuilder<DB, TB, O, A, ArrayItemType<DB[JA][JP]>>
-//           : never
-//         : never
-//       : never
-//     : never
-//   : never
-
-// export type SelectQueryBuilderWithJoin<
-//   DB,
-//   TB extends keyof DB,
-//   O,
-//   TE extends `${string} in ${string}`,
-// > = TE extends `${infer A} in ${infer T}`
-//   ? T extends `${infer Table}.${infer Path}`
-//     ? Table extends keyof DB
-//       ? ExtractPropertyPathType<DB[Table], Path> extends infer ArrayType
-//         ? ArrayType extends any[]
-//           ? InnerJoinedBuilder<DB, TB, O, A, ArrayItemType<ArrayType>>
-//           : never
-//         : never
-//       : never
-//     : never
-//   : never
-
 export type SelectQueryBuilderWithJoin<
   DB,
   TB extends keyof DB,
   O,
   TE extends `${string} in ${string}`,
 > = TE extends `${infer A} in ${infer T}`
-  ? T extends `${infer Table}.${infer Path}`
-    ? Table extends keyof DB
-      ? ExtractPropertyPathType<DB[Table], Path> extends infer ArrayType
-        ? ArrayType extends any[]
-          ? InnerJoinedBuilder<DB, TB, O, A, ArrayItemType<ArrayType>>
-          : InnerJoinedBuilder<DB, TB, O, A, ArrayType>
-        : never
-      : never
-    : never
+  ? JoinArrayProperty<DB, TB, T, A>
   : never
 
 export type SelectQueryBuilderWithInnerJoin<

@@ -2,7 +2,6 @@ import { isFunction, isReadonlyArray, isString } from '../util/object-utils.js'
 import { AliasedSelectQueryBuilder } from '../query-builder/select-query-builder.js'
 import { SelectionNode } from '../operation-node/selection-node.js'
 import {
-  AnyAliasedArrayPropertyPathWithTable,
   AnyAliasedColumnWithTable,
   AnyAliasedPropertyPath,
   AnyAliasedPropertyPathWithTable,
@@ -34,9 +33,6 @@ import {
   ExpressionBuilder,
 } from '../expression/expression-builder.js'
 
-// This is not fully functional. Type errors in select into a join alias beyond the top-level property:
-// Fails: db.selectFrom('orders2 as o').join('i in o.items').select('i.taxes[0].type as taxType')
-// Works: db.selectFrom('orders2 as o').join('i in o.items').select('i.taxes as taxes')
 export type SelectExpression<DB, TB extends keyof DB> =
   | AnyAliasedColumnWithTable<DB, TB>
   // | AnyAliasedColumn<DB, TB> // not needed?
@@ -95,21 +91,6 @@ type ExtractAliasFromSelectExpression<SE> = SE extends string
         ? ExtractAliasFromStringSelectExpression<RA>
         : never
 
-// LKG
-// type ExtractAliasFromStringSelectExpression<SE extends string> =
-//   SE extends `${string}.${string}.${string} as ${infer A}`
-//     ? A
-//     : SE extends `${string}.${string} as ${infer A}`
-//       ? A
-//       : SE extends `${string} as ${infer A}`
-//         ? A
-//         : SE extends `${string}.${string}.${infer C}`
-//           ? C
-//           : SE extends `${string}.${infer C}`
-//             ? C
-//             : SE
-
-// Suggested by Grok
 type ExtractAliasFromStringSelectExpression<SE extends string> =
   SE extends `${string} as ${infer A}`
     ? A
@@ -120,24 +101,6 @@ type ExtractAliasFromStringSelectExpression<SE extends string> =
           : Rest
         : C
       : SE
-
-// type ExtractTypeFromSelectExpression<
-//   DB,
-//   TB extends keyof DB,
-//   SE,
-// > = SE extends string
-//   ? ExtractTypeFromStringSelectExpression<DB, TB, SE>
-//   : SE extends AliasedSelectQueryBuilder<infer O, any>
-//     ? O[keyof O] | null
-//     : SE extends (eb: any) => AliasedSelectQueryBuilder<infer O, any>
-//       ? O[keyof O] | null
-//       : SE extends AliasedExpression<infer O, any>
-//         ? O
-//         : SE extends (eb: any) => AliasedExpression<infer O, any>
-//           ? O
-//           : SE extends DynamicReferenceBuilder<infer RA>
-//             ? ExtractTypeFromStringSelectExpression<DB, TB, RA> | undefined
-//             : never
 
 export type ExtractTypeFromSelectExpression<
   DB,
@@ -156,33 +119,6 @@ export type ExtractTypeFromSelectExpression<
           : SE extends DynamicReferenceBuilder<infer RA>
             ? ExtractTypeFromStringSelectExpression<DB, TB, RA> | undefined
             : never
-
-// This is the new version that works correctly with nested objects
-// export type ExtractTypeFromStringSelectExpression<
-//   DB,
-//   TB extends keyof DB,
-//   SE extends string,
-// > = SE extends `${infer PE extends string} as ${string}`
-//   ? ExtractPropertyPathType<DB[TB], PE>
-//   : SE extends `${infer PE extends string}`
-//     ? ExtractPropertyPathType<DB[TB], PE>
-//     : never
-
-// export type ExtractTypeFromStringSelectExpression<
-//   DB,
-//   TB extends keyof DB,
-//   SE extends string,
-// > = SE extends `${infer T}.${infer P} as ${string}`
-//   ? T extends TB
-//     ? ExtractPropertyPathType<DB[T], P>
-//     : never
-//   : SE extends `${infer T}.${infer P}`
-//     ? T extends TB
-//       ? ExtractPropertyPathType<DB[T], P>
-//       : never
-//     : SE extends AnyColumn<DB, TB>
-//       ? ExtractColumnType<DB, TB, SE>
-//       : never
 
 export type ExtractTypeFromStringSelectExpression<
   DB,
@@ -203,43 +139,6 @@ export type ExtractTypeFromStringSelectExpression<
     : SE extends AnyColumn<DB, TB>
       ? ExtractColumnType<DB, TB, SE>
       : never
-
-// This is the original version that was not working correctly with nested objects
-// type ExtractTypeFromStringSelectExpression<
-//   DB,
-//   TB extends keyof DB,
-//   SE extends string,
-// > = SE extends `${infer SC}.${infer T}.${infer C} as ${string}`
-//   ? `${SC}.${T}` extends TB
-//     ? C extends keyof DB[`${SC}.${T}`]
-//       ? DB[`${SC}.${T}`][C]
-//       : never
-//     : never
-//   : SE extends `${infer T}.${infer C} as ${string}`
-//     ? T extends TB
-//       ? C extends keyof DB[T]
-//         ? DB[T][C]
-//         : never
-//       : never
-//     : SE extends `${infer C} as ${string}`
-//       ? C extends AnyColumn<DB, TB>
-//         ? ExtractColumnType<DB, TB, C>
-//         : never
-//       : SE extends `${infer SC}.${infer T}.${infer C}`
-//         ? `${SC}.${T}` extends TB
-//           ? C extends keyof DB[`${SC}.${T}`]
-//             ? DB[`${SC}.${T}`][C]
-//             : never
-//           : never
-//         : SE extends `${infer T}.${infer C}`
-//           ? T extends TB
-//             ? C extends keyof DB[T]
-//               ? DB[T][C]
-//               : never
-//             : never
-//           : SE extends AnyColumn<DB, TB>
-//             ? ExtractColumnType<DB, TB, SE>
-//             : never
 
 interface User {
   name: string
@@ -264,41 +163,6 @@ interface User {
     theme: 'light' | 'dark'
   }[]
 }
-
-interface Database {
-  user: User
-}
-
-type NameType = Selection<Database, 'user', 'name'> // string
-type AgeType = Selection<Database, 'user', 'details.age'> // number
-type AddressType = Selection<Database, 'user', 'details.addresses[0]'> // { street: string; city: string; zip: string; }
-type VillaType = Selection<Database, 'user', 'details.addresses[0].villa'> // { name: string; year: number; old: boolean; }
-type HobbyType = Selection<Database, 'user', 'details.hobbies[0]'> // string
-type HobbiesType = Selection<Database, 'user', 'details.hobbies'> // string[]
-type FriendNameType = Selection<Database, 'user', 'friends[0].name'> // string
-type SettingsType = Selection<Database, 'user', 'settings'> // { theme: "light" | "dark"; }[]
-type SettingType = Selection<Database, 'user', 'settings[0]'> // { theme: "light" | "dark"; }
-type ThemeType = Selection<Database, 'user', 'settings[0].theme'> // "light" | "dark"
-
-type NameTypeA = Selection<Database, 'user', 'name as n'> // string
-type AgeTypeA = Selection<Database, 'user', 'details.age as a'> // number
-type AddressTypeA = Selection<Database, 'user', 'details.addresses[0] as a'> // { street: string; city: string; zip: string; }
-type VillaTypeA = Selection<Database, 'user', 'details.addresses[0].villa as v'> // { name: string; year: number; old: boolean; }
-type HobbyTypeA = Selection<Database, 'user', 'details.hobbies[0] as h'> // string
-type HobbiesTypeA = Selection<Database, 'user', 'details.hobbies as h'> // string[]
-type FriendNameTypeA = Selection<Database, 'user', 'friends[0].name as fn'> // string
-type SettingsTypeA = Selection<Database, 'user', 'settings as s'> // { theme: "light" | "dark"; }[]
-type SettingTypeA = Selection<Database, 'user', 'settings[0] as s'> // { theme: "light" | "dark"; }
-type ThemeTypeA = Selection<Database, 'user', 'settings[0].theme as t'> // "light" | "dark"
-
-// type NameType = ExtractPropertyPathType<User, 'name'> // string
-// type AgeType = ExtractPropertyPathType<User, 'details.age'> // number
-// type HobbyType = ExtractPropertyPathType<User, 'details.hobbies[0]'> // string
-// type HobbiesType = ExtractPropertyPathType<User, 'details.hobbies'> // string[]
-// type FriendNameType = ExtractPropertyPathType<User, 'friends[0].name'> // string
-// type SettingsType = ExtractPropertyPathType<User, 'settings'> // { theme: "light" | "dark"; }[]
-// type SettingType = ExtractPropertyPathType<User, 'settings[0]'> // { theme: "light" | "dark"; }
-// type ThemeType = ExtractPropertyPathType<User, 'settings[0].theme'> // "light" | "dark"
 
 export type AllSelection<DB, TB extends keyof DB> = DrainOuterGeneric<{
   [C in AnyColumn<DB, TB>]: {
