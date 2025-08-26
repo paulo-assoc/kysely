@@ -165,9 +165,9 @@ export type AnyArrayPropertyPath<
                     >
                   : never
                 : never)
-        : DB[T][K] extends object
+        : NonUndefined<DB[T][K]> extends object
           ? AnyArrayPropertyPath<
-              { _: DB[T][K] },
+              { _: NonUndefined<DB[T][K]> },
               '_',
               Decrement[Depth],
               Path extends '' ? `${K & string}` : `${Path}.${K & string}`
@@ -532,7 +532,7 @@ interface Order extends BaseEntity {
   }[]
   phoneNumbers?: string[]
   tags: { name: string }[]
-  customer: {
+  customer?: {
     firstName: string
     lastName: string
     address: {
