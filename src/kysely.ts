@@ -1179,13 +1179,20 @@ class NotCommittedOrRolledBackAssertingExecutor implements QueryExecutor {
     return this.#executor.executeQuery(compiledQuery, queryId)
   }
 
-  cosmosExecuteQuery<R>(
+  executeQueryFeed<R>(
     compiledQuery: CompiledQuery<R>,
     queryId: QueryId,
-    options: FeedOptions,
+    pageSize: number,
+    continuationToken?: string,
+    // options: FeedOptions,
   ): Promise<FeedResult<R>> {
     assertNotCommittedOrRolledBack(this.#state)
-    return this.#executor.cosmosExecuteQuery(compiledQuery, queryId, options)
+    return this.#executor.executeQueryFeed(
+      compiledQuery,
+      queryId,
+      pageSize,
+      continuationToken,
+    )
   }
 
   stream<R>(

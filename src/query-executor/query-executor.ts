@@ -54,10 +54,11 @@ export interface QueryExecutor extends ConnectionProvider {
    * Executes a cosmos compiled query and runs the result through all plugins'
    * `transformResult` method.
    */
-  cosmosExecuteQuery<R>(
+  executeQueryFeed<R>(
     compiledQuery: CompiledQuery<R>,
     queryId: QueryId,
-    options?: FeedOptions,
+    pageSize: number,
+    continuationToken?: string,
   ): Promise<FeedResult<R>>
 
   /**

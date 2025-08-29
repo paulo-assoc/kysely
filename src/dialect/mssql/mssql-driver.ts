@@ -200,9 +200,10 @@ class MssqlConnection implements DatabaseConnection {
     }
   }
 
-  async cosmosExecuteQuery<R>(
+  async executeQueryFeed<R>(
     compiledQuery: CompiledQuery,
-    options?: FeedOptions,
+    pageSize: number,
+    continuationToken?: string,
   ): Promise<FeedResult<R>> {
     return new FeedResult<R>([], {}, false, {} as any) // TODO: Implement Cosmos DB support;
   }

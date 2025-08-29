@@ -79,15 +79,17 @@ export abstract class QueryExecutorBase implements QueryExecutor {
     })
   }
 
-  async cosmosExecuteQuery<R>(
+  async executeQueryFeed<R>(
     compiledQuery: CompiledQuery,
     queryId: QueryId,
-    options?: FeedOptions,
+    pageSize: number,
+    continuationToken?: string,
   ): Promise<FeedResult<R>> {
     return await this.provideConnection(async (connection) => {
-      const result = await connection.cosmosExecuteQuery<R>(
+      const result = await connection.executeQueryFeed<R>(
         compiledQuery,
-        options,
+        pageSize,
+        continuationToken,
       )
 
       if ('numUpdatedOrDeletedRows' in result) {

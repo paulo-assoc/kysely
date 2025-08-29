@@ -10,9 +10,10 @@ import { Simplify } from '../util/type-utils.js'
 export interface DatabaseConnection {
   executeQuery<R>(compiledQuery: CompiledQuery): Promise<QueryResult<R>>
 
-  cosmosExecuteQuery<R>(
+  executeQueryFeed<R>(
     compiledQuery: CompiledQuery,
-    options?: FeedOptions,
+    pageSize: number,
+    continuationToken?: string,
   ): Promise<FeedResult<R>>
 
   streamQuery<R>(

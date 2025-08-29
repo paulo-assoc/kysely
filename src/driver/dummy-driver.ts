@@ -92,7 +92,7 @@ class DummyConnection implements DatabaseConnection {
     }
   }
 
-  async cosmosExecuteQuery<R>(): Promise<FeedResult<R>> {
+  async executeQueryFeed<R>(): Promise<FeedResult<R>> {
     return new FeedResult<R>([], {}, false, new CosmosDiagnostics())
   }
 

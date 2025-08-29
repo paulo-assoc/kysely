@@ -2174,7 +2174,10 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *
    * Also see the {@link executeTakeFirst} and {@link executeTakeFirstOrThrow} methods.
    */
-  find(options?: FeedOptions): Promise<FeedResult<O>>
+  executeFeed(
+    pageSize: number,
+    continuationToken?: string,
+  ): Promise<FeedResult<O>>
 
   /**
    * Executes the query and returns the first result or undefined if
@@ -2730,13 +2733,17 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     return result.rows
   }
 
-  async find(options?: FeedOptions): Promise<FeedResponse<any>> {
+  async executeFeed(
+    pageSize: number,
+    continuationToken?: string,
+  ): Promise<FeedResponse<any>> {
     const compiledQuery = this.compile()
 
-    const result = await this.#props.executor.cosmosExecuteQuery<O>(
+    const result = await this.#props.executor.executeQueryFeed<O>(
       compiledQuery,
       this.#props.queryId,
-      options,
+      pageSize,
+      continuationToken,
     )
 
     return result
