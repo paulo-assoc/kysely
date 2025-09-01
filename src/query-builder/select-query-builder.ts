@@ -116,12 +116,12 @@ export type JoinArrayProperty<
 
 export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   extends WhereInterface<DB, TB>,
-    HavingInterface<DB, TB>,
+    // HavingInterface<DB, TB>,
     OrderByInterface<DB, TB, O>,
     SelectQueryBuilderExpression<O>,
-    Compilable<O>,
-    // Explainable,
-    Streamable<O> {
+    Compilable<O> {
+  // Explainable,
+  // Streamable<O>
   where<
     RE extends ReferenceExpression<DB, TB>,
     VE extends OperandValueExpressionOrList<DB, TB, RE>,
@@ -144,27 +144,27 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
     rhs: RRE,
   ): SelectQueryBuilder<DB, TB, O>
 
-  having<
-    RE extends ReferenceExpression<DB, TB>,
-    VE extends OperandValueExpressionOrList<DB, TB, RE>,
-  >(
-    lhs: RE,
-    op: ComparisonOperatorExpression,
-    rhs: VE,
-  ): SelectQueryBuilder<DB, TB, O>
+  // having<
+  //   RE extends ReferenceExpression<DB, TB>,
+  //   VE extends OperandValueExpressionOrList<DB, TB, RE>,
+  // >(
+  //   lhs: RE,
+  //   op: ComparisonOperatorExpression,
+  //   rhs: VE,
+  // ): SelectQueryBuilder<DB, TB, O>
 
-  having<E extends ExpressionOrFactory<DB, TB, SqlBool>>(
-    expression: E,
-  ): SelectQueryBuilder<DB, TB, O>
+  // having<E extends ExpressionOrFactory<DB, TB, SqlBool>>(
+  //   expression: E,
+  // ): SelectQueryBuilder<DB, TB, O>
 
-  havingRef<
-    LRE extends ReferenceExpression<DB, TB>,
-    RRE extends ReferenceExpression<DB, TB>,
-  >(
-    lhs: LRE,
-    op: ComparisonOperatorExpression,
-    rhs: RRE,
-  ): SelectQueryBuilder<DB, TB, O>
+  // havingRef<
+  //   LRE extends ReferenceExpression<DB, TB>,
+  //   RRE extends ReferenceExpression<DB, TB>,
+  // >(
+  //   lhs: LRE,
+  //   op: ComparisonOperatorExpression,
+  //   rhs: RRE,
+  // ): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Adds a select statement to the query.
@@ -440,13 +440,13 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * where "pet"."name" = $1
    * ```
    */
-  distinctOn<RE extends ReferenceExpression<DB, TB>>(
-    selections: ReadonlyArray<RE>,
-  ): SelectQueryBuilder<DB, TB, O>
+  // distinctOn<RE extends ReferenceExpression<DB, TB>>(
+  //   selections: ReadonlyArray<RE>,
+  // ): SelectQueryBuilder<DB, TB, O>
 
-  distinctOn<RE extends ReferenceExpression<DB, TB>>(
-    selection: RE,
-  ): SelectQueryBuilder<DB, TB, O>
+  // distinctOn<RE extends ReferenceExpression<DB, TB>>(
+  //   selection: RE,
+  // ): SelectQueryBuilder<DB, TB, O>
 
   /**
    * This can be used to add any additional SQL to the front of the query __after__ the `select` keyword.
@@ -469,7 +469,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * from `person`
    * ```
    */
-  modifyFront(modifier: Expression<any>): SelectQueryBuilder<DB, TB, O>
+  // modifyFront(modifier: Expression<any>): SelectQueryBuilder<DB, TB, O>
 
   /**
    * This can be used to add any additional SQL to the end of the query.
@@ -496,7 +496,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * for update
    * ```
    */
-  modifyEnd(modifier: Expression<any>): SelectQueryBuilder<DB, TB, O>
+  // modifyEnd(modifier: Expression<any>): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Makes the selection distinct.
@@ -523,32 +523,32 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   /**
    * Adds the `for update` modifier to a select query on supported databases.
    */
-  forUpdate(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O>
+  // forUpdate(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Adds the `for share` modifier to a select query on supported databases.
    */
-  forShare(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O>
+  // forShare(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Adds the `for key share` modifier to a select query on supported databases.
    */
-  forKeyShare(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O>
+  // forKeyShare(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Adds the `for no key update` modifier to a select query on supported databases.
    */
-  forNoKeyUpdate(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O>
+  // forNoKeyUpdate(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Adds the `skip locked` modifier to a select query on supported databases.
    */
-  skipLocked(): SelectQueryBuilder<DB, TB, O>
+  // skipLocked(): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Adds the `nowait` modifier to a select query on supported databases.
    */
-  noWait(): SelectQueryBuilder<DB, TB, O>
+  // noWait(): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Adds a `select *` or `select table.*` clause to the query.
@@ -739,95 +739,95 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ```
    */
 
-  innerJoin<
-    TE extends TableExpression<DB, TB>,
-    K1 extends JoinReferenceExpression<DB, TB, TE>,
-    K2 extends JoinReferenceExpression<DB, TB, TE>,
-  >(
-    table: TE,
-    k1: K1,
-    k2: K2,
-  ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
+  // innerJoin<
+  //   TE extends TableExpression<DB, TB>,
+  //   K1 extends JoinReferenceExpression<DB, TB, TE>,
+  //   K2 extends JoinReferenceExpression<DB, TB, TE>,
+  // >(
+  //   table: TE,
+  //   k1: K1,
+  //   k2: K2,
+  // ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
 
-  innerJoin<
-    TE extends TableExpression<DB, TB>,
-    FN extends JoinCallbackExpression<DB, TB, TE>,
-  >(
-    table: TE,
-    callback: FN,
-  ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
+  // innerJoin<
+  //   TE extends TableExpression<DB, TB>,
+  //   FN extends JoinCallbackExpression<DB, TB, TE>,
+  // >(
+  //   table: TE,
+  //   callback: FN,
+  // ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
 
   /**
    * Just like {@link innerJoin} but adds a `left join` instead of an `inner join`.
    */
-  leftJoin<
-    TE extends TableExpression<DB, TB>,
-    K1 extends JoinReferenceExpression<DB, TB, TE>,
-    K2 extends JoinReferenceExpression<DB, TB, TE>,
-  >(
-    table: TE,
-    k1: K1,
-    k2: K2,
-  ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
+  // leftJoin<
+  //   TE extends TableExpression<DB, TB>,
+  //   K1 extends JoinReferenceExpression<DB, TB, TE>,
+  //   K2 extends JoinReferenceExpression<DB, TB, TE>,
+  // >(
+  //   table: TE,
+  //   k1: K1,
+  //   k2: K2,
+  // ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
 
-  leftJoin<
-    TE extends TableExpression<DB, TB>,
-    FN extends JoinCallbackExpression<DB, TB, TE>,
-  >(
-    table: TE,
-    callback: FN,
-  ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
+  // leftJoin<
+  //   TE extends TableExpression<DB, TB>,
+  //   FN extends JoinCallbackExpression<DB, TB, TE>,
+  // >(
+  //   table: TE,
+  //   callback: FN,
+  // ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
 
   /**
    * Just like {@link innerJoin} but adds a `right join` instead of an `inner join`.
    */
-  rightJoin<
-    TE extends TableExpression<DB, TB>,
-    K1 extends JoinReferenceExpression<DB, TB, TE>,
-    K2 extends JoinReferenceExpression<DB, TB, TE>,
-  >(
-    table: TE,
-    k1: K1,
-    k2: K2,
-  ): SelectQueryBuilderWithRightJoin<DB, TB, O, TE>
+  // rightJoin<
+  //   TE extends TableExpression<DB, TB>,
+  //   K1 extends JoinReferenceExpression<DB, TB, TE>,
+  //   K2 extends JoinReferenceExpression<DB, TB, TE>,
+  // >(
+  //   table: TE,
+  //   k1: K1,
+  //   k2: K2,
+  // ): SelectQueryBuilderWithRightJoin<DB, TB, O, TE>
 
-  rightJoin<
-    TE extends TableExpression<DB, TB>,
-    FN extends JoinCallbackExpression<DB, TB, TE>,
-  >(
-    table: TE,
-    callback: FN,
-  ): SelectQueryBuilderWithRightJoin<DB, TB, O, TE>
+  // rightJoin<
+  //   TE extends TableExpression<DB, TB>,
+  //   FN extends JoinCallbackExpression<DB, TB, TE>,
+  // >(
+  //   table: TE,
+  //   callback: FN,
+  // ): SelectQueryBuilderWithRightJoin<DB, TB, O, TE>
 
   /**
    * Just like {@link innerJoin} but adds a `full join` instead of an `inner join`.
    *
    * This is only supported by some dialects like PostgreSQL, MS SQL Server and SQLite.
    */
-  fullJoin<
-    TE extends TableExpression<DB, TB>,
-    K1 extends JoinReferenceExpression<DB, TB, TE>,
-    K2 extends JoinReferenceExpression<DB, TB, TE>,
-  >(
-    table: TE,
-    k1: K1,
-    k2: K2,
-  ): SelectQueryBuilderWithFullJoin<DB, TB, O, TE>
+  // fullJoin<
+  //   TE extends TableExpression<DB, TB>,
+  //   K1 extends JoinReferenceExpression<DB, TB, TE>,
+  //   K2 extends JoinReferenceExpression<DB, TB, TE>,
+  // >(
+  //   table: TE,
+  //   k1: K1,
+  //   k2: K2,
+  // ): SelectQueryBuilderWithFullJoin<DB, TB, O, TE>
 
-  fullJoin<
-    TE extends TableExpression<DB, TB>,
-    FN extends JoinCallbackExpression<DB, TB, TE>,
-  >(
-    table: TE,
-    callback: FN,
-  ): SelectQueryBuilderWithFullJoin<DB, TB, O, TE>
+  // fullJoin<
+  //   TE extends TableExpression<DB, TB>,
+  //   FN extends JoinCallbackExpression<DB, TB, TE>,
+  // >(
+  //   table: TE,
+  //   callback: FN,
+  // ): SelectQueryBuilderWithFullJoin<DB, TB, O, TE>
 
   /**
    * Just like {@link innerJoin} but adds a `cross join` instead of an `inner join`.
    */
-  crossJoin<TE extends TableExpression<DB, TB>>(
-    table: TE,
-  ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
+  // crossJoin<TE extends TableExpression<DB, TB>>(
+  //   table: TE,
+  // ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
 
   // join<TE extends `${string} in ${AnyArrayPropertyPathWithTable<DB, TB>}`>(
   //   table: TE,
@@ -874,23 +874,23 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * order by "first_name"
    * ```
    */
-  innerJoinLateral<
-    TE extends TableExpression<DB, TB>,
-    K1 extends JoinReferenceExpression<DB, TB, TE>,
-    K2 extends JoinReferenceExpression<DB, TB, TE>,
-  >(
-    table: TE,
-    k1: K1,
-    k2: K2,
-  ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
+  // innerJoinLateral<
+  //   TE extends TableExpression<DB, TB>,
+  //   K1 extends JoinReferenceExpression<DB, TB, TE>,
+  //   K2 extends JoinReferenceExpression<DB, TB, TE>,
+  // >(
+  //   table: TE,
+  //   k1: K1,
+  //   k2: K2,
+  // ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
 
-  innerJoinLateral<
-    TE extends TableExpression<DB, TB>,
-    FN extends JoinCallbackExpression<DB, TB, TE>,
-  >(
-    table: TE,
-    callback: FN,
-  ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
+  // innerJoinLateral<
+  //   TE extends TableExpression<DB, TB>,
+  //   FN extends JoinCallbackExpression<DB, TB, TE>,
+  // >(
+  //   table: TE,
+  //   callback: FN,
+  // ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
 
   /**
    * Just like {@link innerJoin} but adds a `left join lateral` instead of an `inner join`.
@@ -927,23 +927,23 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * order by "first_name"
    * ```
    */
-  leftJoinLateral<
-    TE extends TableExpression<DB, TB>,
-    K1 extends JoinReferenceExpression<DB, TB, TE>,
-    K2 extends JoinReferenceExpression<DB, TB, TE>,
-  >(
-    table: TE,
-    k1: K1,
-    k2: K2,
-  ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
+  // leftJoinLateral<
+  //   TE extends TableExpression<DB, TB>,
+  //   K1 extends JoinReferenceExpression<DB, TB, TE>,
+  //   K2 extends JoinReferenceExpression<DB, TB, TE>,
+  // >(
+  //   table: TE,
+  //   k1: K1,
+  //   k2: K2,
+  // ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
 
-  leftJoinLateral<
-    TE extends TableExpression<DB, TB>,
-    FN extends JoinCallbackExpression<DB, TB, TE>,
-  >(
-    table: TE,
-    callback: FN,
-  ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
+  // leftJoinLateral<
+  //   TE extends TableExpression<DB, TB>,
+  //   FN extends JoinCallbackExpression<DB, TB, TE>,
+  // >(
+  //   table: TE,
+  //   callback: FN,
+  // ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
 
   /**
    * Just like {@link innerJoin} but adds a `cross join lateral` instead of an `inner join`.
@@ -979,9 +979,9 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * order by "first_name"
    * ```
    */
-  crossJoinLateral<TE extends TableExpression<DB, TB>>(
-    table: TE,
-  ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
+  // crossJoinLateral<TE extends TableExpression<DB, TB>>(
+  //   table: TE,
+  // ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
 
   /**
    * Joins another table to the query using a `cross apply`.
@@ -1017,18 +1017,18 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * order by "first_name"
    * ```
    */
-  crossApply<TE extends TableExpression<DB, TB>>(
-    table: TE,
-  ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
+  // crossApply<TE extends TableExpression<DB, TB>>(
+  //   table: TE,
+  // ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
 
-  /**
-   * Just like {@link crossApply} but adds an `outer apply` instead of a `cross apply`.
-   *
-   * This is only supported by some dialects like MS SQL Server.
-   */
-  outerApply<TE extends TableExpression<DB, TB>>(
-    table: TE,
-  ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
+  // /**
+  //  * Just like {@link crossApply} but adds an `outer apply` instead of a `cross apply`.
+  //  *
+  //  * This is only supported by some dialects like MS SQL Server.
+  //  */
+  // outerApply<TE extends TableExpression<DB, TB>>(
+  //   table: TE,
+  // ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
 
   /**
    * Adds a `group by` clause to the query.
@@ -1264,10 +1264,10 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * fetch next 10 rows only
    * ```
    */
-  fetch(
-    rowCount: number | bigint,
-    modifier?: FetchModifier,
-  ): SelectQueryBuilder<DB, TB, O>
+  // fetch(
+  //   rowCount: number | bigint,
+  //   modifier?: FetchModifier,
+  // ): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Adds a `top` clause to the query.
@@ -1366,9 +1366,9 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * order by "name"
    * ```
    */
-  union<E extends SetOperandExpression<DB, O>>(
-    expression: E,
-  ): SelectQueryBuilder<DB, TB, O>
+  // union<E extends SetOperandExpression<DB, O>>(
+  //   expression: E,
+  // ): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Combines another select query or raw expression to this query using `union all`.
@@ -1422,9 +1422,9 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * order by "name"
    * ```
    */
-  unionAll<E extends SetOperandExpression<DB, O>>(
-    expression: E,
-  ): SelectQueryBuilder<DB, TB, O>
+  // unionAll<E extends SetOperandExpression<DB, O>>(
+  //   expression: E,
+  // ): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Combines another select query or raw expression to this query using `intersect`.
@@ -1478,9 +1478,9 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * order by "name"
    * ```
    */
-  intersect<E extends SetOperandExpression<DB, O>>(
-    expression: E,
-  ): SelectQueryBuilder<DB, TB, O>
+  // intersect<E extends SetOperandExpression<DB, O>>(
+  //   expression: E,
+  // ): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Combines another select query or raw expression to this query using `intersect all`.
@@ -1534,9 +1534,9 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * order by "name"
    * ```
    */
-  intersectAll<E extends SetOperandExpression<DB, O>>(
-    expression: E,
-  ): SelectQueryBuilder<DB, TB, O>
+  // intersectAll<E extends SetOperandExpression<DB, O>>(
+  //   expression: E,
+  // ): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Combines another select query or raw expression to this query using `except`.
@@ -1590,9 +1590,9 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * order by "name"
    * ```
    */
-  except<E extends SetOperandExpression<DB, O>>(
-    expression: E,
-  ): SelectQueryBuilder<DB, TB, O>
+  // except<E extends SetOperandExpression<DB, O>>(
+  //   expression: E,
+  // ): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Combines another select query or raw expression to this query using `except all`.
@@ -1646,9 +1646,9 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * order by "name"
    * ```
    */
-  exceptAll<E extends SetOperandExpression<DB, O>>(
-    expression: E,
-  ): SelectQueryBuilder<DB, TB, O>
+  // exceptAll<E extends SetOperandExpression<DB, O>>(
+  //   expression: E,
+  // ): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Gives an alias for the query. This method is only useful for sub queries.
@@ -2156,7 +2156,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   /**
    * Returns a copy of this SelectQueryBuilder instance with the given plugin installed.
    */
-  withPlugin(plugin: KyselyPlugin): SelectQueryBuilder<DB, TB, O>
+  // withPlugin(plugin: KyselyPlugin): SelectQueryBuilder<DB, TB, O>
 
   toOperationNode(): SelectQueryNode
 
@@ -2199,7 +2199,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
     errorConstructor?: NoResultErrorConstructor | ((node: QueryNode) => Error),
   ): Promise<Simplify<O>>
 
-  stream(chunkSize?: number): AsyncIterableIterator<O>
+  // stream(chunkSize?: number): AsyncIterableIterator<O>
 
   // explain<ER extends Record<string, any> = Record<string, any>>(
   //   format?: ExplainFormat,
@@ -2248,29 +2248,29 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     })
   }
 
-  having(...args: any[]): any {
-    return new SelectQueryBuilderImpl({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithHaving(
-        this.#props.queryNode,
-        parseValueBinaryOperationOrExpression(args),
-      ),
-    })
-  }
+  // having(...args: any[]): any {
+  //   return new SelectQueryBuilderImpl({
+  //     ...this.#props,
+  //     queryNode: SelectQueryNode.cloneWithHaving(
+  //       this.#props.queryNode,
+  //       parseValueBinaryOperationOrExpression(args),
+  //     ),
+  //   })
+  // }
 
-  havingRef(
-    lhs: ReferenceExpression<DB, TB>,
-    op: ComparisonOperatorExpression,
-    rhs: ReferenceExpression<DB, TB>,
-  ): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilderImpl({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithHaving(
-        this.#props.queryNode,
-        parseReferentialBinaryOperation(lhs, op, rhs),
-      ),
-    })
-  }
+  // havingRef(
+  //   lhs: ReferenceExpression<DB, TB>,
+  //   op: ComparisonOperatorExpression,
+  //   rhs: ReferenceExpression<DB, TB>,
+  // ): SelectQueryBuilder<DB, TB, O> {
+  //   return new SelectQueryBuilderImpl({
+  //     ...this.#props,
+  //     queryNode: SelectQueryNode.cloneWithHaving(
+  //       this.#props.queryNode,
+  //       parseReferentialBinaryOperation(lhs, op, rhs),
+  //     ),
+  //   })
+  // }
 
   select<SE extends SelectExpression<DB, TB>>(
     selection: SelectArg<DB, TB, SE>,
@@ -2300,35 +2300,35 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     })
   }
 
-  distinctOn(selection: ReferenceExpressionOrList<DB, TB>): any {
-    return new SelectQueryBuilderImpl({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithDistinctOn(
-        this.#props.queryNode,
-        parseReferenceExpressionOrList(selection),
-      ),
-    })
-  }
+  // distinctOn(selection: ReferenceExpressionOrList<DB, TB>): any {
+  //   return new SelectQueryBuilderImpl({
+  //     ...this.#props,
+  //     queryNode: SelectQueryNode.cloneWithDistinctOn(
+  //       this.#props.queryNode,
+  //       parseReferenceExpressionOrList(selection),
+  //     ),
+  //   })
+  // }
 
-  modifyFront(modifier: Expression<any>): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilderImpl({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithFrontModifier(
-        this.#props.queryNode,
-        SelectModifierNode.createWithExpression(modifier.toOperationNode()),
-      ),
-    })
-  }
+  // modifyFront(modifier: Expression<any>): SelectQueryBuilder<DB, TB, O> {
+  //   return new SelectQueryBuilderImpl({
+  //     ...this.#props,
+  //     queryNode: SelectQueryNode.cloneWithFrontModifier(
+  //       this.#props.queryNode,
+  //       SelectModifierNode.createWithExpression(modifier.toOperationNode()),
+  //     ),
+  //   })
+  // }
 
-  modifyEnd(modifier: Expression<any>): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilderImpl({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithEndModifier(
-        this.#props.queryNode,
-        SelectModifierNode.createWithExpression(modifier.toOperationNode()),
-      ),
-    })
-  }
+  // modifyEnd(modifier: Expression<any>): SelectQueryBuilder<DB, TB, O> {
+  //   return new SelectQueryBuilderImpl({
+  //     ...this.#props,
+  //     queryNode: QueryNode.cloneWithEndModifier(
+  //       this.#props.queryNode,
+  //       SelectModifierNode.createWithExpression(modifier.toOperationNode()),
+  //     ),
+  //   })
+  // }
 
   distinct(): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
@@ -2340,77 +2340,77 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     })
   }
 
-  forUpdate(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilderImpl({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithEndModifier(
-        this.#props.queryNode,
-        SelectModifierNode.create(
-          'ForUpdate',
-          of ? asArray(of).map(parseTable) : undefined,
-        ),
-      ),
-    })
-  }
+  // forUpdate(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O> {
+  //   return new SelectQueryBuilderImpl({
+  //     ...this.#props,
+  //     queryNode: QueryNode.cloneWithEndModifier(
+  //       this.#props.queryNode,
+  //       SelectModifierNode.create(
+  //         'ForUpdate',
+  //         of ? asArray(of).map(parseTable) : undefined,
+  //       ),
+  //     ),
+  //   })
+  // }
 
-  forShare(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilderImpl({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithEndModifier(
-        this.#props.queryNode,
-        SelectModifierNode.create(
-          'ForShare',
-          of ? asArray(of).map(parseTable) : undefined,
-        ),
-      ),
-    })
-  }
+  // forShare(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O> {
+  //   return new SelectQueryBuilderImpl({
+  //     ...this.#props,
+  //     queryNode: QueryNode.cloneWithEndModifier(
+  //       this.#props.queryNode,
+  //       SelectModifierNode.create(
+  //         'ForShare',
+  //         of ? asArray(of).map(parseTable) : undefined,
+  //       ),
+  //     ),
+  //   })
+  // }
 
-  forKeyShare(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilderImpl({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithEndModifier(
-        this.#props.queryNode,
-        SelectModifierNode.create(
-          'ForKeyShare',
-          of ? asArray(of).map(parseTable) : undefined,
-        ),
-      ),
-    })
-  }
+  // forKeyShare(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O> {
+  //   return new SelectQueryBuilderImpl({
+  //     ...this.#props,
+  //     queryNode: QueryNode.cloneWithEndModifier(
+  //       this.#props.queryNode,
+  //       SelectModifierNode.create(
+  //         'ForKeyShare',
+  //         of ? asArray(of).map(parseTable) : undefined,
+  //       ),
+  //     ),
+  //   })
+  // }
 
-  forNoKeyUpdate(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilderImpl({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithEndModifier(
-        this.#props.queryNode,
-        SelectModifierNode.create(
-          'ForNoKeyUpdate',
-          of ? asArray(of).map(parseTable) : undefined,
-        ),
-      ),
-    })
-  }
+  // forNoKeyUpdate(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O> {
+  //   return new SelectQueryBuilderImpl({
+  //     ...this.#props,
+  //     queryNode: QueryNode.cloneWithEndModifier(
+  //       this.#props.queryNode,
+  //       SelectModifierNode.create(
+  //         'ForNoKeyUpdate',
+  //         of ? asArray(of).map(parseTable) : undefined,
+  //       ),
+  //     ),
+  //   })
+  // }
 
-  skipLocked(): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilderImpl({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithEndModifier(
-        this.#props.queryNode,
-        SelectModifierNode.create('SkipLocked'),
-      ),
-    })
-  }
+  // skipLocked(): SelectQueryBuilder<DB, TB, O> {
+  //   return new SelectQueryBuilderImpl({
+  //     ...this.#props,
+  //     queryNode: QueryNode.cloneWithEndModifier(
+  //       this.#props.queryNode,
+  //       SelectModifierNode.create('SkipLocked'),
+  //     ),
+  //   })
+  // }
 
-  noWait(): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilderImpl({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithEndModifier(
-        this.#props.queryNode,
-        SelectModifierNode.create('NoWait'),
-      ),
-    })
-  }
+  // noWait(): SelectQueryBuilder<DB, TB, O> {
+  //   return new SelectQueryBuilderImpl({
+  //     ...this.#props,
+  //     queryNode: QueryNode.cloneWithEndModifier(
+  //       this.#props.queryNode,
+  //       SelectModifierNode.create('NoWait'),
+  //     ),
+  //   })
+  // }
 
   selectAll(table?: any): any {
     return new SelectQueryBuilderImpl({
@@ -2422,49 +2422,49 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     })
   }
 
-  innerJoin(...args: any): any {
-    return this.#join('InnerJoin', args)
-  }
+  // innerJoin(...args: any): any {
+  //   return this.#join('InnerJoin', args)
+  // }
 
-  leftJoin(...args: any): any {
-    return this.#join('LeftJoin', args)
-  }
+  // leftJoin(...args: any): any {
+  //   return this.#join('LeftJoin', args)
+  // }
 
-  rightJoin(...args: any): any {
-    return this.#join('RightJoin', args)
-  }
+  // rightJoin(...args: any): any {
+  //   return this.#join('RightJoin', args)
+  // }
 
-  fullJoin(...args: any): any {
-    return this.#join('FullJoin', args)
-  }
+  // fullJoin(...args: any): any {
+  //   return this.#join('FullJoin', args)
+  // }
 
-  crossJoin(...args: any): any {
-    return this.#join('CrossJoin', args)
-  }
+  // crossJoin(...args: any): any {
+  //   return this.#join('CrossJoin', args)
+  // }
 
   join(...args: any): any {
     return this.#join('Join', args)
   }
 
-  innerJoinLateral(...args: any): any {
-    return this.#join('LateralInnerJoin', args)
-  }
+  // innerJoinLateral(...args: any): any {
+  //   return this.#join('LateralInnerJoin', args)
+  // }
 
-  leftJoinLateral(...args: any): any {
-    return this.#join('LateralLeftJoin', args)
-  }
+  // leftJoinLateral(...args: any): any {
+  //   return this.#join('LateralLeftJoin', args)
+  // }
 
-  crossJoinLateral(...args: any): any {
-    return this.#join('LateralCrossJoin', args)
-  }
+  // crossJoinLateral(...args: any): any {
+  //   return this.#join('LateralCrossJoin', args)
+  // }
 
-  crossApply(...args: any): any {
-    return this.#join('CrossApply', args)
-  }
+  // crossApply(...args: any): any {
+  //   return this.#join('CrossApply', args)
+  // }
 
-  outerApply(...args: any[]): any {
-    return this.#join('OuterApply', args)
-  }
+  // outerApply(...args: any[]): any {
+  //   return this.#join('OuterApply', args)
+  // }
 
   #join(joinType: JoinType, args: any[]): any {
     return new SelectQueryBuilderImpl({
@@ -2520,18 +2520,18 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     })
   }
 
-  fetch(
-    rowCount: number | bigint,
-    modifier: FetchModifier = 'only',
-  ): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilderImpl({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithFetch(
-        this.#props.queryNode,
-        parseFetch(rowCount, modifier),
-      ),
-    })
-  }
+  // fetch(
+  //   rowCount: number | bigint,
+  //   modifier: FetchModifier = 'only',
+  // ): SelectQueryBuilder<DB, TB, O> {
+  //   return new SelectQueryBuilderImpl({
+  //     ...this.#props,
+  //     queryNode: SelectQueryNode.cloneWithFetch(
+  //       this.#props.queryNode,
+  //       parseFetch(rowCount, modifier),
+  //     ),
+  //   })
+  // }
 
   top(
     expression: number | bigint,
@@ -2703,12 +2703,12 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     return new ExpressionWrapper(this.toOperationNode())
   }
 
-  withPlugin(plugin: KyselyPlugin): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilderImpl({
-      ...this.#props,
-      executor: this.#props.executor.withPlugin(plugin),
-    })
-  }
+  // withPlugin(plugin: KyselyPlugin): SelectQueryBuilder<DB, TB, O> {
+  //   return new SelectQueryBuilderImpl({
+  //     ...this.#props,
+  //     executor: this.#props.executor.withPlugin(plugin),
+  //   })
+  // }
 
   toOperationNode(): SelectQueryNode {
     return this.#props.executor.transformQuery(
@@ -2785,19 +2785,19 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     return result as O
   }
 
-  async *stream(chunkSize: number = 100): AsyncIterableIterator<O> {
-    const compiledQuery = this.compile()
+  // async *stream(chunkSize: number = 100): AsyncIterableIterator<O> {
+  //   const compiledQuery = this.compile()
 
-    const stream = this.#props.executor.stream<O>(
-      compiledQuery,
-      chunkSize,
-      this.#props.queryId,
-    )
+  //   const stream = this.#props.executor.stream<O>(
+  //     compiledQuery,
+  //     chunkSize,
+  //     this.#props.queryId,
+  //   )
 
-    for await (const item of stream) {
-      yield* item.rows
-    }
-  }
+  //   for await (const item of stream) {
+  //     yield* item.rows
+  //   }
+  // }
 
   // async explain<ER extends Record<string, any> = Record<string, any>>(
   //   format?: ExplainFormat,

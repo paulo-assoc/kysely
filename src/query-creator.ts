@@ -5,10 +5,10 @@ import {
 import { InsertQueryBuilder } from './query-builder/insert-query-builder.js'
 import { DeleteQueryBuilder } from './query-builder/delete-query-builder.js'
 import { UpdateQueryBuilder } from './query-builder/update-query-builder.js'
-import { DeleteQueryNode } from './operation-node/delete-query-node.js'
+// import { DeleteQueryNode } from './operation-node/delete-query-node.js'
 import { InsertQueryNode } from './operation-node/insert-query-node.js'
 import { SelectQueryNode } from './operation-node/select-query-node.js'
-import { UpdateQueryNode } from './operation-node/update-query-node.js'
+// import { UpdateQueryNode } from './operation-node/update-query-node.js'
 import {
   parseTable,
   parseTableExpressionOrList,
@@ -44,8 +44,8 @@ import { MergeQueryBuilder } from './query-builder/merge-query-builder.js'
 import { MergeQueryNode } from './operation-node/merge-query-node.js'
 import { MergeResult } from './query-builder/merge-result.js'
 import { SelectFrom } from './parser/select-from-parser.js'
-import { DeleteFrom } from './parser/delete-from-parser.js'
-import { UpdateTable } from './parser/update-parser.js'
+// import { DeleteFrom } from './parser/delete-from-parser.js'
+// import { UpdateTable } from './parser/update-parser.js'
 import { MergeInto } from './parser/merge-into-parser.js'
 
 export class QueryCreator<DB> {
@@ -284,18 +284,18 @@ export class QueryCreator<DB> {
    *   .executeTakeFirstOrThrow()
    * ```
    */
-  insertInto<T extends keyof DB & string>(
-    table: T,
-  ): InsertQueryBuilder<DB, T, InsertResult> {
-    return new InsertQueryBuilder({
-      queryId: createQueryId(),
-      executor: this.#props.executor,
-      queryNode: InsertQueryNode.create(
-        parseTable(table),
-        this.#props.withNode,
-      ),
-    })
-  }
+  // insertInto<T extends keyof DB & string>(
+  //   table: T,
+  // ): InsertQueryBuilder<DB, T, InsertResult> {
+  //   return new InsertQueryBuilder({
+  //     queryId: createQueryId(),
+  //     executor: this.#props.executor,
+  //     queryNode: InsertQueryNode.create(
+  //       parseTable(table),
+  //       this.#props.withNode,
+  //     ),
+  //   })
+  // }
 
   /**
    * Creates a "replace into" query.
@@ -333,19 +333,19 @@ export class QueryCreator<DB> {
    * replace into `person` (`first_name`, `last_name`) values (?, ?)
    * ```
    */
-  replaceInto<T extends keyof DB & string>(
-    table: T,
-  ): InsertQueryBuilder<DB, T, InsertResult> {
-    return new InsertQueryBuilder({
-      queryId: createQueryId(),
-      executor: this.#props.executor,
-      queryNode: InsertQueryNode.create(
-        parseTable(table),
-        this.#props.withNode,
-        true,
-      ),
-    })
-  }
+  // replaceInto<T extends keyof DB & string>(
+  //   table: T,
+  // ): InsertQueryBuilder<DB, T, InsertResult> {
+  //   return new InsertQueryBuilder({
+  //     queryId: createQueryId(),
+  //     executor: this.#props.executor,
+  //     queryNode: InsertQueryNode.create(
+  //       parseTable(table),
+  //       this.#props.withNode,
+  //       true,
+  //     ),
+  //   })
+  // }
 
   /**
    * Creates a delete query.
@@ -396,18 +396,18 @@ export class QueryCreator<DB> {
    * where `person`.`id` = ?
    * ```
    */
-  deleteFrom<TE extends TableExpressionOrList<DB, never>>(
-    from: TE,
-  ): DeleteFrom<DB, TE> {
-    return new DeleteQueryBuilder({
-      queryId: createQueryId(),
-      executor: this.#props.executor,
-      queryNode: DeleteQueryNode.create(
-        parseTableExpressionOrList(from as TableExpressionOrList<any, any>),
-        this.#props.withNode,
-      ),
-    }) as DeleteFrom<DB, TE>
-  }
+  // deleteFrom<TE extends TableExpressionOrList<DB, never>>(
+  //   from: TE,
+  // ): DeleteFrom<DB, TE> {
+  //   return new DeleteQueryBuilder({
+  //     queryId: createQueryId(),
+  //     executor: this.#props.executor,
+  //     queryNode: DeleteQueryNode.create(
+  //       parseTableExpressionOrList(from as TableExpressionOrList<any, any>),
+  //       this.#props.withNode,
+  //     ),
+  //   }) as DeleteFrom<DB, TE>
+  // }
 
   /**
    * Creates an update query.
@@ -432,18 +432,18 @@ export class QueryCreator<DB> {
    * console.log(result.numUpdatedRows)
    * ```
    */
-  updateTable<TE extends TableExpressionOrList<DB, never>>(
-    tables: TE,
-  ): UpdateTable<DB, TE> {
-    return new UpdateQueryBuilder({
-      queryId: createQueryId(),
-      executor: this.#props.executor,
-      queryNode: UpdateQueryNode.create(
-        parseTableExpressionOrList(tables as TableExpressionOrList<any, any>),
-        this.#props.withNode,
-      ),
-    }) as UpdateTable<DB, TE>
-  }
+  // updateTable<TE extends TableExpressionOrList<DB, never>>(
+  //   tables: TE,
+  // ): UpdateTable<DB, TE> {
+  //   return new UpdateQueryBuilder({
+  //     queryId: createQueryId(),
+  //     executor: this.#props.executor,
+  //     queryNode: UpdateQueryNode.create(
+  //       parseTableExpressionOrList(tables as TableExpressionOrList<any, any>),
+  //       this.#props.withNode,
+  //     ),
+  //   }) as UpdateTable<DB, TE>
+  // }
 
   /**
    * Creates a merge query.
@@ -528,18 +528,18 @@ export class QueryCreator<DB> {
    * then delete
    * ```
    */
-  mergeInto<TR extends SimpleTableReference<DB>>(
-    targetTable: TR,
-  ): MergeInto<DB, TR> {
-    return new MergeQueryBuilder({
-      queryId: createQueryId(),
-      executor: this.#props.executor,
-      queryNode: MergeQueryNode.create(
-        parseAliasedTable(targetTable),
-        this.#props.withNode,
-      ),
-    }) as MergeInto<DB, TR>
-  }
+  // mergeInto<TR extends SimpleTableReference<DB>>(
+  //   targetTable: TR,
+  // ): MergeInto<DB, TR> {
+  //   return new MergeQueryBuilder({
+  //     queryId: createQueryId(),
+  //     executor: this.#props.executor,
+  //     queryNode: MergeQueryNode.create(
+  //       parseAliasedTable(targetTable),
+  //       this.#props.withNode,
+  //     ),
+  //   }) as MergeInto<DB, TR>
+  // }
 
   /**
    * Creates a `with` query (Common Table Expression).
@@ -652,19 +652,19 @@ export class QueryCreator<DB> {
    *   .execute()
    * ```
    */
-  with<N extends string, E extends CommonTableExpression<DB, N>>(
-    nameOrBuilder: N | CTEBuilderCallback<N>,
-    expression: E,
-  ): QueryCreatorWithCommonTableExpression<DB, N, E> {
-    const cte = parseCommonTableExpression(nameOrBuilder, expression as any)
+  // with<N extends string, E extends CommonTableExpression<DB, N>>(
+  //   nameOrBuilder: N | CTEBuilderCallback<N>,
+  //   expression: E,
+  // ): QueryCreatorWithCommonTableExpression<DB, N, E> {
+  //   const cte = parseCommonTableExpression(nameOrBuilder, expression as any)
 
-    return new QueryCreator({
-      ...this.#props,
-      withNode: this.#props.withNode
-        ? WithNode.cloneWithExpression(this.#props.withNode, cte)
-        : WithNode.create(cte),
-    })
-  }
+  //   return new QueryCreator({
+  //     ...this.#props,
+  //     withNode: this.#props.withNode
+  //       ? WithNode.cloneWithExpression(this.#props.withNode, cte)
+  //       : WithNode.create(cte),
+  //   })
+  // }
 
   /**
    * Creates a recursive `with` query (Common Table Expression).
@@ -676,42 +676,42 @@ export class QueryCreator<DB> {
    *
    * See the {@link with} method for examples and more documentation.
    */
-  withRecursive<
-    N extends string,
-    E extends RecursiveCommonTableExpression<DB, N>,
-  >(
-    nameOrBuilder: N | CTEBuilderCallback<N>,
-    expression: E,
-  ): QueryCreatorWithCommonTableExpression<DB, N, E> {
-    const cte = parseCommonTableExpression(nameOrBuilder, expression)
+  // withRecursive<
+  //   N extends string,
+  //   E extends RecursiveCommonTableExpression<DB, N>,
+  // >(
+  //   nameOrBuilder: N | CTEBuilderCallback<N>,
+  //   expression: E,
+  // ): QueryCreatorWithCommonTableExpression<DB, N, E> {
+  //   const cte = parseCommonTableExpression(nameOrBuilder, expression)
 
-    return new QueryCreator({
-      ...this.#props,
-      withNode: this.#props.withNode
-        ? WithNode.cloneWithExpression(this.#props.withNode, cte)
-        : WithNode.create(cte, { recursive: true }),
-    })
-  }
+  //   return new QueryCreator({
+  //     ...this.#props,
+  //     withNode: this.#props.withNode
+  //       ? WithNode.cloneWithExpression(this.#props.withNode, cte)
+  //       : WithNode.create(cte, { recursive: true }),
+  //   })
+  // }
 
   /**
    * Returns a copy of this query creator instance with the given plugin installed.
    */
-  withPlugin(plugin: KyselyPlugin): QueryCreator<DB> {
-    return new QueryCreator({
-      ...this.#props,
-      executor: this.#props.executor.withPlugin(plugin),
-    })
-  }
+  // withPlugin(plugin: KyselyPlugin): QueryCreator<DB> {
+  //   return new QueryCreator({
+  //     ...this.#props,
+  //     executor: this.#props.executor.withPlugin(plugin),
+  //   })
+  // }
 
   /**
    * Returns a copy of this query creator instance without any plugins.
    */
-  withoutPlugins(): QueryCreator<DB> {
-    return new QueryCreator({
-      ...this.#props,
-      executor: this.#props.executor.withoutPlugins(),
-    })
-  }
+  // withoutPlugins(): QueryCreator<DB> {
+  //   return new QueryCreator({
+  //     ...this.#props,
+  //     executor: this.#props.executor.withoutPlugins(),
+  //   })
+  // }
 
   /**
    * Sets the schema to be used for all table references that don't explicitly
@@ -760,14 +760,14 @@ export class QueryCreator<DB> {
    * select "p"."name" from "mammals"."pet" as "p"
    * ```
    */
-  withSchema(schema: string): QueryCreator<DB> {
-    return new QueryCreator({
-      ...this.#props,
-      executor: this.#props.executor.withPluginAtFront(
-        new WithSchemaPlugin(schema),
-      ),
-    })
-  }
+  // withSchema(schema: string): QueryCreator<DB> {
+  //   return new QueryCreator({
+  //     ...this.#props,
+  //     executor: this.#props.executor.withPluginAtFront(
+  //       new WithSchemaPlugin(schema),
+  //     ),
+  //   })
+  // }
 }
 
 export interface QueryCreatorProps {

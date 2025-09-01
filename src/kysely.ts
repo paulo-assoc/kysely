@@ -136,9 +136,9 @@ export class Kysely<DB>
   /**
    * Returns the {@link SchemaModule} module for building database schema.
    */
-  get schema(): SchemaModule {
-    return new SchemaModule(this.#props.executor)
-  }
+  // get schema(): SchemaModule {
+  //   return new SchemaModule(this.#props.executor)
+  // }
 
   /**
    * Returns a the {@link DynamicModule} module.
@@ -153,26 +153,26 @@ export class Kysely<DB>
   /**
    * Returns a {@link DatabaseIntrospector | database introspector}.
    */
-  get introspection(): DatabaseIntrospector {
-    return this.#props.dialect.createIntrospector(this.withoutPlugins())
-  }
+  // get introspection(): DatabaseIntrospector {
+  //   return this.#props.dialect.createIntrospector(this.withoutPlugins())
+  // }
 
   /**
    * Creates a `case` statement/operator.
    *
    * See {@link ExpressionBuilder.case} for more information.
    */
-  case(): CaseBuilder<DB, keyof DB>
+  // case(): CaseBuilder<DB, keyof DB>
 
-  case<V>(value: Expression<V>): CaseBuilder<DB, keyof DB, V>
+  // case<V>(value: Expression<V>): CaseBuilder<DB, keyof DB, V>
 
-  case<V>(value?: Expression<V>): any {
-    return new CaseBuilder({
-      node: CaseNode.create(
-        isUndefined(value) ? undefined : parseExpression(value),
-      ),
-    })
-  }
+  // case<V>(value?: Expression<V>): any {
+  //   return new CaseBuilder({
+  //     node: CaseNode.create(
+  //       isUndefined(value) ? undefined : parseExpression(value),
+  //     ),
+  //   })
+  // }
 
   /**
    * Returns a {@link FunctionModule} that can be used to write somewhat type-safe function
@@ -297,9 +297,9 @@ export class Kysely<DB>
    * }
    * ```
    */
-  transaction(): TransactionBuilder<DB> {
-    return new TransactionBuilder({ ...this.#props })
-  }
+  // transaction(): TransactionBuilder<DB> {
+  //   return new TransactionBuilder({ ...this.#props })
+  // }
 
   /**
    * Creates a {@link ControlledTransactionBuilder} that can be used to run queries inside a controlled transaction.
@@ -412,9 +412,9 @@ export class Kysely<DB>
    * }
    * ```
    */
-  startTransaction(): ControlledTransactionBuilder<DB> {
-    return new ControlledTransactionBuilder({ ...this.#props })
-  }
+  // startTransaction(): ControlledTransactionBuilder<DB> {
+  //   return new ControlledTransactionBuilder({ ...this.#props })
+  // }
 
   /**
    * Provides a kysely instance bound to a single database connection.
@@ -443,34 +443,34 @@ export class Kysely<DB>
   /**
    * Returns a copy of this Kysely instance with the given plugin installed.
    */
-  override withPlugin(plugin: KyselyPlugin): Kysely<DB> {
-    return new Kysely({
-      ...this.#props,
-      executor: this.#props.executor.withPlugin(plugin),
-    })
-  }
+  // override withPlugin(plugin: KyselyPlugin): Kysely<DB> {
+  //   return new Kysely({
+  //     ...this.#props,
+  //     executor: this.#props.executor.withPlugin(plugin),
+  //   })
+  // }
 
   /**
    * Returns a copy of this Kysely instance without any plugins.
    */
-  override withoutPlugins(): Kysely<DB> {
-    return new Kysely({
-      ...this.#props,
-      executor: this.#props.executor.withoutPlugins(),
-    })
-  }
+  // override withoutPlugins(): Kysely<DB> {
+  //   return new Kysely({
+  //     ...this.#props,
+  //     executor: this.#props.executor.withoutPlugins(),
+  //   })
+  // }
 
   /**
    * @override
    */
-  override withSchema(schema: string): Kysely<DB> {
-    return new Kysely({
-      ...this.#props,
-      executor: this.#props.executor.withPluginAtFront(
-        new WithSchemaPlugin(schema),
-      ),
-    })
-  }
+  // override withSchema(schema: string): Kysely<DB> {
+  //   return new Kysely({
+  //     ...this.#props,
+  //     executor: this.#props.executor.withPluginAtFront(
+  //       new WithSchemaPlugin(schema),
+  //     ),
+  //   })
+  // }
 
   /**
    * Returns a copy of this Kysely instance with tables added to its
@@ -502,29 +502,29 @@ export class Kysely<DB>
    *   .execute()
    * ```
    */
-  withTables<T extends Record<string, Record<string, any>>>(): Kysely<
-    DrainOuterGeneric<DB & T>
-  > {
-    return new Kysely({ ...this.#props })
-  }
+  // withTables<T extends Record<string, Record<string, any>>>(): Kysely<
+  //   DrainOuterGeneric<DB & T>
+  // > {
+  //   return new Kysely({ ...this.#props })
+  // }
 
   /**
    * Releases all resources and disconnects from the database.
    *
    * You need to call this when you are done using the `Kysely` instance.
    */
-  async destroy(): Promise<void> {
-    await this.#props.driver.destroy()
-  }
+  // async destroy(): Promise<void> {
+  //   await this.#props.driver.destroy()
+  // }
 
   /**
    * Returns true if this `Kysely` instance is a transaction.
    *
    * You can also use `db instanceof Transaction`.
    */
-  get isTransaction(): boolean {
-    return false
-  }
+  // get isTransaction(): boolean {
+  //   return false
+  // }
 
   /**
    * @internal
@@ -549,7 +549,7 @@ export class Kysely<DB>
   // }
 
   async [Symbol.asyncDispose]() {
-    await this.destroy()
+    // await this.destroy()
   }
 }
 
@@ -564,56 +564,56 @@ export class Transaction<DB> extends Kysely<DB> {
   // The return type is `true` instead of `boolean` to make Kysely<DB>
   // unassignable to Transaction<DB> while allowing assignment the
   // other way around.
-  override get isTransaction(): true {
-    return true
-  }
+  // override get isTransaction(): true {
+  //   return true
+  // }
 
-  override transaction(): TransactionBuilder<DB> {
-    throw new Error(
-      'calling the transaction method for a Transaction is not supported',
-    )
-  }
+  // override transaction(): TransactionBuilder<DB> {
+  //   throw new Error(
+  //     'calling the transaction method for a Transaction is not supported',
+  //   )
+  // }
 
-  override connection(): ConnectionBuilder<DB> {
-    throw new Error(
-      'calling the connection method for a Transaction is not supported',
-    )
-  }
+  // override connection(): ConnectionBuilder<DB> {
+  //   throw new Error(
+  //     'calling the connection method for a Transaction is not supported',
+  //   )
+  // }
 
-  override async destroy(): Promise<void> {
-    throw new Error(
-      'calling the destroy method for a Transaction is not supported',
-    )
-  }
+  // override async destroy(): Promise<void> {
+  //   throw new Error(
+  //     'calling the destroy method for a Transaction is not supported',
+  //   )
+  // }
 
-  override withPlugin(plugin: KyselyPlugin): Transaction<DB> {
-    return new Transaction({
-      ...this.#props,
-      executor: this.#props.executor.withPlugin(plugin),
-    })
-  }
+  // override withPlugin(plugin: KyselyPlugin): Transaction<DB> {
+  //   return new Transaction({
+  //     ...this.#props,
+  //     executor: this.#props.executor.withPlugin(plugin),
+  //   })
+  // }
 
-  override withoutPlugins(): Transaction<DB> {
-    return new Transaction({
-      ...this.#props,
-      executor: this.#props.executor.withoutPlugins(),
-    })
-  }
+  // override withoutPlugins(): Transaction<DB> {
+  //   return new Transaction({
+  //     ...this.#props,
+  //     executor: this.#props.executor.withoutPlugins(),
+  //   })
+  // }
 
-  override withSchema(schema: string): Transaction<DB> {
-    return new Transaction({
-      ...this.#props,
-      executor: this.#props.executor.withPluginAtFront(
-        new WithSchemaPlugin(schema),
-      ),
-    })
-  }
+  // override withSchema(schema: string): Transaction<DB> {
+  //   return new Transaction({
+  //     ...this.#props,
+  //     executor: this.#props.executor.withPluginAtFront(
+  //       new WithSchemaPlugin(schema),
+  //     ),
+  //   })
+  // }
 
-  override withTables<
-    T extends Record<string, Record<string, any>>,
-  >(): Transaction<DrainOuterGeneric<DB & T>> {
-    return new Transaction({ ...this.#props })
-  }
+  // override withTables<
+  //   T extends Record<string, Record<string, any>>,
+  // >(): Transaction<DrainOuterGeneric<DB & T>> {
+  //   return new Transaction({ ...this.#props })
+  // }
 }
 
 export interface KyselyProps {
@@ -729,34 +729,34 @@ export class TransactionBuilder<DB> {
     })
   }
 
-  async execute<T>(callback: (trx: Transaction<DB>) => Promise<T>): Promise<T> {
-    const { isolationLevel, accessMode, ...kyselyProps } = this.#props
-    const settings = { isolationLevel, accessMode }
+  // async execute<T>(callback: (trx: Transaction<DB>) => Promise<T>): Promise<T> {
+  //   const { isolationLevel, accessMode, ...kyselyProps } = this.#props
+  //   const settings = { isolationLevel, accessMode }
 
-    validateTransactionSettings(settings)
+  //   validateTransactionSettings(settings)
 
-    return this.#props.executor.provideConnection(async (connection) => {
-      const executor = this.#props.executor.withConnectionProvider(
-        new SingleConnectionProvider(connection),
-      )
+  //   return this.#props.executor.provideConnection(async (connection) => {
+  //     const executor = this.#props.executor.withConnectionProvider(
+  //       new SingleConnectionProvider(connection),
+  //     )
 
-      const transaction = new Transaction<DB>({
-        ...kyselyProps,
-        executor,
-      })
+  //     const transaction = new Transaction<DB>({
+  //       ...kyselyProps,
+  //       executor,
+  //     })
 
-      try {
-        await this.#props.driver.beginTransaction(connection, settings)
-        const result = await callback(transaction)
-        await this.#props.driver.commitTransaction(connection)
+  //     try {
+  //       await this.#props.driver.beginTransaction(connection, settings)
+  //       const result = await callback(transaction)
+  //       await this.#props.driver.commitTransaction(connection)
 
-        return result
-      } catch (error) {
-        await this.#props.driver.rollbackTransaction(connection)
-        throw error
-      }
-    })
-  }
+  //       return result
+  //     } catch (error) {
+  //       await this.#props.driver.rollbackTransaction(connection)
+  //       throw error
+  //     }
+  //   })
+  // }
 }
 
 interface TransactionBuilderProps extends KyselyProps {
@@ -1060,34 +1060,34 @@ export class ControlledTransaction<
     }) as any
   }
 
-  override withPlugin(plugin: KyselyPlugin): ControlledTransaction<DB, S> {
-    return new ControlledTransaction({
-      ...this.#props,
-      executor: this.#props.executor.withPlugin(plugin),
-    })
-  }
+  // override withPlugin(plugin: KyselyPlugin): ControlledTransaction<DB, S> {
+  //   return new ControlledTransaction({
+  //     ...this.#props,
+  //     executor: this.#props.executor.withPlugin(plugin),
+  //   })
+  // }
 
-  override withoutPlugins(): ControlledTransaction<DB, S> {
-    return new ControlledTransaction({
-      ...this.#props,
-      executor: this.#props.executor.withoutPlugins(),
-    })
-  }
+  // override withoutPlugins(): ControlledTransaction<DB, S> {
+  //   return new ControlledTransaction({
+  //     ...this.#props,
+  //     executor: this.#props.executor.withoutPlugins(),
+  //   })
+  // }
 
-  override withSchema(schema: string): ControlledTransaction<DB, S> {
-    return new ControlledTransaction({
-      ...this.#props,
-      executor: this.#props.executor.withPluginAtFront(
-        new WithSchemaPlugin(schema),
-      ),
-    })
-  }
+  // override withSchema(schema: string): ControlledTransaction<DB, S> {
+  //   return new ControlledTransaction({
+  //     ...this.#props,
+  //     executor: this.#props.executor.withPluginAtFront(
+  //       new WithSchemaPlugin(schema),
+  //     ),
+  //   })
+  // }
 
-  override withTables<
-    T extends Record<string, Record<string, any>>,
-  >(): ControlledTransaction<DrainOuterGeneric<DB & T>, S> {
-    return new ControlledTransaction({ ...this.#props })
-  }
+  // override withTables<
+  //   T extends Record<string, Record<string, any>>,
+  // >(): ControlledTransaction<DrainOuterGeneric<DB & T>, S> {
+  //   return new ControlledTransaction({ ...this.#props })
+  // }
 }
 
 interface ControlledTransctionState {

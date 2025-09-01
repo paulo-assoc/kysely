@@ -83,7 +83,7 @@ export class CreateViewBuilder implements OperationNodeSource, Compilable {
     query: SelectQueryBuilder<any, any, any> | RawBuilder<any>,
   ): CreateViewBuilder {
     const queryNode = query
-      .withPlugin(new ImmediateValuePlugin())
+      // .withPlugin(new ImmediateValuePlugin())
       .toOperationNode()
 
     return new CreateViewBuilder({
