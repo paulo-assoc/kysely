@@ -2,7 +2,11 @@ import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { QueryCompiler } from '../query-compiler/query-compiler.js'
 import { Log } from '../util/log.js'
 import { performanceNow } from '../util/performance-now.js'
-import { DatabaseConnection, QueryResult } from './database-connection.js'
+import {
+  DatabaseConnection,
+  FeedResult,
+  QueryResult,
+} from './database-connection.js'
 import { Driver, TransactionSettings } from './driver.js'
 
 /**
@@ -167,7 +171,7 @@ export class RuntimeDriver implements Driver {
 
     connection.executeQuery = async (
       compiledQuery,
-    ): Promise<QueryResult<any>> => {
+    ): Promise<FeedResult<any>> => {
       let caughtError: unknown
       const startTime = performanceNow()
 

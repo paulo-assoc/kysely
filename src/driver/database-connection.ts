@@ -8,12 +8,16 @@ import { Simplify } from '../util/type-utils.js'
  * These are created by an instance of {@link Driver}.
  */
 export interface DatabaseConnection {
-  executeQuery<R>(compiledQuery: CompiledQuery): Promise<QueryResult<R>>
+  // executeQuery<R>(compiledQuery: CompiledQuery): Promise<QueryResult<R>>
+
+  executeQuery<R>(
+    compiledQuery: CompiledQuery,
+    options?: FeedOptions,
+  ): Promise<FeedResult<R>>
 
   executeQueryFeed<R>(
     compiledQuery: CompiledQuery,
-    pageSize: number,
-    continuationToken?: string,
+    options?: FeedOptions,
   ): Promise<FeedResult<R>>
 
   streamQuery<R>(

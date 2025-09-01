@@ -87,9 +87,9 @@ export class RefreshMaterializedViewBuilder
     )
   }
 
-  async execute(): Promise<void> {
-    await this.#props.executor.executeQuery(this.compile(), this.#props.queryId)
-  }
+  // async execute(): Promise<void> {
+  //   await this.#props.executor.executeQuery(this.compile(), this.#props.queryId)
+  // }
 }
 
 export interface RefreshMaterializedViewBuilderProps {

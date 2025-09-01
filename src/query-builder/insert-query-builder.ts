@@ -1304,13 +1304,14 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
       (query.returning && adapter.supportsReturning) ||
       (query.output && adapter.supportsOutput)
     ) {
-      return result.rows as any
+      return result.resources as any
     }
 
     return [
       new InsertResult(
-        result.insertId,
-        result.numAffectedRows ?? BigInt(0),
+        // result.insertId,
+        BigInt(0), //HACK. Insert ID is not available
+        BigInt(result.resources.length) ?? BigInt(0),
       ) as any,
     ]
   }

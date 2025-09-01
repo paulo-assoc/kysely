@@ -86,10 +86,14 @@ export class DummyDriver implements Driver {
 }
 
 class DummyConnection implements DatabaseConnection {
-  async executeQuery<R>(): Promise<QueryResult<R>> {
-    return {
-      rows: [],
-    }
+  // async executeQuery<R>(): Promise<QueryResult<R>> {
+  //   return {
+  //     rows: [],
+  //   }
+  // }
+
+  async executeQuery<R>(): Promise<FeedResult<R>> {
+    return new FeedResult<R>([], {}, false, {} as any)
   }
 
   async executeQueryFeed<R>(): Promise<FeedResult<R>> {

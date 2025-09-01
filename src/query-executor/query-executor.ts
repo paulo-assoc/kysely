@@ -45,10 +45,20 @@ export interface QueryExecutor extends ConnectionProvider {
    * Executes a compiled query and runs the result through all plugins'
    * `transformResult` method.
    */
+  // executeQuery<R>(
+  //   compiledQuery: CompiledQuery<R>,
+  //   queryId: QueryId,
+  // ): Promise<QueryResult<R>>
+
+  /**
+   * Executes a cosmos compiled query and runs the result through all plugins'
+   * `transformResult` method.
+   */
   executeQuery<R>(
     compiledQuery: CompiledQuery<R>,
     queryId: QueryId,
-  ): Promise<QueryResult<R>>
+    options?: FeedOptions,
+  ): Promise<FeedResult<R>>
 
   /**
    * Executes a cosmos compiled query and runs the result through all plugins'
@@ -57,8 +67,7 @@ export interface QueryExecutor extends ConnectionProvider {
   executeQueryFeed<R>(
     compiledQuery: CompiledQuery<R>,
     queryId: QueryId,
-    pageSize: number,
-    continuationToken?: string,
+    options?: FeedOptions,
   ): Promise<FeedResult<R>>
 
   /**

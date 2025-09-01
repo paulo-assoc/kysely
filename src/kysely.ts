@@ -539,14 +539,14 @@ export class Kysely<DB>
    *
    * See {@link https://github.com/kysely-org/kysely/blob/master/site/docs/recipes/0004-splitting-query-building-and-execution.md#execute-compiled-queries splitting build, compile and execute code recipe} for more information.
    */
-  executeQuery<R>(
-    query: CompiledQuery<R> | Compilable<R>,
-    queryId: QueryId = createQueryId(),
-  ): Promise<QueryResult<R>> {
-    const compiledQuery = isCompilable(query) ? query.compile() : query
+  // executeQuery<R>(
+  //   query: CompiledQuery<R> | Compilable<R>,
+  //   queryId: QueryId = createQueryId(),
+  // ): Promise<QueryResult<R>> {
+  //   const compiledQuery = isCompilable(query) ? query.compile() : query
 
-    return this.getExecutor().executeQuery<R>(compiledQuery, queryId)
-  }
+  //   return this.getExecutor().executeQuery<R>(compiledQuery, queryId)
+  // }
 
   async [Symbol.asyncDispose]() {
     await this.destroy()
@@ -1171,28 +1171,30 @@ class NotCommittedOrRolledBackAssertingExecutor implements QueryExecutor {
     return this.#executor.provideConnection(consumer)
   }
 
+  // executeQuery<R>(
+  //   compiledQuery: CompiledQuery<R>,
+  //   queryId: QueryId,
+  // ): Promise<QueryResult<R>> {
+  //   assertNotCommittedOrRolledBack(this.#state)
+  //   return this.#executor.executeQuery(compiledQuery, queryId)
+  // }
+
   executeQuery<R>(
     compiledQuery: CompiledQuery<R>,
     queryId: QueryId,
-  ): Promise<QueryResult<R>> {
+    options?: FeedOptions,
+  ): Promise<FeedResult<R>> {
     assertNotCommittedOrRolledBack(this.#state)
-    return this.#executor.executeQuery(compiledQuery, queryId)
+    return this.#executor.executeQuery(compiledQuery, queryId, options)
   }
 
   executeQueryFeed<R>(
     compiledQuery: CompiledQuery<R>,
     queryId: QueryId,
-    pageSize: number,
-    continuationToken?: string,
-    // options: FeedOptions,
+    options?: FeedOptions,
   ): Promise<FeedResult<R>> {
     assertNotCommittedOrRolledBack(this.#state)
-    return this.#executor.executeQueryFeed(
-      compiledQuery,
-      queryId,
-      pageSize,
-      continuationToken,
-    )
+    return this.#executor.executeQueryFeed(compiledQuery, queryId, options)
   }
 
   stream<R>(

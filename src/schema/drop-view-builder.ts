@@ -62,9 +62,9 @@ export class DropViewBuilder implements OperationNodeSource, Compilable {
     )
   }
 
-  async execute(): Promise<void> {
-    await this.#props.executor.executeQuery(this.compile(), this.#props.queryId)
-  }
+  // async execute(): Promise<void> {
+  //   await this.#props.executor.executeQuery(this.compile(), this.#props.queryId)
+  // }
 }
 
 export interface DropViewBuilderProps {

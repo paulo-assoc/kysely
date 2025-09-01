@@ -62,34 +62,39 @@ export abstract class QueryExecutorBase implements QueryExecutor {
     consumer: (connection: DatabaseConnection) => Promise<T>,
   ): Promise<T>
 
+  // async executeQuery<R>(
+  //   compiledQuery: CompiledQuery,
+  //   queryId: QueryId,
+  // ): Promise<QueryResult<R>> {
+  //   return await this.provideConnection(async (connection) => {
+  //     const result = await connection.executeQuery(compiledQuery)
+
+  //     return await this.#transformResult(result, queryId)
+  //   })
+  // }
+
   async executeQuery<R>(
     compiledQuery: CompiledQuery,
     queryId: QueryId,
-  ): Promise<QueryResult<R>> {
+    options?: FeedOptions,
+  ): Promise<FeedResult<R>> {
     return await this.provideConnection(async (connection) => {
-      const result = await connection.executeQuery(compiledQuery)
+      const result = await connection.executeQuery<R>(compiledQuery, options)
 
-      if ('numUpdatedOrDeletedRows' in result) {
-        logOnce(
-          'kysely:warning: outdated driver/plugin detected! `QueryResult.numUpdatedOrDeletedRows` has been replaced with `QueryResult.numAffectedRows`.',
-        )
-      }
-
-      return await this.#transformResult(result, queryId)
+      return result
+      //return await this.#transformResult(result, queryId)
     })
   }
 
   async executeQueryFeed<R>(
     compiledQuery: CompiledQuery,
     queryId: QueryId,
-    pageSize: number,
-    continuationToken?: string,
+    options?: FeedOptions,
   ): Promise<FeedResult<R>> {
     return await this.provideConnection(async (connection) => {
       const result = await connection.executeQueryFeed<R>(
         compiledQuery,
-        pageSize,
-        continuationToken,
+        options,
       )
 
       if ('numUpdatedOrDeletedRows' in result) {

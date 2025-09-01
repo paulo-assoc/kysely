@@ -1,4 +1,4 @@
-import { QueryResult } from '../driver/database-connection.js'
+import { FeedResult, QueryResult } from '../driver/database-connection.js'
 import { AliasNode } from '../operation-node/alias-node.js'
 import { RawNode } from '../operation-node/raw-node.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
@@ -135,7 +135,7 @@ export interface RawBuilder<O> extends AliasableExpression<O> {
    * const result = await sql`select * from ${sql.table('person')}`.execute(db)
    * ```
    */
-  execute(executorProvider: QueryExecutorProvider): Promise<QueryResult<O>>
+  execute(executorProvider: QueryExecutorProvider): Promise<FeedResult<O>>
 
   toOperationNode(): RawNode
 }
@@ -187,7 +187,7 @@ class RawBuilderImpl<O> implements RawBuilder<O> {
 
   async execute(
     executorProvider: QueryExecutorProvider,
-  ): Promise<QueryResult<O>> {
+  ): Promise<FeedResult<O>> {
     const executor = this.#getExecutor(executorProvider)
 
     return executor.executeQuery<O>(

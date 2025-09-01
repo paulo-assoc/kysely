@@ -71,9 +71,7 @@ import { MultiTableReturningInterface } from './returning-interface.js'
 import { UpdateQueryBuilder } from './update-query-builder.js'
 
 export class MergeQueryBuilder<DB, TT extends keyof DB, O>
-  implements
-    MultiTableReturningInterface<DB, TT, O>,
-    OutputInterface<DB, TT, O>
+  implements MultiTableReturningInterface<DB, TT, O>, OutputInterface<DB, TT, O>
 {
   readonly #props: MergeQueryBuilderProps
 
@@ -897,10 +895,10 @@ export class WheneableMergeQueryBuilder<
       (query.returning && adapter.supportsReturning) ||
       (query.output && adapter.supportsOutput)
     ) {
-      return result.rows as any
+      return result.resources as any
     }
 
-    return [new MergeResult(result.numAffectedRows) as any]
+    return [new MergeResult(BigInt(result.resources.length)) as any]
   }
 
   /**

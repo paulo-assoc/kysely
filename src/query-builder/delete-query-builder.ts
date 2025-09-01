@@ -1071,10 +1071,12 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       (query.returning && adapter.supportsReturning) ||
       (query.output && adapter.supportsOutput)
     ) {
-      return result.rows as any
+      return result.resources as any
     }
 
-    return [new DeleteResult(result.numAffectedRows ?? BigInt(0)) as any]
+    return [
+      new DeleteResult(BigInt(result.resources.length) ?? BigInt(0)) as any,
+    ]
   }
 
   /**

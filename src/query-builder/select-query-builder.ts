@@ -120,7 +120,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
     OrderByInterface<DB, TB, O>,
     SelectQueryBuilderExpression<O>,
     Compilable<O>,
-    Explainable,
+    // Explainable,
     Streamable<O> {
   where<
     RE extends ReferenceExpression<DB, TB>,
@@ -2167,17 +2167,19 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *
    * Also see the {@link executeTakeFirst} and {@link executeTakeFirstOrThrow} methods.
    */
-  execute(): Promise<Simplify<O>[]>
+  // execute(): Promise<Simplify<O>[]>
 
   /**
-   * Executes the query and returns an array of rows.
+   * Executes the query and returns a FeedResult.
    *
-   * Also see the {@link executeTakeFirst} and {@link executeTakeFirstOrThrow} methods.
    */
-  executeFeed(
-    pageSize: number,
-    continuationToken?: string,
-  ): Promise<FeedResult<O>>
+  execute(options?: FeedOptions): Promise<FeedResult<O>>
+
+  /**
+   * Executes the query and returns a FeedResult.
+   *
+   */
+  executeFeed(options?: FeedOptions): Promise<FeedResult<O>>
 
   /**
    * Executes the query and returns the first result or undefined if
@@ -2199,10 +2201,10 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   stream(chunkSize?: number): AsyncIterableIterator<O>
 
-  explain<ER extends Record<string, any> = Record<string, any>>(
-    format?: ExplainFormat,
-    options?: Expression<any>,
-  ): Promise<ER[]>
+  // explain<ER extends Record<string, any> = Record<string, any>>(
+  //   format?: ExplainFormat,
+  //   options?: Expression<any>,
+  // ): Promise<ER[]>
 }
 
 class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
@@ -2722,36 +2724,47 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     )
   }
 
-  async execute(): Promise<Simplify<O>[]> {
+  // async execute(): Promise<Simplify<O>[]> {
+  //   const compiledQuery = this.compile()
+
+  //   const result = await this.#props.executor.executeQuery<O>(
+  //     compiledQuery,
+  //     this.#props.queryId,
+  //   )
+
+  //   return result.rows
+  // }
+
+  async execute(options?: FeedOptions): Promise<FeedResponse<O>> {
     const compiledQuery = this.compile()
 
     const result = await this.#props.executor.executeQuery<O>(
       compiledQuery,
       this.#props.queryId,
+      options,
     )
 
-    return result.rows
+    return result
   }
 
-  async executeFeed(
-    pageSize: number,
-    continuationToken?: string,
-  ): Promise<FeedResponse<any>> {
+  async executeFeed(options?: FeedOptions): Promise<FeedResponse<O>> {
     const compiledQuery = this.compile()
 
     const result = await this.#props.executor.executeQueryFeed<O>(
       compiledQuery,
       this.#props.queryId,
-      pageSize,
-      continuationToken,
+      options,
     )
 
     return result
   }
 
   async executeTakeFirst(): Promise<SimplifySingleResult<O>> {
-    const [result] = await this.execute()
-    return result as SimplifySingleResult<O>
+    // const [result] = await this.execute()
+    // return result as SimplifySingleResult<O>
+    const result = await this.execute()
+    const [resources] = result.resources || []
+    return resources as SimplifySingleResult<O>
   }
 
   async executeTakeFirstOrThrow(
@@ -2786,21 +2799,21 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     }
   }
 
-  async explain<ER extends Record<string, any> = Record<string, any>>(
-    format?: ExplainFormat,
-    options?: Expression<any>,
-  ): Promise<ER[]> {
-    const builder = new SelectQueryBuilderImpl<DB, TB, ER>({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithExplain(
-        this.#props.queryNode,
-        format,
-        options,
-      ),
-    })
+  // async explain<ER extends Record<string, any> = Record<string, any>>(
+  //   format?: ExplainFormat,
+  //   options?: Expression<any>,
+  // ): Promise<ER[]> {
+  //   const builder = new SelectQueryBuilderImpl<DB, TB, ER>({
+  //     ...this.#props,
+  //     queryNode: QueryNode.cloneWithExplain(
+  //       this.#props.queryNode,
+  //       format,
+  //       options,
+  //     ),
+  //   })
 
-    return await builder.execute()
-  }
+  //   return await builder.execute()
+  // }
 }
 
 export function createSelectQueryBuilder<DB, TB extends keyof DB, O>(
