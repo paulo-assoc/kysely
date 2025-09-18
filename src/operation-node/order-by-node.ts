@@ -7,6 +7,11 @@ export interface OrderByNode extends OperationNode {
   readonly items: ReadonlyArray<OrderByItemNode>
 }
 
+export interface OrderByRankNode extends OperationNode {
+  readonly kind: 'OrderByRankNode'
+  readonly items: ReadonlyArray<OrderByItemNode>
+}
+
 /**
  * @internal
  */
@@ -29,6 +34,29 @@ export const OrderByNode = freeze({
     return freeze({
       ...orderBy,
       items: freeze([...orderBy.items, ...items]),
+    })
+  },
+})
+
+export const OrderByRankNode = freeze({
+  is(node: OperationNode): node is OrderByRankNode {
+    return node.kind === 'OrderByRankNode'
+  },
+
+  create(items: ReadonlyArray<OrderByItemNode>): OrderByRankNode {
+    return freeze({
+      kind: 'OrderByRankNode',
+      items: freeze([...items]),
+    })
+  },
+
+  cloneWithItems(
+    orderByRank: OrderByRankNode,
+    items: ReadonlyArray<OrderByItemNode>,
+  ): OrderByRankNode {
+    return freeze({
+      ...orderByRank,
+      items: freeze([...orderByRank.items, ...items]),
     })
   },
 })

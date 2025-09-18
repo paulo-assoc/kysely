@@ -31,7 +31,7 @@ import { CreateTableNode } from './create-table-node.js'
 import { AddColumnNode } from './add-column-node.js'
 import { DropTableNode } from './drop-table-node.js'
 import { DataTypeNode } from './data-type-node.js'
-import { OrderByNode } from './order-by-node.js'
+import { OrderByNode, OrderByRankNode } from './order-by-node.js'
 import { OrderByItemNode } from './order-by-item-node.js'
 import { GroupByNode } from './group-by-node.js'
 import { GroupByItemNode } from './group-by-item-node.js'
@@ -144,6 +144,7 @@ export abstract class OperationNodeVisitor {
     DropTableNode: this.visitDropTable.bind(this),
     DataTypeNode: this.visitDataType.bind(this),
     OrderByNode: this.visitOrderBy.bind(this),
+    OrderByRankNode: this.visitOrderByRank.bind(this),
     OrderByItemNode: this.visitOrderByItem.bind(this),
     GroupByNode: this.visitGroupBy.bind(this),
     GroupByItemNode: this.visitGroupByItem.bind(this),
@@ -244,6 +245,7 @@ export abstract class OperationNodeVisitor {
   protected abstract visitColumnDefinition(node: ColumnDefinitionNode): void
   protected abstract visitDropTable(node: DropTableNode): void
   protected abstract visitOrderBy(node: OrderByNode): void
+  protected abstract visitOrderByRank(node: OrderByRankNode): void
   protected abstract visitOrderByItem(node: OrderByItemNode): void
   protected abstract visitGroupBy(node: GroupByNode): void
   protected abstract visitGroupByItem(node: GroupByItemNode): void

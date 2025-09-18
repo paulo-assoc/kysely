@@ -8,7 +8,7 @@ import { LimitNode } from './limit-node.js'
 import { OffsetNode } from './offset-node.js'
 import { OperationNode } from './operation-node.js'
 import { OrderByItemNode } from './order-by-item-node.js'
-import { OrderByNode } from './order-by-node.js'
+import { OrderByNode, OrderByRankNode } from './order-by-node.js'
 import { SelectionNode } from './selection-node.js'
 import { WhereNode } from './where-node.js'
 import { WithNode } from './with-node.js'
@@ -27,6 +27,7 @@ export interface SelectQueryNode extends OperationNode {
   readonly joins?: ReadonlyArray<JoinNode>
   readonly groupBy?: GroupByNode
   readonly orderBy?: OrderByNode
+  readonly orderByRank?: OrderByRankNode
   readonly where?: WhereNode
   readonly frontModifiers?: ReadonlyArray<SelectModifierNode>
   readonly endModifiers?: ReadonlyArray<SelectModifierNode>

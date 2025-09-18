@@ -30,6 +30,7 @@ export type OperationNodeKind =
   | 'DropTableNode'
   | 'DataTypeNode'
   | 'OrderByNode'
+  | 'OrderByRankNode'
   | 'OrderByItemNode'
   | 'GroupByNode'
   | 'GroupByItemNode'

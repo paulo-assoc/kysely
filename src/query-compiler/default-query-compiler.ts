@@ -24,7 +24,10 @@ import { OperationNodeVisitor } from '../operation-node/operation-node-visitor.j
 import { OperatorNode } from '../operation-node/operator-node.js'
 import { OrNode } from '../operation-node/or-node.js'
 import { OrderByItemNode } from '../operation-node/order-by-item-node.js'
-import { OrderByNode } from '../operation-node/order-by-node.js'
+import {
+  OrderByNode,
+  OrderByRankNode,
+} from '../operation-node/order-by-node.js'
 import { ParensNode } from '../operation-node/parens-node.js'
 import { PrimitiveValueListNode } from '../operation-node/primitive-value-list-node.js'
 import { QueryNode } from '../operation-node/query-node.js'
@@ -232,6 +235,12 @@ export class DefaultQueryCompiler
     if (node.orderBy) {
       this.append(' ')
       this.visitNode(node.orderBy)
+    }
+
+    if (node.orderByRank) {
+      console.log('Order By Rank:', node.orderByRank)
+      this.append(' ')
+      this.visitNode(node.orderByRank)
     }
 
     if (node.limit) {
@@ -771,6 +780,12 @@ export class DefaultQueryCompiler
 
   protected override visitOrderBy(node: OrderByNode): void {
     this.append('order by ')
+    this.compileList(node.items)
+  }
+
+  protected override visitOrderByRank(node: OrderByRankNode): void {
+    console.log('Visiting OrderByRankNode')
+    this.append('order by rank ')
     this.compileList(node.items)
   }
 

@@ -1137,6 +1137,11 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
     modifiers?: OrderByModifiers,
   ): SelectQueryBuilder<DB, TB, O>
 
+  orderByRank<OE extends OrderByExpression<DB, TB, O>>(
+    expr: OE,
+    modifiers?: OrderByModifiers,
+  ): SelectQueryBuilder<DB, TB, O>
+
   // TODO: remove in v0.29
   /**
    * @deprecated It does ~2-2.5x more compile-time instantiations than multiple `orderBy(expr, modifiers?)` calls, and has broken autocompletion.
@@ -2480,6 +2485,16 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     return new SelectQueryBuilderImpl({
       ...this.#props,
       queryNode: QueryNode.cloneWithOrderByItems(
+        this.#props.queryNode,
+        parseOrderBy(args),
+      ),
+    })
+  }
+
+  orderByRank(...args: any[]): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithOrderByRankItems(
         this.#props.queryNode,
         parseOrderBy(args),
       ),

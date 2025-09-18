@@ -26,7 +26,7 @@ import { CreateTableNode } from './create-table-node.js'
 import { AddColumnNode } from './add-column-node.js'
 import { DropTableNode } from './drop-table-node.js'
 import { DataTypeNode } from './data-type-node.js'
-import { OrderByNode } from './order-by-node.js'
+import { OrderByNode, OrderByRankNode } from './order-by-node.js'
 import { OrderByItemNode } from './order-by-item-node.js'
 import { GroupByNode } from './group-by-node.js'
 import { GroupByItemNode } from './group-by-item-node.js'
@@ -174,6 +174,7 @@ export class OperationNodeTransformer {
     DropTableNode: this.transformDropTable.bind(this),
     DataTypeNode: this.transformDataType.bind(this),
     OrderByNode: this.transformOrderBy.bind(this),
+    OrderByRankNode: this.transformOrderByRank.bind(this),
     OrderByItemNode: this.transformOrderByItem.bind(this),
     GroupByNode: this.transformGroupBy.bind(this),
     GroupByItemNode: this.transformGroupByItem.bind(this),
@@ -291,6 +292,7 @@ export class OperationNodeTransformer {
       joins: this.transformNodeList(node.joins, queryId),
       groupBy: this.transformNode(node.groupBy, queryId),
       orderBy: this.transformNode(node.orderBy, queryId),
+      orderByRank: this.transformNode(node.orderByRank, queryId),
       where: this.transformNode(node.where, queryId),
       frontModifiers: this.transformNodeList(node.frontModifiers, queryId),
       endModifiers: this.transformNodeList(node.endModifiers, queryId),
@@ -556,6 +558,16 @@ export class OperationNodeTransformer {
   ): OrderByNode {
     return requireAllProps<OrderByNode>({
       kind: 'OrderByNode',
+      items: this.transformNodeList(node.items, queryId),
+    })
+  }
+
+  protected transformOrderByRank(
+    node: OrderByRankNode,
+    queryId?: QueryId,
+  ): OrderByRankNode {
+    return requireAllProps<OrderByRankNode>({
+      kind: 'OrderByRankNode',
       items: this.transformNodeList(node.items, queryId),
     })
   }

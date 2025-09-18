@@ -14,7 +14,7 @@ import { Expression } from '../expression/expression.js'
 import { MergeQueryNode } from './merge-query-node.js'
 import { TopNode } from './top-node.js'
 import { OutputNode } from './output-node.js'
-import { OrderByNode } from './order-by-node.js'
+import { OrderByNode, OrderByRankNode } from './order-by-node.js'
 import { OrderByItemNode } from './order-by-item-node.js'
 
 export type QueryNode =
@@ -31,7 +31,7 @@ type HasExplain = { explain?: ExplainNode }
 type HasTop = { top?: TopNode }
 type HasOutput = { output?: OutputNode }
 type HasEndModifiers = { endModifiers?: ReadonlyArray<OperationNode> }
-type HasOrderBy = { orderBy?: OrderByNode }
+type HasOrderBy = { orderBy?: OrderByNode; orderByRank?: OrderByRankNode }
 
 /**
  * @internal
@@ -143,10 +143,23 @@ export const QueryNode = freeze({
     })
   },
 
+  cloneWithOrderByRankItems<T extends HasOrderBy>(
+    node: T,
+    items: ReadonlyArray<OrderByItemNode>,
+  ): T {
+    return freeze({
+      ...node,
+      orderByRank: node.orderByRank
+        ? OrderByRankNode.cloneWithItems(node.orderByRank, items)
+        : OrderByRankNode.create(items),
+    })
+  },
+
   cloneWithoutOrderBy<T extends HasOrderBy>(node: T): T {
     return freeze({
       ...node,
       orderBy: undefined,
+      orderByRank: undefined,
     })
   },
 })
