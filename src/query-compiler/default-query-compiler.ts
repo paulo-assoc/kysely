@@ -238,19 +238,17 @@ export class DefaultQueryCompiler
     }
 
     if (node.orderByRank) {
-      console.log('Order By Rank:', node.orderByRank)
       this.append(' ')
       this.visitNode(node.orderByRank)
+    }
+    if (node.offset) {
+      this.append(' ')
+      this.visitNode(node.offset)
     }
 
     if (node.limit) {
       this.append(' ')
       this.visitNode(node.limit)
-    }
-
-    if (node.offset) {
-      this.append(' ')
-      this.visitNode(node.offset)
     }
 
     if (node.fetch) {
@@ -1760,7 +1758,7 @@ export class DefaultQueryCompiler
   }
 
   protected override visitTop(node: TopNode): void {
-    this.append(`top(${node.expression})`)
+    this.append(`top ${node.expression}`)
 
     if (node.modifiers) {
       this.append(` ${node.modifiers}`)

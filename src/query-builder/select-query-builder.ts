@@ -1139,7 +1139,6 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   orderByRank<OE extends OrderByExpression<DB, TB, O>>(
     expr: OE,
-    modifiers?: OrderByModifiers,
   ): SelectQueryBuilder<DB, TB, O>
 
   // TODO: remove in v0.29
@@ -1314,10 +1313,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * select top(10) percent * from "person"
    * ```
    */
-  top(
-    expression: number | bigint,
-    modifiers?: TopModifier,
-  ): SelectQueryBuilder<DB, TB, O>
+  top(expression: number | bigint): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Combines another select query or raw expression to this query using `union`.
@@ -2548,15 +2544,12 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   //   })
   // }
 
-  top(
-    expression: number | bigint,
-    modifiers?: TopModifier,
-  ): SelectQueryBuilder<DB, TB, O> {
+  top(expression: number | bigint): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
       queryNode: QueryNode.cloneWithTop(
         this.#props.queryNode,
-        parseTop(expression, modifiers),
+        parseTop(expression),
       ),
     })
   }

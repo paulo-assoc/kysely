@@ -1105,24 +1105,31 @@ export interface FunctionModule<DB, TB extends keyof DB> {
 
   // Full Text Search functions
 
+  // Returns true if a given string is contained in the specified property of a document. This is useful in a WHERE clause when you want to ensure specific keywords are included in the documents returned by your query.
   fullTextContains<RE extends StringReference<DB, TB>>(
     column: RE,
     searchString: string,
   ): ExpressionWrapper<DB, TB, boolean>
 
+  // Returns true if all of the given strings are contained in the specified property of a document. This is useful in a WHERE clause when you want to ensure that multiple keywords are included in the documents returned by your query.
   fullTextContainsAll<RE extends StringReference<DB, TB>>(
-    column: RE,
-    ...searchStrings: string[]
+    property: RE,
+    searchString: string,
+    ...additionalSearchStrings: ReadonlyArray<string>
   ): ExpressionWrapper<DB, TB, boolean>
 
+  //  Returns true if any of the given strings are contained in the specified property of a document. This is useful in a WHERE clause when you want to ensure that at least one of the keywords is included in the documents returned by your query.
   fullTextContainsAny<RE extends StringReference<DB, TB>>(
-    column: RE,
-    ...searchStrings: string[]
+    property: RE,
+    searchString: string,
+    ...additionalSearchStrings: ReadonlyArray<string>
   ): ExpressionWrapper<DB, TB, boolean>
 
+  // Returns a score. This can only be used in an ORDER BY RANK clause, where the returned documents are ordered by the rank of the full text score, with most relevant (highest scoring) documents at the top, and least relevant (lowest scoring) documents at the bottom.
   fullTextScore<RE extends StringReference<DB, TB>>(
-    column: RE,
-    ...searchStrings: string[]
+    property: RE,
+    searchString: string,
+    ...additionalSearchStrings: ReadonlyArray<string>
   ): ExpressionWrapper<DB, TB, number>
 
   // Vector functions
@@ -2357,12 +2364,15 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
     fullTextContainsAll<RE extends StringReference<DB, TB>>(
       property: RE,
       searchString: string,
-      ...additionalSearchStrings: string[]
+      ...additionalSearchStrings: ReadonlyArray<string>
     ): ExpressionWrapper<DB, TB, boolean> {
+      const args = [searchString, ...additionalSearchStrings].map((s) =>
+        sql`${s}`.toOperationNode(),
+      )
       return new ExpressionWrapper(
         FunctionNode.create('FullTextContainsAll', [
           parseReferenceExpression(property),
-          sql`${[searchString, ...additionalSearchStrings]}`.toOperationNode(),
+          ...args,
         ]),
       )
     },
@@ -2370,12 +2380,15 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
     fullTextContainsAny<RE extends StringReference<DB, TB>>(
       property: RE,
       searchString: string,
-      ...additionalSearchStrings: string[]
+      ...additionalSearchStrings: ReadonlyArray<string>
     ): ExpressionWrapper<DB, TB, boolean> {
+      const args = [searchString, ...additionalSearchStrings].map((s) =>
+        sql`${s}`.toOperationNode(),
+      )
       return new ExpressionWrapper(
         FunctionNode.create('FullTextContainsAny', [
           parseReferenceExpression(property),
-          sql`${[searchString, ...additionalSearchStrings]}`.toOperationNode(),
+          ...args,
         ]),
       )
     },
@@ -2383,12 +2396,15 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
     fullTextScore<RE extends StringReference<DB, TB>>(
       property: RE,
       searchString: string,
-      ...additionalSearchStrings: string[]
+      ...additionalSearchStrings: ReadonlyArray<string>
     ): ExpressionWrapper<DB, TB, number> {
+      const args = [searchString, ...additionalSearchStrings].map((s) =>
+        sql`${s}`.toOperationNode(),
+      )
       return new ExpressionWrapper(
         FunctionNode.create('FullTextScore', [
           parseReferenceExpression(property),
-          sql`${[searchString, ...additionalSearchStrings]}`.toOperationNode(),
+          ...args,
         ]),
       )
     },
