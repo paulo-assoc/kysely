@@ -411,9 +411,15 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
     selection: SE,
   ): SelectQueryBuilder<DB, TB, O & Selection<DB, TB, SE>>
 
-  selectValue<SE extends AnyPropertyPathWithTable<DB, TB>>( // selectValue uses AnyPropertyPathWithTable rather than SelectExpression because the type returned is a value not an object with a property that can be aliased.
+  selectValue<SE extends AnyPropertyPathWithTable<DB, TB> | TB>(
     selection: SE,
-  ): SelectQueryBuilder<DB, TB, ExtractTypeFromSelectExpression<DB, TB, SE>>
+  ): SelectQueryBuilder<
+    DB,
+    TB,
+    SE extends TB
+      ? Selectable<DB[Extract<keyof DB, SE>]>
+      : ExtractTypeFromSelectExpression<DB, TB, SE>
+  >
 
   /**
    * Adds `distinct on` expressions to the select clause.
@@ -2285,20 +2291,19 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     })
   }
 
-  selectValue<SE extends AnyPropertyPathWithTable<DB, TB>>(
+  selectValue<SE extends AnyPropertyPathWithTable<DB, TB> | TB>(
     selection: SE,
-  ): SelectQueryBuilder<DB, TB, ExtractTypeFromSelectExpression<DB, TB, SE>> {
-    return new SelectQueryBuilderImpl<
-      DB,
-      TB,
-      ExtractTypeFromSelectExpression<DB, TB, SE>
-    >({
+  ): SelectQueryBuilder<DB, TB, any> {
+    const sel = selection as string;
+
+    // Property path case (e.g. 'tax.rate')
+    return new SelectQueryBuilderImpl({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithSelections(
         this.#props.queryNode,
         parseSelectValueExpression(selection),
       ),
-    })
+    }) as any;
   }
 
   // distinctOn(selection: ReferenceExpressionOrList<DB, TB>): any {
@@ -2890,154 +2895,154 @@ export type SelectQueryBuilderWithJoin<
   ? JoinArrayProperty<DB, TB, T, A>
   : never
 
-export type SelectQueryBuilderWithInnerJoin<
-  DB,
-  TB extends keyof DB,
-  O,
-  TE extends TableExpression<DB, TB>,
-> = TE extends `${infer T} as ${infer A}`
-  ? T extends keyof DB
-    ? InnerJoinedBuilder<DB, TB, O, A, DB[T]>
-    : never
-  : TE extends keyof DB
-    ? SelectQueryBuilder<DB, TB | TE, O>
-    : TE extends AliasedExpression<infer QO, infer QA>
-      ? InnerJoinedBuilder<DB, TB, O, QA, QO>
-      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-        ? InnerJoinedBuilder<DB, TB, O, QA, QO>
-        : never
+// export type SelectQueryBuilderWithInnerJoin<
+//   DB,
+//   TB extends keyof DB,
+//   O,
+//   TE extends TableExpression<DB, TB>,
+// > = TE extends `${infer T} as ${infer A}`
+//   ? T extends keyof DB
+//     ? InnerJoinedBuilder<DB, TB, O, A, DB[T]>
+//     : never
+//   : TE extends keyof DB
+//     ? SelectQueryBuilder<DB, TB | TE, O>
+//     : TE extends AliasedExpression<infer QO, infer QA>
+//       ? InnerJoinedBuilder<DB, TB, O, QA, QO>
+//       : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+//         ? InnerJoinedBuilder<DB, TB, O, QA, QO>
+//         : never
 
-type InnerJoinedBuilder<
-  DB,
-  TB extends keyof DB,
-  O,
-  A extends string,
-  R,
-> = A extends keyof DB
-  ? SelectQueryBuilder<InnerJoinedDB<DB, A, R>, TB | A, O>
-  : // Much faster non-recursive solution for the simple case.
-    SelectQueryBuilder<DB & ShallowRecord<A, R>, TB | A, O>
+// type InnerJoinedBuilder<
+//   DB,
+//   TB extends keyof DB,
+//   O,
+//   A extends string,
+//   R,
+// > = A extends keyof DB
+//   ? SelectQueryBuilder<InnerJoinedDB<DB, A, R>, TB | A, O>
+//   : // Much faster non-recursive solution for the simple case.
+//     SelectQueryBuilder<DB & ShallowRecord<A, R>, TB | A, O>
 
-type InnerJoinedDB<DB, A extends string, R> = DrainOuterGeneric<{
-  [C in keyof DB | A]: C extends A ? R : C extends keyof DB ? DB[C] : never
-}>
+// type InnerJoinedDB<DB, A extends string, R> = DrainOuterGeneric<{
+//   [C in keyof DB | A]: C extends A ? R : C extends keyof DB ? DB[C] : never
+// }>
 
-export type SelectQueryBuilderWithLeftJoin<
-  DB,
-  TB extends keyof DB,
-  O,
-  TE extends TableExpression<DB, TB>,
-> = TE extends `${infer T} as ${infer A}`
-  ? T extends keyof DB
-    ? LeftJoinedBuilder<DB, TB, O, A, DB[T]>
-    : never
-  : TE extends keyof DB
-    ? LeftJoinedBuilder<DB, TB, O, TE, DB[TE]>
-    : TE extends AliasedExpression<infer QO, infer QA>
-      ? LeftJoinedBuilder<DB, TB, O, QA, QO>
-      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-        ? LeftJoinedBuilder<DB, TB, O, QA, QO>
-        : never
+// export type SelectQueryBuilderWithLeftJoin<
+//   DB,
+//   TB extends keyof DB,
+//   O,
+//   TE extends TableExpression<DB, TB>,
+// > = TE extends `${infer T} as ${infer A}`
+//   ? T extends keyof DB
+//     ? LeftJoinedBuilder<DB, TB, O, A, DB[T]>
+//     : never
+//   : TE extends keyof DB
+//     ? LeftJoinedBuilder<DB, TB, O, TE, DB[TE]>
+//     : TE extends AliasedExpression<infer QO, infer QA>
+//       ? LeftJoinedBuilder<DB, TB, O, QA, QO>
+//       : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+//         ? LeftJoinedBuilder<DB, TB, O, QA, QO>
+//         : never
 
-type LeftJoinedBuilder<
-  DB,
-  TB extends keyof DB,
-  O,
-  A extends keyof any,
-  R,
-> = A extends keyof DB
-  ? SelectQueryBuilder<LeftJoinedDB<DB, A, R>, TB | A, O>
-  : // Much faster non-recursive solution for the simple case.
-    SelectQueryBuilder<DB & ShallowRecord<A, Nullable<R>>, TB | A, O>
+// type LeftJoinedBuilder<
+//   DB,
+//   TB extends keyof DB,
+//   O,
+//   A extends keyof any,
+//   R,
+// > = A extends keyof DB
+//   ? SelectQueryBuilder<LeftJoinedDB<DB, A, R>, TB | A, O>
+//   : // Much faster non-recursive solution for the simple case.
+//     SelectQueryBuilder<DB & ShallowRecord<A, Nullable<R>>, TB | A, O>
 
-type LeftJoinedDB<DB, A extends keyof any, R> = DrainOuterGeneric<{
-  [C in keyof DB | A]: C extends A
-    ? Nullable<R>
-    : C extends keyof DB
-      ? DB[C]
-      : never
-}>
+// type LeftJoinedDB<DB, A extends keyof any, R> = DrainOuterGeneric<{
+//   [C in keyof DB | A]: C extends A
+//     ? Nullable<R>
+//     : C extends keyof DB
+//       ? DB[C]
+//       : never
+// }>
 
-export type SelectQueryBuilderWithRightJoin<
-  DB,
-  TB extends keyof DB,
-  O,
-  TE extends TableExpression<DB, TB>,
-> = TE extends `${infer T} as ${infer A}`
-  ? T extends keyof DB
-    ? RightJoinedBuilder<DB, TB, O, A, DB[T]>
-    : never
-  : TE extends keyof DB
-    ? RightJoinedBuilder<DB, TB, O, TE, DB[TE]>
-    : TE extends AliasedExpression<infer QO, infer QA>
-      ? RightJoinedBuilder<DB, TB, O, QA, QO>
-      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-        ? RightJoinedBuilder<DB, TB, O, QA, QO>
-        : never
+// export type SelectQueryBuilderWithRightJoin<
+//   DB,
+//   TB extends keyof DB,
+//   O,
+//   TE extends TableExpression<DB, TB>,
+// > = TE extends `${infer T} as ${infer A}`
+//   ? T extends keyof DB
+//     ? RightJoinedBuilder<DB, TB, O, A, DB[T]>
+//     : never
+//   : TE extends keyof DB
+//     ? RightJoinedBuilder<DB, TB, O, TE, DB[TE]>
+//     : TE extends AliasedExpression<infer QO, infer QA>
+//       ? RightJoinedBuilder<DB, TB, O, QA, QO>
+//       : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+//         ? RightJoinedBuilder<DB, TB, O, QA, QO>
+//         : never
 
-type RightJoinedBuilder<
-  DB,
-  TB extends keyof DB,
-  O,
-  A extends keyof any,
-  R,
-> = SelectQueryBuilder<RightJoinedDB<DB, TB, A, R>, TB | A, O>
+// type RightJoinedBuilder<
+//   DB,
+//   TB extends keyof DB,
+//   O,
+//   A extends keyof any,
+//   R,
+// > = SelectQueryBuilder<RightJoinedDB<DB, TB, A, R>, TB | A, O>
 
-type RightJoinedDB<
-  DB,
-  TB extends keyof DB,
-  A extends keyof any,
-  R,
-> = DrainOuterGeneric<{
-  [C in keyof DB | A]: C extends A
-    ? R
-    : C extends TB
-      ? Nullable<DB[C]>
-      : C extends keyof DB
-        ? DB[C]
-        : never
-}>
+// type RightJoinedDB<
+//   DB,
+//   TB extends keyof DB,
+//   A extends keyof any,
+//   R,
+// > = DrainOuterGeneric<{
+//   [C in keyof DB | A]: C extends A
+//     ? R
+//     : C extends TB
+//       ? Nullable<DB[C]>
+//       : C extends keyof DB
+//         ? DB[C]
+//         : never
+// }>
 
-export type SelectQueryBuilderWithFullJoin<
-  DB,
-  TB extends keyof DB,
-  O,
-  TE extends TableExpression<DB, TB>,
-> = TE extends `${infer T} as ${infer A}`
-  ? T extends keyof DB
-    ? OuterJoinedBuilder<DB, TB, O, A, DB[T]>
-    : never
-  : TE extends keyof DB
-    ? OuterJoinedBuilder<DB, TB, O, TE, DB[TE]>
-    : TE extends AliasedExpression<infer QO, infer QA>
-      ? OuterJoinedBuilder<DB, TB, O, QA, QO>
-      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-        ? OuterJoinedBuilder<DB, TB, O, QA, QO>
-        : never
+// export type SelectQueryBuilderWithFullJoin<
+//   DB,
+//   TB extends keyof DB,
+//   O,
+//   TE extends TableExpression<DB, TB>,
+// > = TE extends `${infer T} as ${infer A}`
+//   ? T extends keyof DB
+//     ? OuterJoinedBuilder<DB, TB, O, A, DB[T]>
+//     : never
+//   : TE extends keyof DB
+//     ? OuterJoinedBuilder<DB, TB, O, TE, DB[TE]>
+//     : TE extends AliasedExpression<infer QO, infer QA>
+//       ? OuterJoinedBuilder<DB, TB, O, QA, QO>
+//       : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+//         ? OuterJoinedBuilder<DB, TB, O, QA, QO>
+//         : never
 
-type OuterJoinedBuilder<
-  DB,
-  TB extends keyof DB,
-  O,
-  A extends keyof any,
-  R,
-> = SelectQueryBuilder<OuterJoinedBuilderDB<DB, TB, A, R>, TB | A, O>
+// type OuterJoinedBuilder<
+//   DB,
+//   TB extends keyof DB,
+//   O,
+//   A extends keyof any,
+//   R,
+// > = SelectQueryBuilder<OuterJoinedBuilderDB<DB, TB, A, R>, TB | A, O>
 
-type OuterJoinedBuilderDB<
-  DB,
-  TB extends keyof DB,
-  A extends keyof any,
-  R,
-> = DrainOuterGeneric<{
-  [C in keyof DB | A]: C extends A
-    ? Nullable<R>
-    : C extends TB
-      ? Nullable<DB[C]>
-      : C extends keyof DB
-        ? DB[C]
-        : never
-}>
+// type OuterJoinedBuilderDB<
+//   DB,
+//   TB extends keyof DB,
+//   A extends keyof any,
+//   R,
+// > = DrainOuterGeneric<{
+//   [C in keyof DB | A]: C extends A
+//     ? Nullable<R>
+//     : C extends TB
+//       ? Nullable<DB[C]>
+//       : C extends keyof DB
+//         ? DB[C]
+//         : never
+// }>
 
-type TableOrList<TB extends keyof any> =
-  | (TB & string)
-  | ReadonlyArray<TB & string>
+// type TableOrList<TB extends keyof any> =
+//   | (TB & string)
+//   | ReadonlyArray<TB & string>

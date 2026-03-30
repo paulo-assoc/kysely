@@ -153,7 +153,12 @@ async function JoinTest(db: Kysely<Database>) {
 
     const result1a = await db
       .selectFrom('persons as p')
-      .selectValue('p.age')
+      .selectValue('p.age') // works fine
+      .compile()
+
+    const result1b = await db
+      .selectFrom('persons as p')
+      .selectValue('p') 
       .compile()
 
     const result2 = db
@@ -366,6 +371,19 @@ async function JoinTest(db: Kysely<Database>) {
        .where(eb => eb.fn.arrayContainsAll('o.items', { category: 'electronics' }, { category: 'furniture' }))
       .groupBy('tag.name')
       .select(['tag.name', (eb) => eb.fn.avg<number>('tax.rate').as('totalAmount')])
+      .compile()
+
+    const resulta = db
+      .selectFrom('orders as o')
+      .join('i in o.items')
+      .join('tax in i.taxes')
+      .join('tag in o.tags')
+       .where(eb => eb.fn.arrayContains('tax.codes', 'NY-TAX-001'))
+       .where(eb => eb.fn.arrayContains('o.items', { category: 'electronics' }))
+       .where(eb => eb.fn.arrayContainsAny('o.items', { category: 'electronics' }, { category: 'furniture' }))
+       .where(eb => eb.fn.arrayContainsAll('o.items', { category: 'electronics' }, { category: 'furniture' }))
+      .groupBy('tag.name')
+      .selectValue('tax')
       .compile()
   })
 
