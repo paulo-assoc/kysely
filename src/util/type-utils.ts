@@ -194,19 +194,29 @@ export type ExtractArrayItemType<
         ? U
         : never
       : never
-    : P extends keyof DB[T]
-      ? DB[T][P] extends (infer U)[] | undefined
-        ? U
-        : DB[T][P]
-      : never
+    : P extends `${infer Key}.${infer Rest}`
+      ? Key extends keyof DB[T]
+        ? DB[T][Key] extends (infer U)[] | undefined
+          ? U extends object
+            ? ExtractArrayItemType<{ _: U }, '_', Rest>
+            : never
+          : ExtractArrayItemType<{ _: DB[T][Key] }, '_', Rest>  // Handle object nesting
+        : never
+      : P extends keyof DB[T]  // Direct property
+        ? DB[T][P] extends (infer U)[] | undefined
+          ? U
+          : never
+        : never
 
 export type ExtractArrayItemTypeWithTable<
   DB,
   TB extends keyof DB,
   P extends string,
-> = P extends `${TB & string}.${infer Rest}`
-  ? ExtractArrayItemType<DB, TB, Rest>
-  : P extends TB & string
+> = P extends `${infer Table}.${infer Rest}`
+  ? Table extends TB
+    ? ExtractArrayItemType<DB, Table, Rest>
+    : never
+  : P extends TB & string  // Whole table is an array
     ? DB[TB] extends (infer U)[] | undefined
       ? U
       : never

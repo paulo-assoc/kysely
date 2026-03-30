@@ -51,6 +51,7 @@ interface Order extends BaseEntity {
     taxes: {
       type: string
       rate: number
+      codes: string[]
     }[]
     productId: string
     quantity: number
@@ -356,10 +357,15 @@ async function JoinTest(db: Kysely<Database>) {
   test('join with deeply nested array test', async () => {
     const result = db
       .selectFrom('orders as o')
-      .join('i in o.items[5].taxes')
-      .join('t in o.tags')
-      .groupBy('t.name')
-      .select(['t.name', (eb) => eb.fn.avg<number>('i.rate').as('totalAmount')])
+      .join('i in o.items')
+      .join('tax in i.taxes')
+      .join('tag in o.tags')
+       .where(eb => eb.fn.arrayContains('tax.codes', 'NY-TAX-001'))
+       .where(eb => eb.fn.arrayContains('o.items', { category: 'electronics' }))
+       .where(eb => eb.fn.arrayContainsAny('o.items', { category: 'electronics' }, { category: 'furniture' }))
+       .where(eb => eb.fn.arrayContainsAll('o.items', { category: 'electronics' }, { category: 'furniture' }))
+      .groupBy('tag.name')
+      .select(['tag.name', (eb) => eb.fn.avg<number>('tax.rate').as('totalAmount')])
       .compile()
   })
 
