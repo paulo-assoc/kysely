@@ -1578,6 +1578,7 @@ export class DefaultQueryCompiler
   protected override visitFunction(node: FunctionNode): void {
     this.append(node.func)
     this.append('(')
+    // console.dir(node.arguments)
     this.compileList(node.arguments)
     this.append(')')
   }

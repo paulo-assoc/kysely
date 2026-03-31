@@ -2454,7 +2454,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       return new ExpressionWrapper(
         FunctionNode.create('ARRAY_CONTAINS', [
           parseReferenceExpression(property), // Parse property as a reference
-          sql`${value}`.toOperationNode(), // Treat value as a literal
+          sql`${value}`.toOperationNode(), // Pass value as a literal
         ]),
       )
     },
@@ -2463,10 +2463,14 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       property: P,
       ...values: Partial<ExtractArrayItemTypeWithTable<DB, TB, P>>[]
     ): Expression<boolean> {
+
+      // Convert each literal value to a separate operation node so they can be rendered as individual query parameters.
+      const opNodes = values.map(v => sql`${v}`.toOperationNode())
+
       return new ExpressionWrapper(
         FunctionNode.create('ARRAY_CONTAINS_ANY', [
           parseReferenceExpression(property), // Parse property as a reference
-          sql`${values}`.toOperationNode(), // Treat values array as a literal
+          ...opNodes, // Spread the operation nodes
         ]),
       )
     },
@@ -2475,10 +2479,14 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       property: P,
       ...values: Partial<ExtractArrayItemTypeWithTable<DB, TB, P>>[]
     ): Expression<boolean> {
+
+      // Convert each literal value to a separate operation node so they can be rendered as individual query parameters.
+      const opNodes = values.map(v => sql`${v}`.toOperationNode())
+
       return new ExpressionWrapper(
         FunctionNode.create('ARRAY_CONTAINS_ALL', [
           parseReferenceExpression(property), // Parse property as a reference
-          sql`${values}`.toOperationNode(), // Treat values array as a literal
+          ...opNodes, // Spread the operation nodes
         ]),
       )
     },

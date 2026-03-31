@@ -1162,6 +1162,7 @@ export class OperationNodeTransformer {
     node: FunctionNode,
     queryId?: QueryId,
   ): FunctionNode {
+    // console.log('Transforming FunctionNode', node)
     return requireAllProps<FunctionNode>({
       kind: 'FunctionNode',
       func: node.func,
