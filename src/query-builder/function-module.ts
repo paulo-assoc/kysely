@@ -27,7 +27,7 @@ import {
 } from '../util/type-utils.js'
 import { AggregateFunctionBuilder } from './aggregate-function-builder.js'
 import { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js'
-import { isString } from '../util/object-utils.js'
+import { isNull, isString } from '../util/object-utils.js'
 import { parseTable } from '../parser/table-parser.js'
 import { Selectable } from '../util/column-type.js'
 import { sql } from '../raw-builder/sql.js'
@@ -916,6 +916,48 @@ export interface FunctionModule<DB, TB extends keyof DB> {
   trunc<RE extends ReferenceExpression<DB, TB>>(
     column: number | RE,
   ): ExpressionWrapper<DB, TB, number>
+
+  // Type-checking functions
+
+  isDefined<RE extends ReferenceExpression<DB, TB>>(
+    column: RE,
+  ): ExpressionWrapper<DB, TB, boolean>
+
+  isNull<RE extends ReferenceExpression<DB, TB>>(
+    column: RE,
+  ): ExpressionWrapper<DB, TB, boolean>
+
+  isArray<RE extends ReferenceExpression<DB, TB>>(
+    column: RE,
+  ): ExpressionWrapper<DB, TB, boolean>
+
+  isBool<RE extends ReferenceExpression<DB, TB>>(
+    column: RE,
+  ): ExpressionWrapper<DB, TB, boolean>
+
+  isFiniteNumber<RE extends ReferenceExpression<DB, TB>>(
+    column: RE,
+  ): ExpressionWrapper<DB, TB, boolean>
+
+  isInteger<RE extends ReferenceExpression<DB, TB>>(
+    column: RE,
+  ): ExpressionWrapper<DB, TB, boolean>
+
+  isNumber<RE extends ReferenceExpression<DB, TB>>(
+    column: RE,
+  ): ExpressionWrapper<DB, TB, boolean>
+
+  isObject<RE extends ReferenceExpression<DB, TB>>(
+    column: RE,
+  ): ExpressionWrapper<DB, TB, boolean>
+
+  isPrimitive<RE extends ReferenceExpression<DB, TB>>(
+    column: RE,
+  ): ExpressionWrapper<DB, TB, boolean>
+
+  isString<RE extends ReferenceExpression<DB, TB>>(
+    column: RE,
+  ): ExpressionWrapper<DB, TB, boolean>
 
   // String functions
 
@@ -1827,6 +1869,86 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
             ? parseReferenceExpression(column)
             : sql`${column}`.toOperationNode(),
         ]),
+      )
+    },
+
+    isDefined<RE extends ReferenceExpression<DB, TB>>(
+      column: RE,
+    ): ExpressionWrapper<DB, TB, boolean> { 
+      return new ExpressionWrapper(
+        FunctionNode.create('IS_DEFINED', [parseReferenceExpression(column)]),
+      )
+    },
+
+    isNull<RE extends ReferenceExpression<DB, TB>>(
+      column: RE,
+    ): ExpressionWrapper<DB, TB, boolean> { 
+      return new ExpressionWrapper(
+        FunctionNode.create('IS_NULL', [parseReferenceExpression(column)]),
+      )
+    },
+
+    isArray<RE extends ReferenceExpression<DB, TB>>(
+      column: RE,
+    ): ExpressionWrapper<DB, TB, boolean> { 
+      return new ExpressionWrapper(
+        FunctionNode.create('IS_ARRAY', [parseReferenceExpression(column)]),
+      )
+    },
+
+    isBool<RE extends ReferenceExpression<DB, TB>>(
+      column: RE,
+    ): ExpressionWrapper<DB, TB, boolean> { 
+      return new ExpressionWrapper(
+        FunctionNode.create('IS_BOOL', [parseReferenceExpression(column)]),
+      )
+    },
+
+    isFiniteNumber<RE extends ReferenceExpression<DB, TB>>(
+      column: RE,
+    ): ExpressionWrapper<DB, TB, boolean> { 
+      return new ExpressionWrapper(
+        FunctionNode.create('IS_FINITE_NUMBER', [parseReferenceExpression(column)]),
+      )
+    },
+
+    isInteger<RE extends ReferenceExpression<DB, TB>>(
+      column: RE,
+    ): ExpressionWrapper<DB, TB, boolean> { 
+      return new ExpressionWrapper(
+        FunctionNode.create('IS_INTEGER', [parseReferenceExpression(column)]),
+      )
+    },
+
+    isNumber<RE extends ReferenceExpression<DB, TB>>(
+      column: RE,
+    ): ExpressionWrapper<DB, TB, boolean> { 
+      return new ExpressionWrapper(
+        FunctionNode.create('IS_NUMBER', [parseReferenceExpression(column)]),
+      )
+    },
+
+    isObject<RE extends ReferenceExpression<DB, TB>>(
+      column: RE,
+    ): ExpressionWrapper<DB, TB, boolean> { 
+      return new ExpressionWrapper(
+        FunctionNode.create('IS_OBJECT', [parseReferenceExpression(column)]),
+      )
+    },
+
+    isPrimitive<RE extends ReferenceExpression<DB, TB>>(
+      column: RE,
+    ): ExpressionWrapper<DB, TB, boolean> { 
+      return new ExpressionWrapper(
+        FunctionNode.create('IS_PRIMITIVE', [parseReferenceExpression(column)]),
+      )
+    },
+
+    isString<RE extends ReferenceExpression<DB, TB>>(
+      column: RE,
+    ): ExpressionWrapper<DB, TB, boolean> { 
+      return new ExpressionWrapper(
+        FunctionNode.create('IS_STRING', [parseReferenceExpression(column)]),
       )
     },
 
