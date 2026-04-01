@@ -327,12 +327,12 @@ export type AnyAliasedArrayPropertyPathWithTable<
   TB extends keyof DB,
 > = `${AnyArrayPropertyPathWithTable<DB, TB>} as ${string}`
 
-export type AnyMatchingObjectPropertyPathWithTable<
-  DB,
-  TB extends keyof DB,
-  M,
-> = {
-  [T in TB]: `${T & string}.${AnyMatchingObjectPropertyPath<DB, TB, M> & string}`
+export type AnyMatchingObjectPropertyPathWithTable<DB, TB extends keyof DB, M> = {
+  [T in TB]: T extends keyof DB
+    ? DB[T] extends any[] | undefined
+      ? T & string // Include the table alias if it's an array
+      : `${T & string}.${AnyMatchingObjectPropertyPath<DB, T, M> & string}`
+    : never
 }[TB]
 
 /**

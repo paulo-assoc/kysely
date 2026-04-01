@@ -96,19 +96,16 @@ import { FeedResult } from '../driver/database-connection.js'
 export type JoinArrayProperty<
   DB,
   TB extends keyof DB,
+  O,
   P extends string,
   A extends string,
 > = P extends `${infer T}.${infer Rest}`
   ? T extends TB
     ? Rest extends AnyArrayPropertyPath<DB, T>
       ? SelectQueryBuilder<
-          DB &
-            ShallowRecord<
-              A,
-              ArrayItemType<ExtractPropertyPathType<DB[T], Rest>>
-            >,
-          TB | A,
-          {}
+          DB & ShallowRecord<A, ArrayItemType<ExtractPropertyPathType<DB[T], Rest>>>,
+          TB | A,        // original tables + new alias
+          O              // preserve selections/output type
         >
       : never
     : never
@@ -2892,7 +2889,7 @@ export type SelectQueryBuilderWithJoin<
   O,
   TE extends `${string} in ${string}`,
 > = TE extends `${infer A} in ${infer T}`
-  ? JoinArrayProperty<DB, TB, T, A>
+  ? JoinArrayProperty<DB, TB, O, T, A>
   : never
 
 // export type SelectQueryBuilderWithInnerJoin<
