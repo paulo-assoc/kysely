@@ -1,7 +1,7 @@
-import { ExpressionWrapper } from '../expression/expression-wrapper.js'
-import { Expression } from '../expression/expression.js'
-import { AggregateFunctionNode } from '../operation-node/aggregate-function-node.js'
-import { FunctionNode } from '../operation-node/function-node.js'
+import { ExpressionWrapper } from '../expression/expression-wrapper.js';
+import { Expression } from '../expression/expression.js';
+import { AggregateFunctionNode } from '../operation-node/aggregate-function-node.js';
+import { FunctionNode } from '../operation-node/function-node.js';
 // import {
 //   ExtractTypeFromCoalesce1,
 //   ExtractTypeFromCoalesce3,
@@ -16,22 +16,17 @@ import {
   parseReferenceExpressionOrList,
   ExtractTypeFromStringReference,
   parseReferenceExpression,
-} from '../parser/reference-parser.js'
-import { parseSelectAll } from '../parser/select-parser.js'
+} from '../parser/reference-parser.js';
+import { parseSelectAll } from '../parser/select-parser.js';
 // import { KyselyTypeError } from '../util/type-error.js'
-import {
-  AnyArrayPropertyPathWithTable,
-  AnyMatchingObjectPropertyPathWithTable,
-  ExtractArrayItemTypeWithTable,
-  IsNever,
-} from '../util/type-utils.js'
-import { AggregateFunctionBuilder } from './aggregate-function-builder.js'
-import { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js'
-import { isNull, isString } from '../util/object-utils.js'
-import { parseTable } from '../parser/table-parser.js'
-import { Selectable } from '../util/column-type.js'
-import { sql } from '../raw-builder/sql.js'
-import type { GeoJsonObject, MultiPolygon, Polygon } from 'geojson'
+import { AnyArrayPropertyPathWithTable, AnyMatchingObjectPropertyPathWithTable, ExtractArrayItemTypeWithTable, IsNever } from '../util/type-utils.js';
+import { AggregateFunctionBuilder } from './aggregate-function-builder.js';
+import { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js';
+import { isNull, isString } from '../util/object-utils.js';
+import { parseTable } from '../parser/table-parser.js';
+import { Selectable } from '../util/column-type.js';
+import { sql } from '../raw-builder/sql.js';
+import type { GeoJsonObject, MultiPolygon, Polygon } from 'geojson';
 
 /**
  * Helpers for type safe SQL function calls.
@@ -139,10 +134,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    *   .execute()
    * ```
    */
-  <O, RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>>(
-    name: string,
-    args?: ReadonlyArray<RE>,
-  ): ExpressionWrapper<DB, TB, O>
+  <O, RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>>(name: string, args?: ReadonlyArray<RE>): ExpressionWrapper<DB, TB, O>;
 
   /**
    * Creates an aggregate function call.
@@ -228,12 +220,9 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    *   .execute()
    * ```
    */
-  avg<
-    O extends number | string | null = number | string,
-    RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>,
-  >(
-    expr: RE,
-  ): AggregateFunctionBuilder<DB, TB, O>
+  avg<O extends number | string | null = number | string, RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>>(
+    expr: RE
+  ): AggregateFunctionBuilder<DB, TB, O>;
 
   /**
    * Calls the `coalesce` function for given arguments.
@@ -379,12 +368,9 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    *   .execute()
    * ```
    */
-  count<
-    O extends number | string | bigint,
-    RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>,
-  >(
-    expr: RE,
-  ): AggregateFunctionBuilder<DB, TB, O>
+  count<O extends number | string | bigint, RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>>(
+    expr: RE
+  ): AggregateFunctionBuilder<DB, TB, O>;
 
   /**
    * Calls the `count` function with `*` or `table.*` as argument.
@@ -494,23 +480,9 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    *   .execute()
    * ```
    */
-  max<
-    O extends number | string | Date | bigint | null = never,
-    RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>,
-  >(
-    expr: RE,
-  ): AggregateFunctionBuilder<
-    DB,
-    TB,
-    IsNever<O> extends true
-      ? ExtractTypeFromReferenceExpression<
-          DB,
-          TB,
-          RE,
-          number | string | Date | bigint
-        >
-      : O
-  >
+  max<O extends number | string | Date | bigint | null = never, RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>>(
+    expr: RE
+  ): AggregateFunctionBuilder<DB, TB, IsNever<O> extends true ? ExtractTypeFromReferenceExpression<DB, TB, RE, number | string | Date | bigint> : O>;
 
   /**
    * Calls the `min` function for the column or expression given as the argument.
@@ -550,23 +522,9 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    *   .execute()
    * ```
    */
-  min<
-    O extends number | string | Date | bigint | null = never,
-    RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>,
-  >(
-    expr: RE,
-  ): AggregateFunctionBuilder<
-    DB,
-    TB,
-    IsNever<O> extends true
-      ? ExtractTypeFromReferenceExpression<
-          DB,
-          TB,
-          RE,
-          number | string | Date | bigint
-        >
-      : O
-  >
+  min<O extends number | string | Date | bigint | null = never, RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>>(
+    expr: RE
+  ): AggregateFunctionBuilder<DB, TB, IsNever<O> extends true ? ExtractTypeFromReferenceExpression<DB, TB, RE, number | string | Date | bigint> : O>;
 
   /**
    * Calls the `sum` function for the column or expression given as the argument.
@@ -618,12 +576,9 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    *   .execute()
    * ```
    */
-  sum<
-    O extends number | string | bigint | null = number | string | bigint,
-    RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>,
-  >(
-    expr: RE,
-  ): AggregateFunctionBuilder<DB, TB, O>
+  sum<O extends number | string | bigint | null = number | string | bigint, RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>>(
+    expr: RE
+  ): AggregateFunctionBuilder<DB, TB, O>;
 
   /**
    * Calls the `any` function for the column or expression given as the argument.
@@ -768,343 +723,166 @@ export interface FunctionModule<DB, TB extends keyof DB> {
 
   // Math functions
 
-  abs<RE extends ReferenceExpression<DB, TB>>(
-    column: number | RE,
-  ): ExpressionWrapper<DB, TB, number>
+  abs<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number>;
 
-  acos<RE extends ReferenceExpression<DB, TB>>(
-    column: number | RE,
-  ): ExpressionWrapper<DB, TB, number>
+  acos<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number>;
 
-  asin<RE extends ReferenceExpression<DB, TB>>(
-    column: number | RE,
-  ): ExpressionWrapper<DB, TB, number>
+  asin<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number>;
 
-  atan<RE extends ReferenceExpression<DB, TB>>(
-    column: number | RE,
-  ): ExpressionWrapper<DB, TB, number>
+  atan<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number>;
 
-  ceiling<RE extends ReferenceExpression<DB, TB>>(
-    column: number | RE,
-  ): ExpressionWrapper<DB, TB, number>
+  ceiling<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number>;
 
-  cos<RE extends ReferenceExpression<DB, TB>>(
-    column: number | RE,
-  ): ExpressionWrapper<DB, TB, number>
+  cos<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number>;
 
-  cot<RE extends ReferenceExpression<DB, TB>>(
-    column: number | RE,
-  ): ExpressionWrapper<DB, TB, number>
+  cot<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number>;
 
-  degrees<RE extends ReferenceExpression<DB, TB>>(
-    column: number | RE,
-  ): ExpressionWrapper<DB, TB, number>
+  degrees<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number>;
 
-  exp<RE extends ReferenceExpression<DB, TB>>(
-    column: number | RE,
-  ): ExpressionWrapper<DB, TB, number>
+  exp<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number>;
 
-  floor<RE extends ReferenceExpression<DB, TB>>(
-    column: number | RE,
-  ): ExpressionWrapper<DB, TB, number>
+  floor<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number>;
 
-  intAdd<RE extends ReferenceExpression<DB, TB>>(
-    expr1: number | RE,
-    expr2: number | RE,
-  ): ExpressionWrapper<DB, TB, number>
+  intAdd<RE extends ReferenceExpression<DB, TB>>(expr1: number | RE, expr2: number | RE): ExpressionWrapper<DB, TB, number>;
 
-  intBitAnd<RE extends ReferenceExpression<DB, TB>>(
-    expr1: number | RE,
-    expr2: number | RE,
-  ): ExpressionWrapper<DB, TB, number>
+  intBitAnd<RE extends ReferenceExpression<DB, TB>>(expr1: number | RE, expr2: number | RE): ExpressionWrapper<DB, TB, number>;
 
-  intBitLeftShift<RE extends ReferenceExpression<DB, TB>>(
-    expr1: number | RE,
-    expr2: number | RE,
-  ): ExpressionWrapper<DB, TB, number>
+  intBitLeftShift<RE extends ReferenceExpression<DB, TB>>(expr1: number | RE, expr2: number | RE): ExpressionWrapper<DB, TB, number>;
 
-  intBitNot<RE extends ReferenceExpression<DB, TB>>(
-    expr: number | RE,
-  ): ExpressionWrapper<DB, TB, number>
+  intBitNot<RE extends ReferenceExpression<DB, TB>>(expr: number | RE): ExpressionWrapper<DB, TB, number>;
 
-  intBitOr<RE extends ReferenceExpression<DB, TB>>(
-    expr1: number | RE,
-    expr2: number | RE,
-  ): ExpressionWrapper<DB, TB, number>
+  intBitOr<RE extends ReferenceExpression<DB, TB>>(expr1: number | RE, expr2: number | RE): ExpressionWrapper<DB, TB, number>;
 
-  intBitRightShift<RE extends ReferenceExpression<DB, TB>>(
-    expr1: number | RE,
-    expr2: number | RE,
-  ): ExpressionWrapper<DB, TB, number>
+  intBitRightShift<RE extends ReferenceExpression<DB, TB>>(expr1: number | RE, expr2: number | RE): ExpressionWrapper<DB, TB, number>;
 
-  intBitXor<RE extends ReferenceExpression<DB, TB>>(
-    expr1: number | RE,
-    expr2: number | RE,
-  ): ExpressionWrapper<DB, TB, number>
+  intBitXor<RE extends ReferenceExpression<DB, TB>>(expr1: number | RE, expr2: number | RE): ExpressionWrapper<DB, TB, number>;
 
-  intDiv<RE extends ReferenceExpression<DB, TB>>(
-    expr1: number | RE,
-    expr2: number | RE,
-  ): ExpressionWrapper<DB, TB, number>
+  intDiv<RE extends ReferenceExpression<DB, TB>>(expr1: number | RE, expr2: number | RE): ExpressionWrapper<DB, TB, number>;
 
-  intMod<RE extends ReferenceExpression<DB, TB>>(
-    expr1: number | RE,
-    expr2: number | RE,
-  ): ExpressionWrapper<DB, TB, number>
+  intMod<RE extends ReferenceExpression<DB, TB>>(expr1: number | RE, expr2: number | RE): ExpressionWrapper<DB, TB, number>;
 
-  intMul<RE extends ReferenceExpression<DB, TB>>(
-    expr1: number | RE,
-    expr2: number | RE,
-  ): ExpressionWrapper<DB, TB, number>
+  intMul<RE extends ReferenceExpression<DB, TB>>(expr1: number | RE, expr2: number | RE): ExpressionWrapper<DB, TB, number>;
 
-  intSub<RE extends ReferenceExpression<DB, TB>>(
-    expr1: number | RE,
-    expr2: number | RE,
-  ): ExpressionWrapper<DB, TB, number>
+  intSub<RE extends ReferenceExpression<DB, TB>>(expr1: number | RE, expr2: number | RE): ExpressionWrapper<DB, TB, number>;
 
-  log<RE extends ReferenceExpression<DB, TB>>(
-    column: number | RE,
-    base?: number,
-  ): ExpressionWrapper<DB, TB, number>
+  log<RE extends ReferenceExpression<DB, TB>>(column: number | RE, base?: number): ExpressionWrapper<DB, TB, number>;
 
-  log10<RE extends ReferenceExpression<DB, TB>>(
-    column: number | RE,
-  ): ExpressionWrapper<DB, TB, number>
+  log10<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number>;
 
-  numberBin<RE extends ReferenceExpression<DB, TB>>(
-    column: number | RE,
-    binSize?: number,
-  ): ExpressionWrapper<DB, TB, number>
+  numberBin<RE extends ReferenceExpression<DB, TB>>(column: number | RE, binSize?: number): ExpressionWrapper<DB, TB, number>;
 
-  pi(): ExpressionWrapper<DB, TB, number>
+  pi(): ExpressionWrapper<DB, TB, number>;
 
-  power<RE extends ReferenceExpression<DB, TB>>(
-    base: number | RE,
-    exponent: number | RE,
-  ): ExpressionWrapper<DB, TB, number>
+  power<RE extends ReferenceExpression<DB, TB>>(base: number | RE, exponent: number | RE): ExpressionWrapper<DB, TB, number>;
 
-  radians<RE extends ReferenceExpression<DB, TB>>(
-    column: number | RE,
-  ): ExpressionWrapper<DB, TB, number>
+  radians<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number>;
 
-  rand(): ExpressionWrapper<DB, TB, number>
+  rand(): ExpressionWrapper<DB, TB, number>;
 
-  round<RE extends ReferenceExpression<DB, TB>>(
-    column: number | RE,
-  ): ExpressionWrapper<DB, TB, number>
+  round<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number>;
 
-  sign<RE extends ReferenceExpression<DB, TB>>(
-    column: number | RE,
-  ): ExpressionWrapper<DB, TB, number>
+  sign<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number>;
 
-  sin<RE extends ReferenceExpression<DB, TB>>(
-    column: number | RE,
-  ): ExpressionWrapper<DB, TB, number>
+  sin<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number>;
 
-  sqrt<RE extends ReferenceExpression<DB, TB>>(
-    column: number | RE,
-  ): ExpressionWrapper<DB, TB, number>
+  sqrt<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number>;
 
-  square<RE extends ReferenceExpression<DB, TB>>(
-    column: number | RE,
-  ): ExpressionWrapper<DB, TB, number>
+  square<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number>;
 
-  tan<RE extends ReferenceExpression<DB, TB>>(
-    column: number | RE,
-  ): ExpressionWrapper<DB, TB, number>
+  tan<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number>;
 
-  trunc<RE extends ReferenceExpression<DB, TB>>(
-    column: number | RE,
-  ): ExpressionWrapper<DB, TB, number>
+  trunc<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number>;
 
   // Type-checking functions
 
-  isDefined<RE extends ReferenceExpression<DB, TB>>(
-    column: RE,
-  ): ExpressionWrapper<DB, TB, boolean>
+  isDefined<RE extends ReferenceExpression<DB, TB>>(column: RE): ExpressionWrapper<DB, TB, boolean>;
 
-  isNull<RE extends ReferenceExpression<DB, TB>>(
-    column: RE,
-  ): ExpressionWrapper<DB, TB, boolean>
+  isNull<RE extends ReferenceExpression<DB, TB>>(column: RE): ExpressionWrapper<DB, TB, boolean>;
 
-  isArray<RE extends ReferenceExpression<DB, TB>>(
-    column: RE,
-  ): ExpressionWrapper<DB, TB, boolean>
+  isArray<RE extends ReferenceExpression<DB, TB>>(column: RE): ExpressionWrapper<DB, TB, boolean>;
 
-  isBool<RE extends ReferenceExpression<DB, TB>>(
-    column: RE,
-  ): ExpressionWrapper<DB, TB, boolean>
+  isBool<RE extends ReferenceExpression<DB, TB>>(column: RE): ExpressionWrapper<DB, TB, boolean>;
 
-  isFiniteNumber<RE extends ReferenceExpression<DB, TB>>(
-    column: RE,
-  ): ExpressionWrapper<DB, TB, boolean>
+  isFiniteNumber<RE extends ReferenceExpression<DB, TB>>(column: RE): ExpressionWrapper<DB, TB, boolean>;
 
-  isInteger<RE extends ReferenceExpression<DB, TB>>(
-    column: RE,
-  ): ExpressionWrapper<DB, TB, boolean>
+  isInteger<RE extends ReferenceExpression<DB, TB>>(column: RE): ExpressionWrapper<DB, TB, boolean>;
 
-  isNumber<RE extends ReferenceExpression<DB, TB>>(
-    column: RE,
-  ): ExpressionWrapper<DB, TB, boolean>
+  isNumber<RE extends ReferenceExpression<DB, TB>>(column: RE): ExpressionWrapper<DB, TB, boolean>;
 
-  isObject<RE extends ReferenceExpression<DB, TB>>(
-    column: RE,
-  ): ExpressionWrapper<DB, TB, boolean>
+  isObject<RE extends ReferenceExpression<DB, TB>>(column: RE): ExpressionWrapper<DB, TB, boolean>;
 
-  isPrimitive<RE extends ReferenceExpression<DB, TB>>(
-    column: RE,
-  ): ExpressionWrapper<DB, TB, boolean>
+  isPrimitive<RE extends ReferenceExpression<DB, TB>>(column: RE): ExpressionWrapper<DB, TB, boolean>;
 
-  isString<RE extends ReferenceExpression<DB, TB>>(
-    column: RE,
-  ): ExpressionWrapper<DB, TB, boolean>
+  isString<RE extends ReferenceExpression<DB, TB>>(column: RE): ExpressionWrapper<DB, TB, boolean>;
 
   // String functions
 
-  contains<RE extends StringReference<DB, TB>>(
-    column: RE,
-    searchString: string,
-    ignoreCase?: boolean,
-  ): ExpressionWrapper<DB, TB, boolean>
+  contains<RE extends StringReference<DB, TB>>(column: RE, searchString: string, ignoreCase?: boolean): ExpressionWrapper<DB, TB, boolean>;
 
-  containsRef<RE extends StringReference<DB, TB>>(
-    column: RE,
-    searchStringColumn: RE,
-    ignoreCase?: boolean,
-  ): ExpressionWrapper<DB, TB, boolean>
+  containsRef<RE extends StringReference<DB, TB>>(column: RE, searchStringColumn: RE, ignoreCase?: boolean): ExpressionWrapper<DB, TB, boolean>;
 
-  endsWith<RE extends StringReference<DB, TB>>(
-    column: RE,
-    searchString: string,
-    ignoreCase?: boolean,
-  ): ExpressionWrapper<DB, TB, boolean>
+  endsWith<RE extends StringReference<DB, TB>>(column: RE, searchString: string, ignoreCase?: boolean): ExpressionWrapper<DB, TB, boolean>;
 
-  endsWithRef<RE extends StringReference<DB, TB>>(
-    column: RE,
-    searchStringColumn: RE,
-    ignoreCase?: boolean,
-  ): ExpressionWrapper<DB, TB, boolean>
+  endsWithRef<RE extends StringReference<DB, TB>>(column: RE, searchStringColumn: RE, ignoreCase?: boolean): ExpressionWrapper<DB, TB, boolean>;
 
-  indexOf<RE extends StringReference<DB, TB>>(
-    column: RE,
-    searchString: string,
-    startIndex?: number,
-  ): ExpressionWrapper<DB, TB, number>
+  indexOf<RE extends StringReference<DB, TB>>(column: RE, searchString: string, startIndex?: number): ExpressionWrapper<DB, TB, number>;
 
-  indexOfRef<RE extends StringReference<DB, TB>>(
-    column: RE,
-    searchStringColumn: RE,
-    startIndex?: number,
-  ): ExpressionWrapper<DB, TB, number>
+  indexOfRef<RE extends StringReference<DB, TB>>(column: RE, searchStringColumn: RE, startIndex?: number): ExpressionWrapper<DB, TB, number>;
 
-  left<RE extends StringReference<DB, TB>>(
-    column: RE,
-    length: number,
-  ): ExpressionWrapper<DB, TB, string>
+  left<RE extends StringReference<DB, TB>>(column: RE, length: number): ExpressionWrapper<DB, TB, string>;
 
-  len<RE extends StringReference<DB, TB>>(
-    column: RE,
-  ): ExpressionWrapper<DB, TB, number>
+  len<RE extends StringReference<DB, TB>>(column: RE): ExpressionWrapper<DB, TB, number>;
 
-  lower<RE extends StringReference<DB, TB>>(
-    column: RE,
-  ): ExpressionWrapper<DB, TB, string>
+  lower<RE extends StringReference<DB, TB>>(column: RE): ExpressionWrapper<DB, TB, string>;
 
-  ltrim<RE extends StringReference<DB, TB>>(
-    column: RE,
-    trimStr?: string,
-  ): ExpressionWrapper<DB, TB, string>
+  ltrim<RE extends StringReference<DB, TB>>(column: RE, trimStr?: string): ExpressionWrapper<DB, TB, string>;
 
-  regexMatch<RE extends StringReference<DB, TB>>(
-    column: RE,
-    pattern: string,
-    modifiers?: string,
-  ): ExpressionWrapper<DB, TB, boolean>
+  regexMatch<RE extends StringReference<DB, TB>>(column: RE, pattern: string, modifiers?: string): ExpressionWrapper<DB, TB, boolean>;
 
-  replace<RE extends StringReference<DB, TB>>(
-    column: RE,
-    searchStr: string,
-    replaceStr: string,
-  ): ExpressionWrapper<DB, TB, string>
+  replace<RE extends StringReference<DB, TB>>(column: RE, searchStr: string, replaceStr: string): ExpressionWrapper<DB, TB, string>;
 
-  replicate<RE extends StringReference<DB, TB>>(
-    column: RE,
-    count: number,
-  ): ExpressionWrapper<DB, TB, string>
+  replicate<RE extends StringReference<DB, TB>>(column: RE, count: number): ExpressionWrapper<DB, TB, string>;
 
-  reverse<RE extends StringReference<DB, TB>>(
-    column: RE,
-  ): ExpressionWrapper<DB, TB, string>
+  reverse<RE extends StringReference<DB, TB>>(column: RE): ExpressionWrapper<DB, TB, string>;
 
-  right<RE extends StringReference<DB, TB>>(
-    column: RE,
-    length: number,
-  ): ExpressionWrapper<DB, TB, string>
+  right<RE extends StringReference<DB, TB>>(column: RE, length: number): ExpressionWrapper<DB, TB, string>;
 
-  rtrim<RE extends StringReference<DB, TB>>(
-    column: RE,
-    trimStr?: string,
-  ): ExpressionWrapper<DB, TB, string>
+  rtrim<RE extends StringReference<DB, TB>>(column: RE, trimStr?: string): ExpressionWrapper<DB, TB, string>;
 
-  startsWith<RE extends StringReference<DB, TB>>(
-    column: RE,
-    searchString: string,
-    ignoreCase?: boolean,
-  ): ExpressionWrapper<DB, TB, boolean>
+  startsWith<RE extends StringReference<DB, TB>>(column: RE, searchString: string, ignoreCase?: boolean): ExpressionWrapper<DB, TB, boolean>;
 
-  startsWithRef<RE extends StringReference<DB, TB>>(
-    column: RE,
-    searchStringColumn: RE,
-    ignoreCase?: boolean,
-  ): ExpressionWrapper<DB, TB, boolean>
+  startsWithRef<RE extends StringReference<DB, TB>>(column: RE, searchStringColumn: RE, ignoreCase?: boolean): ExpressionWrapper<DB, TB, boolean>;
 
-  stringEquals<RE extends StringReference<DB, TB>>(
-    column: RE,
-    compareString: string,
-    ignoreCase?: boolean,
-  ): ExpressionWrapper<DB, TB, boolean>
+  stringEquals<RE extends StringReference<DB, TB>>(column: RE, compareString: string, ignoreCase?: boolean): ExpressionWrapper<DB, TB, boolean>;
 
-  stringEqualsRef<RE extends StringReference<DB, TB>>(
-    column: RE,
-    compareStringColumn: RE,
-    ignoreCase?: boolean,
-  ): ExpressionWrapper<DB, TB, boolean>
+  stringEqualsRef<RE extends StringReference<DB, TB>>(column: RE, compareStringColumn: RE, ignoreCase?: boolean): ExpressionWrapper<DB, TB, boolean>;
 
-  substring<RE extends StringReference<DB, TB>>(
-    column: RE,
-    start: number,
-    length?: number,
-  ): ExpressionWrapper<DB, TB, string>
+  substring<RE extends StringReference<DB, TB>>(column: RE, start: number, length?: number): ExpressionWrapper<DB, TB, string>;
 
-  trim<RE extends StringReference<DB, TB>>(
-    column: RE,
-    trimStr?: string,
-  ): ExpressionWrapper<DB, TB, string>
+  trim<RE extends StringReference<DB, TB>>(column: RE, trimStr?: string): ExpressionWrapper<DB, TB, string>;
 
-  upper<RE extends StringReference<DB, TB>>(
-    column: RE,
-  ): ExpressionWrapper<DB, TB, string>
+  upper<RE extends StringReference<DB, TB>>(column: RE): ExpressionWrapper<DB, TB, string>;
 
   // Date and Time functions
 
   dateTimeAdd<RE extends ReferenceExpression<DB, TB>>(
     dateTimePart: 'yyyy' | 'MM' | 'dd' | 'hh' | 'mm' | 'ss' | 'ms',
     numericExpression: number,
-    dateTime: Date | RE,
-  ): ExpressionWrapper<DB, TB, string>
+    dateTime: Date | RE
+  ): ExpressionWrapper<DB, TB, string>;
 
   dateTimeBin<RE extends ReferenceExpression<DB, TB>>(
     dateTime: Date | RE,
     dateTimePart: 'yyyy' | 'MM' | 'dd' | 'hh' | 'mm' | 'ss' | 'ms',
     binSize?: number,
-    binStartDateTime?: Date | RE,
-  ): ExpressionWrapper<DB, TB, string>
+    binStartDateTime?: Date | RE
+  ): ExpressionWrapper<DB, TB, string>;
 
   dateTimeDiff<RE extends ReferenceExpression<DB, TB>>(
     dateTimePart: 'yyyy' | 'MM' | 'dd' | 'hh' | 'mm' | 'ss' | 'ms',
     startDateTime: Date | RE,
-    endDateTime: Date | RE,
-  ): ExpressionWrapper<DB, TB, number>
+    endDateTime: Date | RE
+  ): ExpressionWrapper<DB, TB, number>;
 
   dateTimeFromParts(
     year: number,
@@ -1113,98 +891,129 @@ export interface FunctionModule<DB, TB extends keyof DB> {
     hour?: number,
     minute?: number,
     second?: number,
-    secondFraction?: number,
-  ): ExpressionWrapper<DB, TB, string>
+    secondFraction?: number
+  ): ExpressionWrapper<DB, TB, string>;
 
   dateTimePart<RE extends ReferenceExpression<DB, TB>>(
     dateTimePart: 'yyyy' | 'MM' | 'dd' | 'hh' | 'mm' | 'ss' | 'ms',
-    dateTime: Date | RE,
-  ): ExpressionWrapper<DB, TB, number>
+    dateTime: Date | RE
+  ): ExpressionWrapper<DB, TB, number>;
 
-  dateTimeToTicks<RE extends ReferenceExpression<DB, TB>>(
-    dateTime: Date | RE,
-  ): ExpressionWrapper<DB, TB, number>
+  dateTimeToTicks<RE extends ReferenceExpression<DB, TB>>(dateTime: Date | RE): ExpressionWrapper<DB, TB, number>;
 
-  dateTimeToTimestamp<RE extends ReferenceExpression<DB, TB>>(
-    dateTime: Date | RE,
-  ): ExpressionWrapper<DB, TB, number>
+  dateTimeToTimestamp<RE extends ReferenceExpression<DB, TB>>(dateTime: Date | RE): ExpressionWrapper<DB, TB, number>;
 
-  getCurrentDateTime(): ExpressionWrapper<DB, TB, string>
+  getCurrentDateTime(): ExpressionWrapper<DB, TB, string>;
 
-  getCurrentDateTimeStatic(): ExpressionWrapper<DB, TB, string>
+  getCurrentDateTimeStatic(): ExpressionWrapper<DB, TB, string>;
 
-  getCurrentTicks(): ExpressionWrapper<DB, TB, number>
+  getCurrentTicks(): ExpressionWrapper<DB, TB, number>;
 
-  getCurrentTicksStatic(): ExpressionWrapper<DB, TB, number>
+  getCurrentTicksStatic(): ExpressionWrapper<DB, TB, number>;
 
-  getCurrentTimestamp(): ExpressionWrapper<DB, TB, number>
+  getCurrentTimestamp(): ExpressionWrapper<DB, TB, number>;
 
-  getCurrentTimestampStatic(): ExpressionWrapper<DB, TB, number>
+  getCurrentTimestampStatic(): ExpressionWrapper<DB, TB, number>;
 
-  ticksToDateTime(ticks: number): ExpressionWrapper<DB, TB, string>
+  ticksToDateTime(ticks: number): ExpressionWrapper<DB, TB, string>;
 
-  timestampToDateTime(timestamp: number): ExpressionWrapper<DB, TB, string>
+  timestampToDateTime(timestamp: number): ExpressionWrapper<DB, TB, string>;
 
   // Full Text Search functions
 
   // Returns true if a given string is contained in the specified property of a document. This is useful in a WHERE clause when you want to ensure specific keywords are included in the documents returned by your query.
-  fullTextContains<RE extends StringReference<DB, TB>>(
-    column: RE,
-    searchString: string,
-  ): ExpressionWrapper<DB, TB, boolean>
+  fullTextContains<RE extends StringReference<DB, TB>>(column: RE, searchString: string): ExpressionWrapper<DB, TB, boolean>;
 
   // Returns true if all of the given strings are contained in the specified property of a document. This is useful in a WHERE clause when you want to ensure that multiple keywords are included in the documents returned by your query.
   fullTextContainsAll<RE extends StringReference<DB, TB>>(
     property: RE,
     searchString: string,
     ...additionalSearchStrings: ReadonlyArray<string>
-  ): ExpressionWrapper<DB, TB, boolean>
+  ): ExpressionWrapper<DB, TB, boolean>;
 
   //  Returns true if any of the given strings are contained in the specified property of a document. This is useful in a WHERE clause when you want to ensure that at least one of the keywords is included in the documents returned by your query.
   fullTextContainsAny<RE extends StringReference<DB, TB>>(
     property: RE,
     searchString: string,
     ...additionalSearchStrings: ReadonlyArray<string>
-  ): ExpressionWrapper<DB, TB, boolean>
+  ): ExpressionWrapper<DB, TB, boolean>;
 
   // Returns a score. This can only be used in an ORDER BY RANK clause, where the returned documents are ordered by the rank of the full text score, with most relevant (highest scoring) documents at the top, and least relevant (lowest scoring) documents at the bottom.
   fullTextScore<RE extends StringReference<DB, TB>>(
     property: RE,
     searchString: string,
     ...additionalSearchStrings: ReadonlyArray<string>
-  ): ExpressionWrapper<DB, TB, number>
+  ): ExpressionWrapper<DB, TB, number>;
 
   // Vector functions
 
   vectorDistance<
     P extends AnyArrayPropertyPathWithTable<DB, TB>,
     M extends {
-      distanceFunction: 'cosine' | 'euclidean' | 'inner-product'
-      dataType: 'float32' | 'int8' | 'uint8'
-      searchListSizeMultiplier: number
-      quantizedVectorListMultiplier: number
+      distanceFunction: 'cosine' | 'euclidean' | 'inner-product';
+      dataType: 'float32' | 'int8' | 'uint8';
+      searchListSizeMultiplier: number;
+      quantizedVectorListMultiplier: number;
     } = {
-      distanceFunction: 'cosine'
-      dataType: 'float32'
-      searchListSizeMultiplier: 10
-      quantizedVectorListMultiplier: 5
+      distanceFunction: 'cosine';
+      dataType: 'float32';
+      searchListSizeMultiplier: 10;
+      quantizedVectorListMultiplier: 5;
     },
   >(
     vectorProperty: P,
     queryVector: number[],
     useIndex?: boolean,
-    options?: M,
-  ): ExpressionWrapper<DB, TB, number>
+    options?: M
+  ): ExpressionWrapper<DB, TB, number>;
 
   // Array functions
+
+  /**
+   * Calls the ARRAY_AVG function to calculate the average of the values in the specified array property.
+   */
+  arrayAvg<P extends AnyArrayPropertyPathWithTable<DB, TB>>(property: P): ExpressionWrapper<DB, TB, number>;
+
+  /**
+   * Calls the ARRAY_CONCAT function to return an array that is the result of concatenating two or more array values.
+   */
+  arrayConcat<P extends AnyArrayPropertyPathWithTable<DB, TB>, Item = ExtractArrayItemTypeWithTable<DB, TB, P>>(
+    arrayProp: P,
+    ...items: (Item | Partial<Item> | null | undefined)[]
+  ): ExpressionWrapper<DB, TB, Item[]>;
+
+  /**
+   * Calls the ARRAY_MAX function to return the maximal value of elements in the specified array expression.
+   */
+  arrayMax<P extends AnyArrayPropertyPathWithTable<DB, TB>>(property: P): ExpressionWrapper<DB, TB, number>;
+
+  /**
+   * Calls the ARRAY_MEDIAN function to return the median value of elements in the specified array expression.
+   */
+  arrayMedian<P extends AnyArrayPropertyPathWithTable<DB, TB>>(property: P): ExpressionWrapper<DB, TB, number>;
+
+  /**
+   * Calls the ARRAY_MIN function to return the minimal value of elements in the specified array expression.
+   */
+  arrayMin<P extends AnyArrayPropertyPathWithTable<DB, TB>>(property: P): ExpressionWrapper<DB, TB, number>;
+
+  /**
+   * Calls the ARRAY_LENGTH function to return the number of elements in the specified array expression.
+   */
+  arrayLength<P extends AnyArrayPropertyPathWithTable<DB, TB>>(property: P): ExpressionWrapper<DB, TB, number>;
+
+  /**
+   * Calls the ARRAY_SUM function to return the sum of elements in the specified array expression.
+   */
+  arraySum<P extends AnyArrayPropertyPathWithTable<DB, TB>>(property: P): ExpressionWrapper<DB, TB, number>;
 
   /**
    * Calls the ARRAY_CONTAINS function to determine whether the specified array property contains the given value.
    */
   arrayContains<P extends AnyArrayPropertyPathWithTable<DB, TB>>(
     property: P,
-    value: Partial<ExtractArrayItemTypeWithTable<DB, TB, P>>,
-  ): Expression<boolean>
+    value: Partial<ExtractArrayItemTypeWithTable<DB, TB, P>>
+  ): ExpressionWrapper<DB, TB, boolean>;
 
   /**
    * Calls the ARRAY_CONTAINS_ANY function to determine whether the specified array property contains any of the given values.
@@ -1212,7 +1021,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
   arrayContainsAny<P extends AnyArrayPropertyPathWithTable<DB, TB>>(
     property: P,
     ...values: Partial<ExtractArrayItemTypeWithTable<DB, TB, P>>[]
-  ): Expression<boolean>
+  ): ExpressionWrapper<DB, TB, boolean>;
 
   /**
    * Calls the ARRAY_CONTAINS_ALL function to determine whether the specified array property contains all of the given values.
@@ -1220,178 +1029,133 @@ export interface FunctionModule<DB, TB extends keyof DB> {
   arrayContainsAll<P extends AnyArrayPropertyPathWithTable<DB, TB>>(
     property: P,
     ...values: Partial<ExtractArrayItemTypeWithTable<DB, TB, P>>[]
-  ): Expression<boolean>
+  ): ExpressionWrapper<DB, TB, boolean>;
 
   // Spatial functions
 
   /**
    * Calls the ST_AREA function to calculate the total area of a GeoJSON Polygon or MultiPolygon property.
    */
-  area<
-    P extends
-      | AnyMatchingObjectPropertyPathWithTable<DB, TB, Polygon | MultiPolygon>
-      | Polygon
-      | MultiPolygon,
-  >(
-    polygon: P,
-  ): ExpressionWrapper<DB, TB, number>
+  area<P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, Polygon | MultiPolygon> | Polygon | MultiPolygon>(
+    polygon: P
+  ): ExpressionWrapper<DB, TB, number>;
 
   /**
    * Calls the ST_ISVALID function to determine whether the specified GeoJSON property is valid.
    */
-  isValid<
-    P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>,
-  >(
-    property: P,
-  ): ExpressionWrapper<DB, TB, boolean>
+  isValid<P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>>(property: P): ExpressionWrapper<DB, TB, boolean>;
 
   /**
    * Calls the ST_ISVALIDDETAILED function to determine whether the specified GeoJSON property is valid, and if invalid, the reason.
    */
-  isValidDetailed<
-    P extends
-      | AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>
-      | GeoJsonObject,
-  >(
-    property: P,
+  isValidDetailed<P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject> | GeoJsonObject>(
+    property: P
   ): ExpressionWrapper<
     DB,
     TB,
     {
-      valid: boolean
-      reason?: string
+      valid: boolean;
+      reason?: string;
     }
-  >
+  >;
 
   /**
    * Calls the ST_DISTANCE function to calculate the distance between the GeoJSON object (GeoJSON Point, Polygon, or LineString expression) specified in the first argument is within the GeoJSON object in the second argument.
    */
-  distance<
-    P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>,
-  >(
+  distance<P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>>(
     property: P,
-    geo: GeoJsonObject,
-  ): ExpressionWrapper<DB, TB, number>
+    geo: GeoJsonObject
+  ): ExpressionWrapper<DB, TB, number>;
 
   /**
    * Calls the ST_DISTANCE function with swapped parameters (geo first, property second).
    */
-  distance<
-    P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>,
-  >(
+  distance<P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>>(
     geo: GeoJsonObject,
-    property: P,
-  ): ExpressionWrapper<DB, TB, number>
+    property: P
+  ): ExpressionWrapper<DB, TB, number>;
 
   /**
    * Calls the ST_WITHIN function to determine whether the GeoJSON object (GeoJSON Point, Polygon, or LineString expression) specified in the first argument is within the GeoJSON object in the second argument.
    */
-  within<
-    P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>,
-  >(
+  within<P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>>(
     property: P,
-    geo: GeoJsonObject,
-  ): ExpressionWrapper<DB, TB, boolean>
+    geo: GeoJsonObject
+  ): ExpressionWrapper<DB, TB, boolean>;
 
   /**
    * Calls the ST_WITHIN function with swapped parameters (geo first, property second).
    */
-  within<
-    P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>,
-  >(
+  within<P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>>(
     geo: GeoJsonObject,
-    property: P,
-  ): ExpressionWrapper<DB, TB, boolean>
+    property: P
+  ): ExpressionWrapper<DB, TB, boolean>;
 
   /**
    * Calls the ST_INTERSECTS function determines whether the GeoJSON object (Point, Polygon, MultiPolygon, or LineString) specified in the first argument intersects the GeoJSON object in the second argument.
    */
-  intersects<
-    P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>,
-  >(
+  intersects<P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>>(
     property: P,
-    geo: GeoJsonObject,
-  ): ExpressionWrapper<DB, TB, boolean>
+    geo: GeoJsonObject
+  ): ExpressionWrapper<DB, TB, boolean>;
 
   /**
    * Calls the ST_INTERSECTS function with swapped parameters (geo first, property second).
    */
-  intersects<
-    P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>,
-  >(
+  intersects<P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>>(
     geo: GeoJsonObject,
-    property: P,
-  ): ExpressionWrapper<DB, TB, boolean>
+    property: P
+  ): ExpressionWrapper<DB, TB, boolean>;
 }
 
-export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
-  DB,
-  TB
-> {
-  const fn = <T>(
-    name: string,
-    args?: ReadonlyArray<ReferenceExpression<DB, TB>>,
-  ): ExpressionWrapper<DB, TB, T> => {
-    return new ExpressionWrapper(
-      FunctionNode.create(name, parseReferenceExpressionOrList(args ?? [])),
-    )
-  }
+export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<DB, TB> {
+  const fn = <T>(name: string, args?: ReadonlyArray<ReferenceExpression<DB, TB>>): ExpressionWrapper<DB, TB, T> => {
+    return new ExpressionWrapper(FunctionNode.create(name, parseReferenceExpressionOrList(args ?? [])));
+  };
 
-  const agg = <O>(
-    name: string,
-    args?: ReadonlyArray<ReferenceExpression<DB, TB>>,
-  ): AggregateFunctionBuilder<DB, TB, O> => {
+  const agg = <O>(name: string, args?: ReadonlyArray<ReferenceExpression<DB, TB>>): AggregateFunctionBuilder<DB, TB, O> => {
     return new AggregateFunctionBuilder({
-      aggregateFunctionNode: AggregateFunctionNode.create(
-        name,
-        args ? parseReferenceExpressionOrList(args) : undefined,
-      ),
-    })
-  }
+      aggregateFunctionNode: AggregateFunctionNode.create(name, args ? parseReferenceExpressionOrList(args) : undefined),
+    });
+  };
 
   return Object.assign(fn, {
     agg,
 
-    avg<
-      O extends number | string | null = number | string,
-      C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>,
-    >(column: C): AggregateFunctionBuilder<DB, TB, O> {
-      return agg('AVG', [column])
+    avg<O extends number | string | null = number | string, C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>>(
+      column: C
+    ): AggregateFunctionBuilder<DB, TB, O> {
+      return agg('AVG', [column]);
     },
 
     coalesce(...values: any[]): ExpressionWrapper<DB, TB, any> {
-      return fn('coalesce', values)
+      return fn('coalesce', values);
     },
 
-    count<
-      O extends number | string | bigint,
-      C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>,
-    >(column: C): AggregateFunctionBuilder<DB, TB, O> {
-      return agg('COUNT', [column])
+    count<O extends number | string | bigint, C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>>(
+      column: C
+    ): AggregateFunctionBuilder<DB, TB, O> {
+      return agg('COUNT', [column]);
     },
 
     countAll(table?: string): any {
       return new AggregateFunctionBuilder({
-        aggregateFunctionNode: AggregateFunctionNode.create(
-          'COUNT',
-          parseSelectAll(table),
-        ),
-      })
+        aggregateFunctionNode: AggregateFunctionNode.create('COUNT', parseSelectAll(table)),
+      });
     },
 
     max(column: any): any {
-      return agg('MAX', [column])
+      return agg('MAX', [column]);
     },
 
     min(column: any): any {
-      return agg('MIN', [column])
+      return agg('MIN', [column]);
     },
 
-    sum<
-      O extends number | string | bigint | null = number | string | bigint,
-      C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>,
-    >(column: C): AggregateFunctionBuilder<DB, TB, O> {
-      return agg('SUM', [column])
+    sum<O extends number | string | bigint | null = number | string | bigint, C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>>(
+      column: C
+    ): AggregateFunctionBuilder<DB, TB, O> {
+      return agg('SUM', [column]);
     },
 
     // any<RE extends ReferenceExpression<DB, TB>>(column: RE): any {
@@ -1414,922 +1178,539 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
     //   )
     // },
 
-    abs<RE extends ReferenceExpression<DB, TB>>(
-      column: number | RE,
-    ): ExpressionWrapper<DB, TB, number> {
+    abs<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('ABS', [
-          isString(column)
-            ? parseReferenceExpression(column)
-            : sql`${column}`.toOperationNode(),
-        ]),
-      )
+        FunctionNode.create('ABS', [isString(column) ? parseReferenceExpression(column) : sql`${column}`.toOperationNode()])
+      );
     },
 
-    acos<RE extends ReferenceExpression<DB, TB>>(
-      column: number | RE,
-    ): ExpressionWrapper<DB, TB, number> {
+    acos<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('ACOS', [
-          isString(column)
-            ? parseReferenceExpression(column)
-            : sql`${column}`.toOperationNode(),
-        ]),
-      )
+        FunctionNode.create('ACOS', [isString(column) ? parseReferenceExpression(column) : sql`${column}`.toOperationNode()])
+      );
     },
 
-    asin<RE extends ReferenceExpression<DB, TB>>(
-      column: number | RE,
-    ): ExpressionWrapper<DB, TB, number> {
+    asin<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('ASIN', [
-          isString(column)
-            ? parseReferenceExpression(column)
-            : sql`${column}`.toOperationNode(),
-        ]),
-      )
+        FunctionNode.create('ASIN', [isString(column) ? parseReferenceExpression(column) : sql`${column}`.toOperationNode()])
+      );
     },
 
-    atan<RE extends ReferenceExpression<DB, TB>>(
-      column: number | RE,
-    ): ExpressionWrapper<DB, TB, number> {
+    atan<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('ATAN', [
-          isString(column)
-            ? parseReferenceExpression(column)
-            : sql`${column}`.toOperationNode(),
-        ]),
-      )
+        FunctionNode.create('ATAN', [isString(column) ? parseReferenceExpression(column) : sql`${column}`.toOperationNode()])
+      );
     },
 
-    ceiling<RE extends ReferenceExpression<DB, TB>>(
-      column: number | RE,
-    ): ExpressionWrapper<DB, TB, number> {
+    ceiling<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('CEILING', [
-          isString(column)
-            ? parseReferenceExpression(column)
-            : sql`${column}`.toOperationNode(),
-        ]),
-      )
+        FunctionNode.create('CEILING', [isString(column) ? parseReferenceExpression(column) : sql`${column}`.toOperationNode()])
+      );
     },
 
-    cos<RE extends ReferenceExpression<DB, TB>>(
-      column: number | RE,
-    ): ExpressionWrapper<DB, TB, number> {
+    cos<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('COS', [
-          isString(column)
-            ? parseReferenceExpression(column)
-            : sql`${column}`.toOperationNode(),
-        ]),
-      )
+        FunctionNode.create('COS', [isString(column) ? parseReferenceExpression(column) : sql`${column}`.toOperationNode()])
+      );
     },
 
-    cot<RE extends ReferenceExpression<DB, TB>>(
-      column: number | RE,
-    ): ExpressionWrapper<DB, TB, number> {
+    cot<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('COT', [
-          isString(column)
-            ? parseReferenceExpression(column)
-            : sql`${column}`.toOperationNode(),
-        ]),
-      )
+        FunctionNode.create('COT', [isString(column) ? parseReferenceExpression(column) : sql`${column}`.toOperationNode()])
+      );
     },
 
-    degrees<RE extends ReferenceExpression<DB, TB>>(
-      column: number | RE,
-    ): ExpressionWrapper<DB, TB, number> {
+    degrees<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('DEGREES', [
-          isString(column)
-            ? parseReferenceExpression(column)
-            : sql`${column}`.toOperationNode(),
-        ]),
-      )
+        FunctionNode.create('DEGREES', [isString(column) ? parseReferenceExpression(column) : sql`${column}`.toOperationNode()])
+      );
     },
 
-    exp<RE extends ReferenceExpression<DB, TB>>(
-      column: number | RE,
-    ): ExpressionWrapper<DB, TB, number> {
+    exp<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('EXP', [
-          isString(column)
-            ? parseReferenceExpression(column)
-            : sql`${column}`.toOperationNode(),
-        ]),
-      )
+        FunctionNode.create('EXP', [isString(column) ? parseReferenceExpression(column) : sql`${column}`.toOperationNode()])
+      );
     },
 
-    floor<RE extends ReferenceExpression<DB, TB>>(
-      column: number | RE,
-    ): ExpressionWrapper<DB, TB, number> {
+    floor<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('FLOOR', [
-          isString(column)
-            ? parseReferenceExpression(column)
-            : sql`${column}`.toOperationNode(),
-        ]),
-      )
+        FunctionNode.create('FLOOR', [isString(column) ? parseReferenceExpression(column) : sql`${column}`.toOperationNode()])
+      );
     },
 
-    intAdd<RE extends ReferenceExpression<DB, TB>>(
-      expr1: number | RE,
-      expr2: number | RE,
-    ): ExpressionWrapper<DB, TB, number> {
+    intAdd<RE extends ReferenceExpression<DB, TB>>(expr1: number | RE, expr2: number | RE): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
         FunctionNode.create('intAdd', [
-          isString(expr1)
-            ? parseReferenceExpression(expr1)
-            : sql`${expr1}`.toOperationNode(),
-          isString(expr2)
-            ? parseReferenceExpression(expr2)
-            : sql`${expr2}`.toOperationNode(),
-        ]),
-      )
+          isString(expr1) ? parseReferenceExpression(expr1) : sql`${expr1}`.toOperationNode(),
+          isString(expr2) ? parseReferenceExpression(expr2) : sql`${expr2}`.toOperationNode(),
+        ])
+      );
     },
 
-    intBitAnd<RE extends ReferenceExpression<DB, TB>>(
-      expr1: number | RE,
-      expr2: number | RE,
-    ): ExpressionWrapper<DB, TB, number> {
+    intBitAnd<RE extends ReferenceExpression<DB, TB>>(expr1: number | RE, expr2: number | RE): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
         FunctionNode.create('intBitAnd', [
-          isString(expr1)
-            ? parseReferenceExpression(expr1)
-            : sql`${expr1}`.toOperationNode(),
-          isString(expr2)
-            ? parseReferenceExpression(expr2)
-            : sql`${expr2}`.toOperationNode(),
-        ]),
-      )
+          isString(expr1) ? parseReferenceExpression(expr1) : sql`${expr1}`.toOperationNode(),
+          isString(expr2) ? parseReferenceExpression(expr2) : sql`${expr2}`.toOperationNode(),
+        ])
+      );
     },
 
-    intBitLeftShift<RE extends ReferenceExpression<DB, TB>>(
-      expr1: number | RE,
-      expr2: number | RE,
-    ): ExpressionWrapper<DB, TB, number> {
+    intBitLeftShift<RE extends ReferenceExpression<DB, TB>>(expr1: number | RE, expr2: number | RE): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
         FunctionNode.create('intBitLeftShift', [
-          isString(expr1)
-            ? parseReferenceExpression(expr1)
-            : sql`${expr1}`.toOperationNode(),
-          isString(expr2)
-            ? parseReferenceExpression(expr2)
-            : sql`${expr2}`.toOperationNode(),
-        ]),
-      )
+          isString(expr1) ? parseReferenceExpression(expr1) : sql`${expr1}`.toOperationNode(),
+          isString(expr2) ? parseReferenceExpression(expr2) : sql`${expr2}`.toOperationNode(),
+        ])
+      );
     },
 
-    intBitNot<RE extends ReferenceExpression<DB, TB>>(
-      expr: number | RE,
-    ): ExpressionWrapper<DB, TB, number> {
+    intBitNot<RE extends ReferenceExpression<DB, TB>>(expr: number | RE): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('intBitNot', [
-          isString(expr)
-            ? parseReferenceExpression(expr)
-            : sql`${expr}`.toOperationNode(),
-        ]),
-      )
+        FunctionNode.create('intBitNot', [isString(expr) ? parseReferenceExpression(expr) : sql`${expr}`.toOperationNode()])
+      );
     },
 
-    intBitOr<RE extends ReferenceExpression<DB, TB>>(
-      expr1: number | RE,
-      expr2: number | RE,
-    ): ExpressionWrapper<DB, TB, number> {
+    intBitOr<RE extends ReferenceExpression<DB, TB>>(expr1: number | RE, expr2: number | RE): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
         FunctionNode.create('intBitOr', [
-          isString(expr1)
-            ? parseReferenceExpression(expr1)
-            : sql`${expr1}`.toOperationNode(),
-          isString(expr2)
-            ? parseReferenceExpression(expr2)
-            : sql`${expr2}`.toOperationNode(),
-        ]),
-      )
+          isString(expr1) ? parseReferenceExpression(expr1) : sql`${expr1}`.toOperationNode(),
+          isString(expr2) ? parseReferenceExpression(expr2) : sql`${expr2}`.toOperationNode(),
+        ])
+      );
     },
 
-    intBitRightShift<RE extends ReferenceExpression<DB, TB>>(
-      expr1: number | RE,
-      expr2: number | RE,
-    ): ExpressionWrapper<DB, TB, number> {
+    intBitRightShift<RE extends ReferenceExpression<DB, TB>>(expr1: number | RE, expr2: number | RE): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
         FunctionNode.create('intBitRightShift', [
-          isString(expr1)
-            ? parseReferenceExpression(expr1)
-            : sql`${expr1}`.toOperationNode(),
-          isString(expr2)
-            ? parseReferenceExpression(expr2)
-            : sql`${expr2}`.toOperationNode(),
-        ]),
-      )
+          isString(expr1) ? parseReferenceExpression(expr1) : sql`${expr1}`.toOperationNode(),
+          isString(expr2) ? parseReferenceExpression(expr2) : sql`${expr2}`.toOperationNode(),
+        ])
+      );
     },
 
-    intBitXor<RE extends ReferenceExpression<DB, TB>>(
-      expr1: number | RE,
-      expr2: number | RE,
-    ): ExpressionWrapper<DB, TB, number> {
+    intBitXor<RE extends ReferenceExpression<DB, TB>>(expr1: number | RE, expr2: number | RE): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
         FunctionNode.create('intBitXor', [
-          isString(expr1)
-            ? parseReferenceExpression(expr1)
-            : sql`${expr1}`.toOperationNode(),
-          isString(expr2)
-            ? parseReferenceExpression(expr2)
-            : sql`${expr2}`.toOperationNode(),
-        ]),
-      )
+          isString(expr1) ? parseReferenceExpression(expr1) : sql`${expr1}`.toOperationNode(),
+          isString(expr2) ? parseReferenceExpression(expr2) : sql`${expr2}`.toOperationNode(),
+        ])
+      );
     },
 
-    intDiv<RE extends ReferenceExpression<DB, TB>>(
-      expr1: number | RE,
-      expr2: number | RE,
-    ): ExpressionWrapper<DB, TB, number> {
+    intDiv<RE extends ReferenceExpression<DB, TB>>(expr1: number | RE, expr2: number | RE): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
         FunctionNode.create('intDiv', [
-          isString(expr1)
-            ? parseReferenceExpression(expr1)
-            : sql`${expr1}`.toOperationNode(),
-          isString(expr2)
-            ? parseReferenceExpression(expr2)
-            : sql`${expr2}`.toOperationNode(),
-        ]),
-      )
+          isString(expr1) ? parseReferenceExpression(expr1) : sql`${expr1}`.toOperationNode(),
+          isString(expr2) ? parseReferenceExpression(expr2) : sql`${expr2}`.toOperationNode(),
+        ])
+      );
     },
 
-    intMod<RE extends ReferenceExpression<DB, TB>>(
-      expr1: number | RE,
-      expr2: number | RE,
-    ): ExpressionWrapper<DB, TB, number> {
+    intMod<RE extends ReferenceExpression<DB, TB>>(expr1: number | RE, expr2: number | RE): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
         FunctionNode.create('intMod', [
-          isString(expr1)
-            ? parseReferenceExpression(expr1)
-            : sql`${expr1}`.toOperationNode(),
-          isString(expr2)
-            ? parseReferenceExpression(expr2)
-            : sql`${expr2}`.toOperationNode(),
-        ]),
-      )
+          isString(expr1) ? parseReferenceExpression(expr1) : sql`${expr1}`.toOperationNode(),
+          isString(expr2) ? parseReferenceExpression(expr2) : sql`${expr2}`.toOperationNode(),
+        ])
+      );
     },
 
-    intMul<RE extends ReferenceExpression<DB, TB>>(
-      expr1: number | RE,
-      expr2: number | RE,
-    ): ExpressionWrapper<DB, TB, number> {
+    intMul<RE extends ReferenceExpression<DB, TB>>(expr1: number | RE, expr2: number | RE): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
         FunctionNode.create('intMul', [
-          isString(expr1)
-            ? parseReferenceExpression(expr1)
-            : sql`${expr1}`.toOperationNode(),
-          isString(expr2)
-            ? parseReferenceExpression(expr2)
-            : sql`${expr2}`.toOperationNode(),
-        ]),
-      )
+          isString(expr1) ? parseReferenceExpression(expr1) : sql`${expr1}`.toOperationNode(),
+          isString(expr2) ? parseReferenceExpression(expr2) : sql`${expr2}`.toOperationNode(),
+        ])
+      );
     },
 
-    intSub<RE extends ReferenceExpression<DB, TB>>(
-      expr1: number | RE,
-      expr2: number | RE,
-    ): ExpressionWrapper<DB, TB, number> {
+    intSub<RE extends ReferenceExpression<DB, TB>>(expr1: number | RE, expr2: number | RE): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
         FunctionNode.create('intSub', [
-          isString(expr1)
-            ? parseReferenceExpression(expr1)
-            : sql`${expr1}`.toOperationNode(),
-          isString(expr2)
-            ? parseReferenceExpression(expr2)
-            : sql`${expr2}`.toOperationNode(),
-        ]),
-      )
+          isString(expr1) ? parseReferenceExpression(expr1) : sql`${expr1}`.toOperationNode(),
+          isString(expr2) ? parseReferenceExpression(expr2) : sql`${expr2}`.toOperationNode(),
+        ])
+      );
     },
 
-    log<RE extends ReferenceExpression<DB, TB>>(
-      column: number | RE,
-      base?: number,
-    ): ExpressionWrapper<DB, TB, number> {
-      const args = [
-        isString(column)
-          ? parseReferenceExpression(column)
-          : sql`${column}`.toOperationNode(),
-      ]
+    log<RE extends ReferenceExpression<DB, TB>>(column: number | RE, base?: number): ExpressionWrapper<DB, TB, number> {
+      const args = [isString(column) ? parseReferenceExpression(column) : sql`${column}`.toOperationNode()];
 
       if (base !== undefined) {
-        args.push(sql`${base}`.toOperationNode())
+        args.push(sql`${base}`.toOperationNode());
       }
 
-      return new ExpressionWrapper(FunctionNode.create('LOG', args))
+      return new ExpressionWrapper(FunctionNode.create('LOG', args));
     },
 
-    log10<RE extends ReferenceExpression<DB, TB>>(
-      column: number | RE,
-    ): ExpressionWrapper<DB, TB, number> {
+    log10<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('LOG10', [
-          isString(column)
-            ? parseReferenceExpression(column)
-            : sql`${column}`.toOperationNode(),
-        ]),
-      )
+        FunctionNode.create('LOG10', [isString(column) ? parseReferenceExpression(column) : sql`${column}`.toOperationNode()])
+      );
     },
 
-    numberBin<RE extends ReferenceExpression<DB, TB>>(
-      column: number | RE,
-      binSize?: number,
-    ): ExpressionWrapper<DB, TB, number> {
-      const args = [
-        isString(column)
-          ? parseReferenceExpression(column)
-          : sql`${column}`.toOperationNode(),
-      ]
+    numberBin<RE extends ReferenceExpression<DB, TB>>(column: number | RE, binSize?: number): ExpressionWrapper<DB, TB, number> {
+      const args = [isString(column) ? parseReferenceExpression(column) : sql`${column}`.toOperationNode()];
 
       if (binSize !== undefined) {
-        args.push(sql`${binSize}`.toOperationNode())
+        args.push(sql`${binSize}`.toOperationNode());
       }
 
-      return new ExpressionWrapper(FunctionNode.create('NumberBin', args))
+      return new ExpressionWrapper(FunctionNode.create('NumberBin', args));
     },
 
     pi(): ExpressionWrapper<DB, TB, number> {
-      return new ExpressionWrapper(FunctionNode.create('PI', []))
+      return new ExpressionWrapper(FunctionNode.create('PI', []));
     },
 
-    power<RE extends ReferenceExpression<DB, TB>>(
-      base: number | RE,
-      exponent: number | RE,
-    ): ExpressionWrapper<DB, TB, number> {
+    power<RE extends ReferenceExpression<DB, TB>>(base: number | RE, exponent: number | RE): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
         FunctionNode.create('POWER', [
-          isString(base)
-            ? parseReferenceExpression(base)
-            : sql`${base}`.toOperationNode(),
-          isString(exponent)
-            ? parseReferenceExpression(exponent)
-            : sql`${exponent}`.toOperationNode(),
-        ]),
-      )
+          isString(base) ? parseReferenceExpression(base) : sql`${base}`.toOperationNode(),
+          isString(exponent) ? parseReferenceExpression(exponent) : sql`${exponent}`.toOperationNode(),
+        ])
+      );
     },
 
-    radians<RE extends ReferenceExpression<DB, TB>>(
-      column: number | RE,
-    ): ExpressionWrapper<DB, TB, number> {
+    radians<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('RADIANS', [
-          isString(column)
-            ? parseReferenceExpression(column)
-            : sql`${column}`.toOperationNode(),
-        ]),
-      )
+        FunctionNode.create('RADIANS', [isString(column) ? parseReferenceExpression(column) : sql`${column}`.toOperationNode()])
+      );
     },
 
     rand(): ExpressionWrapper<DB, TB, number> {
-      return new ExpressionWrapper(FunctionNode.create('RAND', []))
+      return new ExpressionWrapper(FunctionNode.create('RAND', []));
     },
 
-    round<RE extends ReferenceExpression<DB, TB>>(
-      column: number | RE,
-    ): ExpressionWrapper<DB, TB, number> {
+    round<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('ROUND', [
-          isString(column)
-            ? parseReferenceExpression(column)
-            : sql`${column}`.toOperationNode(),
-        ]),
-      )
+        FunctionNode.create('ROUND', [isString(column) ? parseReferenceExpression(column) : sql`${column}`.toOperationNode()])
+      );
     },
 
-    sign<RE extends ReferenceExpression<DB, TB>>(
-      column: number | RE,
-    ): ExpressionWrapper<DB, TB, number> {
+    sign<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('SIGN', [
-          isString(column)
-            ? parseReferenceExpression(column)
-            : sql`${column}`.toOperationNode(),
-        ]),
-      )
+        FunctionNode.create('SIGN', [isString(column) ? parseReferenceExpression(column) : sql`${column}`.toOperationNode()])
+      );
     },
 
-    sin<RE extends ReferenceExpression<DB, TB>>(
-      column: number | RE,
-    ): ExpressionWrapper<DB, TB, number> {
+    sin<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('SIN', [
-          isString(column)
-            ? parseReferenceExpression(column)
-            : sql`${column}`.toOperationNode(),
-        ]),
-      )
+        FunctionNode.create('SIN', [isString(column) ? parseReferenceExpression(column) : sql`${column}`.toOperationNode()])
+      );
     },
 
-    sqrt<RE extends ReferenceExpression<DB, TB>>(
-      column: number | RE,
-    ): ExpressionWrapper<DB, TB, number> {
+    sqrt<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('SQRT', [
-          isString(column)
-            ? parseReferenceExpression(column)
-            : sql`${column}`.toOperationNode(),
-        ]),
-      )
+        FunctionNode.create('SQRT', [isString(column) ? parseReferenceExpression(column) : sql`${column}`.toOperationNode()])
+      );
     },
 
-    square<RE extends ReferenceExpression<DB, TB>>(
-      column: number | RE,
-    ): ExpressionWrapper<DB, TB, number> {
+    square<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('SQUARE', [
-          isString(column)
-            ? parseReferenceExpression(column)
-            : sql`${column}`.toOperationNode(),
-        ]),
-      )
+        FunctionNode.create('SQUARE', [isString(column) ? parseReferenceExpression(column) : sql`${column}`.toOperationNode()])
+      );
     },
 
-    tan<RE extends ReferenceExpression<DB, TB>>(
-      column: number | RE,
-    ): ExpressionWrapper<DB, TB, number> {
+    tan<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('TAN', [
-          isString(column)
-            ? parseReferenceExpression(column)
-            : sql`${column}`.toOperationNode(),
-        ]),
-      )
+        FunctionNode.create('TAN', [isString(column) ? parseReferenceExpression(column) : sql`${column}`.toOperationNode()])
+      );
     },
 
-    trunc<RE extends ReferenceExpression<DB, TB>>(
-      column: number | RE,
-    ): ExpressionWrapper<DB, TB, number> {
+    trunc<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
-        FunctionNode.create('TRUNC', [
-          isString(column)
-            ? parseReferenceExpression(column)
-            : sql`${column}`.toOperationNode(),
-        ]),
-      )
+        FunctionNode.create('TRUNC', [isString(column) ? parseReferenceExpression(column) : sql`${column}`.toOperationNode()])
+      );
     },
 
-    isDefined<RE extends ReferenceExpression<DB, TB>>(
-      column: RE,
-    ): ExpressionWrapper<DB, TB, boolean> { 
-      return new ExpressionWrapper(
-        FunctionNode.create('IS_DEFINED', [parseReferenceExpression(column)]),
-      )
+    isDefined<RE extends ReferenceExpression<DB, TB>>(column: RE): ExpressionWrapper<DB, TB, boolean> {
+      return new ExpressionWrapper(FunctionNode.create('IS_DEFINED', [parseReferenceExpression(column)]));
     },
 
-    isNull<RE extends ReferenceExpression<DB, TB>>(
-      column: RE,
-    ): ExpressionWrapper<DB, TB, boolean> { 
-      return new ExpressionWrapper(
-        FunctionNode.create('IS_NULL', [parseReferenceExpression(column)]),
-      )
+    isNull<RE extends ReferenceExpression<DB, TB>>(column: RE): ExpressionWrapper<DB, TB, boolean> {
+      return new ExpressionWrapper(FunctionNode.create('IS_NULL', [parseReferenceExpression(column)]));
     },
 
-    isArray<RE extends ReferenceExpression<DB, TB>>(
-      column: RE,
-    ): ExpressionWrapper<DB, TB, boolean> { 
-      return new ExpressionWrapper(
-        FunctionNode.create('IS_ARRAY', [parseReferenceExpression(column)]),
-      )
+    isArray<RE extends ReferenceExpression<DB, TB>>(column: RE): ExpressionWrapper<DB, TB, boolean> {
+      return new ExpressionWrapper(FunctionNode.create('IS_ARRAY', [parseReferenceExpression(column)]));
     },
 
-    isBool<RE extends ReferenceExpression<DB, TB>>(
-      column: RE,
-    ): ExpressionWrapper<DB, TB, boolean> { 
-      return new ExpressionWrapper(
-        FunctionNode.create('IS_BOOL', [parseReferenceExpression(column)]),
-      )
+    isBool<RE extends ReferenceExpression<DB, TB>>(column: RE): ExpressionWrapper<DB, TB, boolean> {
+      return new ExpressionWrapper(FunctionNode.create('IS_BOOL', [parseReferenceExpression(column)]));
     },
 
-    isFiniteNumber<RE extends ReferenceExpression<DB, TB>>(
-      column: RE,
-    ): ExpressionWrapper<DB, TB, boolean> { 
-      return new ExpressionWrapper(
-        FunctionNode.create('IS_FINITE_NUMBER', [parseReferenceExpression(column)]),
-      )
+    isFiniteNumber<RE extends ReferenceExpression<DB, TB>>(column: RE): ExpressionWrapper<DB, TB, boolean> {
+      return new ExpressionWrapper(FunctionNode.create('IS_FINITE_NUMBER', [parseReferenceExpression(column)]));
     },
 
-    isInteger<RE extends ReferenceExpression<DB, TB>>(
-      column: RE,
-    ): ExpressionWrapper<DB, TB, boolean> { 
-      return new ExpressionWrapper(
-        FunctionNode.create('IS_INTEGER', [parseReferenceExpression(column)]),
-      )
+    isInteger<RE extends ReferenceExpression<DB, TB>>(column: RE): ExpressionWrapper<DB, TB, boolean> {
+      return new ExpressionWrapper(FunctionNode.create('IS_INTEGER', [parseReferenceExpression(column)]));
     },
 
-    isNumber<RE extends ReferenceExpression<DB, TB>>(
-      column: RE,
-    ): ExpressionWrapper<DB, TB, boolean> { 
-      return new ExpressionWrapper(
-        FunctionNode.create('IS_NUMBER', [parseReferenceExpression(column)]),
-      )
+    isNumber<RE extends ReferenceExpression<DB, TB>>(column: RE): ExpressionWrapper<DB, TB, boolean> {
+      return new ExpressionWrapper(FunctionNode.create('IS_NUMBER', [parseReferenceExpression(column)]));
     },
 
-    isObject<RE extends ReferenceExpression<DB, TB>>(
-      column: RE,
-    ): ExpressionWrapper<DB, TB, boolean> { 
-      return new ExpressionWrapper(
-        FunctionNode.create('IS_OBJECT', [parseReferenceExpression(column)]),
-      )
+    isObject<RE extends ReferenceExpression<DB, TB>>(column: RE): ExpressionWrapper<DB, TB, boolean> {
+      return new ExpressionWrapper(FunctionNode.create('IS_OBJECT', [parseReferenceExpression(column)]));
     },
 
-    isPrimitive<RE extends ReferenceExpression<DB, TB>>(
-      column: RE,
-    ): ExpressionWrapper<DB, TB, boolean> { 
-      return new ExpressionWrapper(
-        FunctionNode.create('IS_PRIMITIVE', [parseReferenceExpression(column)]),
-      )
+    isPrimitive<RE extends ReferenceExpression<DB, TB>>(column: RE): ExpressionWrapper<DB, TB, boolean> {
+      return new ExpressionWrapper(FunctionNode.create('IS_PRIMITIVE', [parseReferenceExpression(column)]));
     },
 
-    isString<RE extends ReferenceExpression<DB, TB>>(
-      column: RE,
-    ): ExpressionWrapper<DB, TB, boolean> { 
-      return new ExpressionWrapper(
-        FunctionNode.create('IS_STRING', [parseReferenceExpression(column)]),
-      )
+    isString<RE extends ReferenceExpression<DB, TB>>(column: RE): ExpressionWrapper<DB, TB, boolean> {
+      return new ExpressionWrapper(FunctionNode.create('IS_STRING', [parseReferenceExpression(column)]));
     },
 
-    contains<RE extends StringReference<DB, TB>>(
-      column: RE,
-      searchString: string,
-      ignoreCase?: boolean,
-    ): ExpressionWrapper<DB, TB, boolean> {
-      const args = [
-        parseReferenceExpression(column),
-        sql`${searchString}`.toOperationNode(),
-      ]
+    contains<RE extends StringReference<DB, TB>>(column: RE, searchString: string, ignoreCase?: boolean): ExpressionWrapper<DB, TB, boolean> {
+      const args = [parseReferenceExpression(column), sql`${searchString}`.toOperationNode()];
 
       if (ignoreCase !== undefined) {
-        args.push(sql`${ignoreCase}`.toOperationNode())
+        args.push(sql`${ignoreCase}`.toOperationNode());
       }
 
-      return new ExpressionWrapper(FunctionNode.create('CONTAINS', args))
+      return new ExpressionWrapper(FunctionNode.create('CONTAINS', args));
     },
 
-    containsRef<RE extends StringReference<DB, TB>>(
-      column: RE,
-      searchStringColumn: RE,
-      ignoreCase?: boolean,
-    ): ExpressionWrapper<DB, TB, boolean> {
-      const args = [
-        parseReferenceExpression(column),
-        parseReferenceExpression(searchStringColumn),
-      ]
+    containsRef<RE extends StringReference<DB, TB>>(column: RE, searchStringColumn: RE, ignoreCase?: boolean): ExpressionWrapper<DB, TB, boolean> {
+      const args = [parseReferenceExpression(column), parseReferenceExpression(searchStringColumn)];
 
       if (ignoreCase !== undefined) {
-        args.push(sql`${ignoreCase}`.toOperationNode())
+        args.push(sql`${ignoreCase}`.toOperationNode());
       }
 
-      return new ExpressionWrapper(FunctionNode.create('CONTAINS', args))
+      return new ExpressionWrapper(FunctionNode.create('CONTAINS', args));
     },
 
-    endsWith<RE extends StringReference<DB, TB>>(
-      column: RE,
-      searchString: string,
-      ignoreCase?: boolean,
-    ): ExpressionWrapper<DB, TB, boolean> {
-      const args = [
-        parseReferenceExpression(column),
-        sql`${searchString}`.toOperationNode(),
-      ]
+    endsWith<RE extends StringReference<DB, TB>>(column: RE, searchString: string, ignoreCase?: boolean): ExpressionWrapper<DB, TB, boolean> {
+      const args = [parseReferenceExpression(column), sql`${searchString}`.toOperationNode()];
 
       if (ignoreCase !== undefined) {
-        args.push(sql`${ignoreCase}`.toOperationNode())
+        args.push(sql`${ignoreCase}`.toOperationNode());
       }
 
-      return new ExpressionWrapper(FunctionNode.create('ENDSWITH', args))
+      return new ExpressionWrapper(FunctionNode.create('ENDSWITH', args));
     },
 
-    endsWithRef<RE extends StringReference<DB, TB>>(
-      column: RE,
-      searchStringColumn: RE,
-      ignoreCase?: boolean,
-    ): ExpressionWrapper<DB, TB, boolean> {
-      const args = [
-        parseReferenceExpression(column),
-        parseReferenceExpression(searchStringColumn),
-      ]
+    endsWithRef<RE extends StringReference<DB, TB>>(column: RE, searchStringColumn: RE, ignoreCase?: boolean): ExpressionWrapper<DB, TB, boolean> {
+      const args = [parseReferenceExpression(column), parseReferenceExpression(searchStringColumn)];
 
       if (ignoreCase !== undefined) {
-        args.push(sql`${ignoreCase}`.toOperationNode())
+        args.push(sql`${ignoreCase}`.toOperationNode());
       }
 
-      return new ExpressionWrapper(FunctionNode.create('ENDSWITH', args))
+      return new ExpressionWrapper(FunctionNode.create('ENDSWITH', args));
     },
 
-    indexOf<RE extends StringReference<DB, TB>>(
-      column: RE,
-      searchString: string,
-      startIndex?: number,
-    ): ExpressionWrapper<DB, TB, number> {
-      const args = [
-        parseReferenceExpression(column),
-        sql`${searchString}`.toOperationNode(),
-      ]
+    indexOf<RE extends StringReference<DB, TB>>(column: RE, searchString: string, startIndex?: number): ExpressionWrapper<DB, TB, number> {
+      const args = [parseReferenceExpression(column), sql`${searchString}`.toOperationNode()];
 
       if (startIndex !== undefined) {
-        args.push(sql`${startIndex}`.toOperationNode())
+        args.push(sql`${startIndex}`.toOperationNode());
       }
 
-      return new ExpressionWrapper(FunctionNode.create('INDEX_OF', args))
+      return new ExpressionWrapper(FunctionNode.create('INDEX_OF', args));
     },
 
-    indexOfRef<RE extends StringReference<DB, TB>>(
-      column: RE,
-      searchStringColumn: RE,
-      startIndex?: number,
-    ): ExpressionWrapper<DB, TB, number> {
-      const args = [
-        parseReferenceExpression(column),
-        parseReferenceExpression(searchStringColumn),
-      ]
+    indexOfRef<RE extends StringReference<DB, TB>>(column: RE, searchStringColumn: RE, startIndex?: number): ExpressionWrapper<DB, TB, number> {
+      const args = [parseReferenceExpression(column), parseReferenceExpression(searchStringColumn)];
 
       if (startIndex !== undefined) {
-        args.push(sql`${startIndex}`.toOperationNode())
+        args.push(sql`${startIndex}`.toOperationNode());
       }
 
-      return new ExpressionWrapper(FunctionNode.create('INDEX_OF', args))
+      return new ExpressionWrapper(FunctionNode.create('INDEX_OF', args));
     },
 
-    left<RE extends StringReference<DB, TB>>(
-      column: RE,
-      length: number,
-    ): ExpressionWrapper<DB, TB, string> {
-      const args = [
-        parseReferenceExpression(column),
-        sql`${length}`.toOperationNode(),
-      ]
+    left<RE extends StringReference<DB, TB>>(column: RE, length: number): ExpressionWrapper<DB, TB, string> {
+      const args = [parseReferenceExpression(column), sql`${length}`.toOperationNode()];
 
-      return new ExpressionWrapper(FunctionNode.create('LEFT', args))
+      return new ExpressionWrapper(FunctionNode.create('LEFT', args));
     },
 
-    len<RE extends StringReference<DB, TB>>( // there is a readonly 'length' property in the prototype of a function (ie, fn), so we have to use 'len'.
-      column: RE,
+    len<RE extends StringReference<DB, TB>>(
+      // there is a readonly 'length' property in the prototype of a function (ie, fn), so we have to use 'len'.
+      column: RE
     ): ExpressionWrapper<DB, TB, number> {
-      return new ExpressionWrapper(
-        FunctionNode.create('LENGTH', [parseReferenceExpression(column)]),
-      )
+      return new ExpressionWrapper(FunctionNode.create('LENGTH', [parseReferenceExpression(column)]));
     },
 
-    lower<RE extends StringReference<DB, TB>>(
-      column: RE,
-    ): ExpressionWrapper<DB, TB, string> {
-      return new ExpressionWrapper(
-        FunctionNode.create('LOWER', [parseReferenceExpression(column)]),
-      )
+    lower<RE extends StringReference<DB, TB>>(column: RE): ExpressionWrapper<DB, TB, string> {
+      return new ExpressionWrapper(FunctionNode.create('LOWER', [parseReferenceExpression(column)]));
     },
 
-    ltrim<RE extends StringReference<DB, TB>>(
-      column: RE,
-      trimStr?: string,
-    ): ExpressionWrapper<DB, TB, string> {
-      const args = [parseReferenceExpression(column)]
+    ltrim<RE extends StringReference<DB, TB>>(column: RE, trimStr?: string): ExpressionWrapper<DB, TB, string> {
+      const args = [parseReferenceExpression(column)];
 
       if (trimStr !== undefined) {
-        args.push(sql`${trimStr}`.toOperationNode())
+        args.push(sql`${trimStr}`.toOperationNode());
       }
 
-      return new ExpressionWrapper(FunctionNode.create('LTRIM', args))
+      return new ExpressionWrapper(FunctionNode.create('LTRIM', args));
     },
 
-    regexMatch<RE extends StringReference<DB, TB>>(
-      column: RE,
-      pattern: string,
-      modifiers?: string,
-    ): ExpressionWrapper<DB, TB, boolean> {
-      const args = [
-        parseReferenceExpression(column),
-        sql`${pattern}`.toOperationNode(),
-      ]
+    regexMatch<RE extends StringReference<DB, TB>>(column: RE, pattern: string, modifiers?: string): ExpressionWrapper<DB, TB, boolean> {
+      const args = [parseReferenceExpression(column), sql`${pattern}`.toOperationNode()];
 
       if (modifiers !== undefined) {
-        args.push(sql`${modifiers}`.toOperationNode())
+        args.push(sql`${modifiers}`.toOperationNode());
       }
 
-      return new ExpressionWrapper(FunctionNode.create('REGEXMATCH', args))
+      return new ExpressionWrapper(FunctionNode.create('REGEXMATCH', args));
     },
 
-    replace<RE extends StringReference<DB, TB>>(
-      column: RE,
-      searchStr: string,
-      replaceStr: string,
-    ): ExpressionWrapper<DB, TB, string> {
-      const args = [
-        parseReferenceExpression(column),
-        sql`${searchStr}`.toOperationNode(),
-        sql`${replaceStr}`.toOperationNode(),
-      ]
+    replace<RE extends StringReference<DB, TB>>(column: RE, searchStr: string, replaceStr: string): ExpressionWrapper<DB, TB, string> {
+      const args = [parseReferenceExpression(column), sql`${searchStr}`.toOperationNode(), sql`${replaceStr}`.toOperationNode()];
 
-      return new ExpressionWrapper(FunctionNode.create('REPLACE', args))
+      return new ExpressionWrapper(FunctionNode.create('REPLACE', args));
     },
 
-    replicate<RE extends StringReference<DB, TB>>(
-      column: RE,
-      count: number,
-    ): ExpressionWrapper<DB, TB, string> {
-      const args = [
-        parseReferenceExpression(column),
-        sql`${count}`.toOperationNode(),
-      ]
+    replicate<RE extends StringReference<DB, TB>>(column: RE, count: number): ExpressionWrapper<DB, TB, string> {
+      const args = [parseReferenceExpression(column), sql`${count}`.toOperationNode()];
 
-      return new ExpressionWrapper(FunctionNode.create('REPLICATE', args))
+      return new ExpressionWrapper(FunctionNode.create('REPLICATE', args));
     },
 
-    reverse<RE extends StringReference<DB, TB>>(
-      column: RE,
-    ): ExpressionWrapper<DB, TB, string> {
-      return new ExpressionWrapper(
-        FunctionNode.create('REVERSE', [parseReferenceExpression(column)]),
-      )
+    reverse<RE extends StringReference<DB, TB>>(column: RE): ExpressionWrapper<DB, TB, string> {
+      return new ExpressionWrapper(FunctionNode.create('REVERSE', [parseReferenceExpression(column)]));
     },
 
-    right<RE extends StringReference<DB, TB>>(
-      column: RE,
-      length: number,
-    ): ExpressionWrapper<DB, TB, string> {
-      const args = [
-        parseReferenceExpression(column),
-        sql`${length}`.toOperationNode(),
-      ]
+    right<RE extends StringReference<DB, TB>>(column: RE, length: number): ExpressionWrapper<DB, TB, string> {
+      const args = [parseReferenceExpression(column), sql`${length}`.toOperationNode()];
 
-      return new ExpressionWrapper(FunctionNode.create('RIGHT', args))
+      return new ExpressionWrapper(FunctionNode.create('RIGHT', args));
     },
 
-    rtrim<RE extends StringReference<DB, TB>>(
-      column: RE,
-      trimStr?: string,
-    ): ExpressionWrapper<DB, TB, string> {
-      const args = [parseReferenceExpression(column)]
+    rtrim<RE extends StringReference<DB, TB>>(column: RE, trimStr?: string): ExpressionWrapper<DB, TB, string> {
+      const args = [parseReferenceExpression(column)];
 
       if (trimStr !== undefined) {
-        args.push(sql`${trimStr}`.toOperationNode())
+        args.push(sql`${trimStr}`.toOperationNode());
       }
 
-      return new ExpressionWrapper(FunctionNode.create('RTRIM', args))
+      return new ExpressionWrapper(FunctionNode.create('RTRIM', args));
     },
 
-    startsWith<RE extends StringReference<DB, TB>>(
-      column: RE,
-      searchString: string,
-      ignoreCase?: boolean,
-    ): ExpressionWrapper<DB, TB, boolean> {
-      const args = [
-        parseReferenceExpression(column),
-        sql`${searchString}`.toOperationNode(),
-      ]
+    startsWith<RE extends StringReference<DB, TB>>(column: RE, searchString: string, ignoreCase?: boolean): ExpressionWrapper<DB, TB, boolean> {
+      const args = [parseReferenceExpression(column), sql`${searchString}`.toOperationNode()];
 
       if (ignoreCase !== undefined) {
-        args.push(sql`${ignoreCase}`.toOperationNode())
+        args.push(sql`${ignoreCase}`.toOperationNode());
       }
 
-      return new ExpressionWrapper(FunctionNode.create('STARTSWITH', args))
+      return new ExpressionWrapper(FunctionNode.create('STARTSWITH', args));
     },
 
-    startsWithRef<RE extends StringReference<DB, TB>>(
-      column: RE,
-      searchStringColumn: RE,
-      ignoreCase?: boolean,
-    ): ExpressionWrapper<DB, TB, boolean> {
-      const args = [
-        parseReferenceExpression(column),
-        parseReferenceExpression(searchStringColumn),
-      ]
+    startsWithRef<RE extends StringReference<DB, TB>>(column: RE, searchStringColumn: RE, ignoreCase?: boolean): ExpressionWrapper<DB, TB, boolean> {
+      const args = [parseReferenceExpression(column), parseReferenceExpression(searchStringColumn)];
 
       if (ignoreCase !== undefined) {
-        args.push(sql`${ignoreCase}`.toOperationNode())
+        args.push(sql`${ignoreCase}`.toOperationNode());
       }
 
-      return new ExpressionWrapper(FunctionNode.create('STARTSWITH', args))
+      return new ExpressionWrapper(FunctionNode.create('STARTSWITH', args));
     },
 
-    stringEquals<RE extends StringReference<DB, TB>>(
-      column: RE,
-      compareString: string,
-      ignoreCase?: boolean,
-    ): ExpressionWrapper<DB, TB, boolean> {
-      const args = [
-        parseReferenceExpression(column),
-        sql`${compareString}`.toOperationNode(),
-      ]
+    stringEquals<RE extends StringReference<DB, TB>>(column: RE, compareString: string, ignoreCase?: boolean): ExpressionWrapper<DB, TB, boolean> {
+      const args = [parseReferenceExpression(column), sql`${compareString}`.toOperationNode()];
 
       if (ignoreCase !== undefined) {
-        args.push(sql`${ignoreCase}`.toOperationNode())
+        args.push(sql`${ignoreCase}`.toOperationNode());
       }
 
-      return new ExpressionWrapper(FunctionNode.create('STRINGEQUALS', args))
+      return new ExpressionWrapper(FunctionNode.create('STRINGEQUALS', args));
     },
 
     stringEqualsRef<RE extends StringReference<DB, TB>>(
       column: RE,
       compareStringColumn: RE,
-      ignoreCase?: boolean,
+      ignoreCase?: boolean
     ): ExpressionWrapper<DB, TB, boolean> {
-      const args = [
-        parseReferenceExpression(column),
-        parseReferenceExpression(compareStringColumn),
-      ]
+      const args = [parseReferenceExpression(column), parseReferenceExpression(compareStringColumn)];
 
       if (ignoreCase !== undefined) {
-        args.push(sql`${ignoreCase}`.toOperationNode())
+        args.push(sql`${ignoreCase}`.toOperationNode());
       }
 
-      return new ExpressionWrapper(FunctionNode.create('STRINGEQUALS', args))
+      return new ExpressionWrapper(FunctionNode.create('STRINGEQUALS', args));
     },
 
-    substring<RE extends StringReference<DB, TB>>(
-      column: RE,
-      start: number,
-      length?: number,
-    ): ExpressionWrapper<DB, TB, string> {
-      const args = [
-        parseReferenceExpression(column),
-        sql`${start}`.toOperationNode(),
-      ]
+    substring<RE extends StringReference<DB, TB>>(column: RE, start: number, length?: number): ExpressionWrapper<DB, TB, string> {
+      const args = [parseReferenceExpression(column), sql`${start}`.toOperationNode()];
 
       if (length !== undefined) {
-        args.push(sql`${length}`.toOperationNode())
+        args.push(sql`${length}`.toOperationNode());
       }
 
-      return new ExpressionWrapper(FunctionNode.create('SUBSTRING', args))
+      return new ExpressionWrapper(FunctionNode.create('SUBSTRING', args));
     },
 
-    trim<RE extends StringReference<DB, TB>>(
-      column: RE,
-      trimStr?: string,
-    ): ExpressionWrapper<DB, TB, string> {
-      const args = [parseReferenceExpression(column)]
+    trim<RE extends StringReference<DB, TB>>(column: RE, trimStr?: string): ExpressionWrapper<DB, TB, string> {
+      const args = [parseReferenceExpression(column)];
 
       if (trimStr !== undefined) {
-        args.push(sql`${trimStr}`.toOperationNode())
+        args.push(sql`${trimStr}`.toOperationNode());
       }
 
-      return new ExpressionWrapper(FunctionNode.create('TRIM', args))
+      return new ExpressionWrapper(FunctionNode.create('TRIM', args));
     },
 
-    upper<RE extends StringReference<DB, TB>>(
-      column: RE,
-    ): ExpressionWrapper<DB, TB, string> {
-      return new ExpressionWrapper(
-        FunctionNode.create('UPPER', [parseReferenceExpression(column)]),
-      )
+    upper<RE extends StringReference<DB, TB>>(column: RE): ExpressionWrapper<DB, TB, string> {
+      return new ExpressionWrapper(FunctionNode.create('UPPER', [parseReferenceExpression(column)]));
     },
 
     dateTimeAdd<RE extends ReferenceExpression<DB, TB>>(
       dateTimePart: 'yyyy' | 'MM' | 'dd' | 'hh' | 'mm' | 'ss' | 'ms',
       numericExpression: number,
-      dateTime: Date | RE,
+      dateTime: Date | RE
     ): ExpressionWrapper<DB, TB, string> {
       return new ExpressionWrapper(
         FunctionNode.create('DateTimeAdd', [
           sql`${dateTimePart}`.toOperationNode(),
 
-          isString(numericExpression)
-            ? parseReferenceExpression(numericExpression)
-            : sql`${numericExpression}`.toOperationNode(),
+          isString(numericExpression) ? parseReferenceExpression(numericExpression) : sql`${numericExpression}`.toOperationNode(),
 
           isString(dateTime) // ie, an RE not a Date object
             ? parseReferenceExpression(dateTime)
             : sql`${(dateTime as Date).toISOString()}`.toOperationNode(),
-        ]),
-      )
+        ])
+      );
     },
 
     dateTimeBin<RE extends ReferenceExpression<DB, TB>>(
       dateTime: Date | RE,
       dateTimePart: 'yyyy' | 'MM' | 'dd' | 'hh' | 'mm' | 'ss' | 'ms',
       binSize?: number,
-      binStartDateTime?: Date | RE,
+      binStartDateTime?: Date | RE
     ): ExpressionWrapper<DB, TB, string> {
       const args = [
-        isString(dateTime)
-          ? parseReferenceExpression(dateTime)
-          : sql`${(dateTime as Date).toISOString()}`.toOperationNode(),
+        isString(dateTime) ? parseReferenceExpression(dateTime) : sql`${(dateTime as Date).toISOString()}`.toOperationNode(),
 
         sql`${dateTimePart}`.toOperationNode(),
-      ]
+      ];
 
       if (binSize !== undefined) {
-        args.push(sql`${binSize}`.toOperationNode())
+        args.push(sql`${binSize}`.toOperationNode());
       }
 
       if (binStartDateTime !== undefined) {
         args.push(
           typeof binStartDateTime === 'string'
             ? parseReferenceExpression(binStartDateTime)
-            : sql`${(binStartDateTime as Date).toISOString()}`.toOperationNode(),
-        )
+            : sql`${(binStartDateTime as Date).toISOString()}`.toOperationNode()
+        );
       }
 
-      return new ExpressionWrapper(FunctionNode.create('DateTimeBin', args))
+      return new ExpressionWrapper(FunctionNode.create('DateTimeBin', args));
     },
 
     dateTimeDiff<RE extends ReferenceExpression<DB, TB>>(
       dateTimePart: 'yyyy' | 'MM' | 'dd' | 'hh' | 'mm' | 'ss' | 'ms',
       startDateTime: Date | RE,
-      endDateTime: Date | RE,
+      endDateTime: Date | RE
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
         FunctionNode.create('DateTimeDiff', [
@@ -2342,8 +1723,8 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
           typeof endDateTime === 'string' // ie, an RE not a Date object
             ? parseReferenceExpression(endDateTime)
             : sql`${(endDateTime as Date).toISOString()}`.toOperationNode(),
-        ]),
-      )
+        ])
+      );
     },
 
     dateTimeFromParts(
@@ -2353,38 +1734,32 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       hour?: number,
       minute?: number,
       second?: number,
-      secondFraction?: number,
+      secondFraction?: number
     ): ExpressionWrapper<DB, TB, string> {
-      const args = [
-        sql`${year}`.toOperationNode(),
-        sql`${month}`.toOperationNode(),
-        sql`${day}`.toOperationNode(),
-      ]
+      const args = [sql`${year}`.toOperationNode(), sql`${month}`.toOperationNode(), sql`${day}`.toOperationNode()];
 
       if (hour !== undefined) {
-        args.push(sql`${hour}`.toOperationNode())
+        args.push(sql`${hour}`.toOperationNode());
       }
 
       if (minute !== undefined) {
-        args.push(sql`${minute}`.toOperationNode())
+        args.push(sql`${minute}`.toOperationNode());
       }
 
       if (second !== undefined) {
-        args.push(sql`${second}`.toOperationNode())
+        args.push(sql`${second}`.toOperationNode());
       }
 
       if (secondFraction !== undefined) {
-        args.push(sql`${secondFraction}`.toOperationNode())
+        args.push(sql`${secondFraction}`.toOperationNode());
       }
 
-      return new ExpressionWrapper(
-        FunctionNode.create('DateTimeFromParts', args),
-      )
+      return new ExpressionWrapper(FunctionNode.create('DateTimeFromParts', args));
     },
 
     dateTimePart<RE extends ReferenceExpression<DB, TB>>(
       dateTimePart: 'yyyy' | 'MM' | 'dd' | 'hh' | 'mm' | 'ss' | 'ms',
-      dateTime: Date | RE,
+      dateTime: Date | RE
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
         FunctionNode.create('DateTimePart', [
@@ -2393,94 +1768,66 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
           isString(dateTime) // ie, an RE not a Date object
             ? parseReferenceExpression(dateTime)
             : sql`${(dateTime as Date).toISOString()}`.toOperationNode(),
-        ]),
-      )
+        ])
+      );
     },
 
-    dateTimeToTicks<RE extends ReferenceExpression<DB, TB>>(
-      dateTime: Date | RE,
-    ): ExpressionWrapper<DB, TB, number> {
+    dateTimeToTicks<RE extends ReferenceExpression<DB, TB>>(dateTime: Date | RE): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
         FunctionNode.create('DateTimeToTicks', [
           isString(dateTime) // ie, an RE not a Date object
             ? parseReferenceExpression(dateTime)
             : sql`${(dateTime as Date).toISOString()}`.toOperationNode(),
-        ]),
-      )
+        ])
+      );
     },
 
-    dateTimeToTimestamp<RE extends ReferenceExpression<DB, TB>>(
-      dateTime: Date | RE,
-    ): ExpressionWrapper<DB, TB, number> {
+    dateTimeToTimestamp<RE extends ReferenceExpression<DB, TB>>(dateTime: Date | RE): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
         FunctionNode.create('DateTimeToTimestamp', [
           isString(dateTime) // ie, an RE not a Date object
             ? parseReferenceExpression(dateTime)
             : sql`${(dateTime as Date).toISOString()}`.toOperationNode(),
-        ]),
-      )
+        ])
+      );
     },
 
     getCurrentDateTime(): ExpressionWrapper<DB, TB, string> {
-      return new ExpressionWrapper(
-        FunctionNode.create('GetCurrentDateTime', []),
-      )
+      return new ExpressionWrapper(FunctionNode.create('GetCurrentDateTime', []));
     },
 
     getCurrentDateTimeStatic(): ExpressionWrapper<DB, TB, string> {
-      return new ExpressionWrapper(
-        FunctionNode.create('GetCurrentDateTimeStatic', []),
-      )
+      return new ExpressionWrapper(FunctionNode.create('GetCurrentDateTimeStatic', []));
     },
 
     getCurrentTicks(): ExpressionWrapper<DB, TB, number> {
-      return new ExpressionWrapper(FunctionNode.create('GetCurrentTicks', []))
+      return new ExpressionWrapper(FunctionNode.create('GetCurrentTicks', []));
     },
 
     getCurrentTicksStatic(): ExpressionWrapper<DB, TB, number> {
-      return new ExpressionWrapper(
-        FunctionNode.create('GetCurrentTicksStatic', []),
-      )
+      return new ExpressionWrapper(FunctionNode.create('GetCurrentTicksStatic', []));
     },
 
     getCurrentTimestamp(): ExpressionWrapper<DB, TB, number> {
-      return new ExpressionWrapper(
-        FunctionNode.create('GetCurrentTimestamp', []),
-      )
+      return new ExpressionWrapper(FunctionNode.create('GetCurrentTimestamp', []));
     },
 
     getCurrentTimestampStatic(): ExpressionWrapper<DB, TB, number> {
-      return new ExpressionWrapper(
-        FunctionNode.create('GetCurrentTimestampStatic', []),
-      )
+      return new ExpressionWrapper(FunctionNode.create('GetCurrentTimestampStatic', []));
     },
 
     ticksToDateTime(ticks: number): ExpressionWrapper<DB, TB, string> {
-      return new ExpressionWrapper(
-        FunctionNode.create('TicksToDateTime', [
-          sql`${ticks}`.toOperationNode(),
-        ]),
-      )
+      return new ExpressionWrapper(FunctionNode.create('TicksToDateTime', [sql`${ticks}`.toOperationNode()]));
     },
 
     timestampToDateTime(timestamp: number): ExpressionWrapper<DB, TB, string> {
-      return new ExpressionWrapper(
-        FunctionNode.create('TimestampToDateTime', [
-          sql`${timestamp}`.toOperationNode(),
-        ]),
-      )
+      return new ExpressionWrapper(FunctionNode.create('TimestampToDateTime', [sql`${timestamp}`.toOperationNode()]));
     },
 
-    fullTextContains<RE extends StringReference<DB, TB>>(
-      property: RE,
-      searchString: string,
-    ): ExpressionWrapper<DB, TB, boolean> {
+    fullTextContains<RE extends StringReference<DB, TB>>(property: RE, searchString: string): ExpressionWrapper<DB, TB, boolean> {
       return new ExpressionWrapper(
-        FunctionNode.create('FullTextContains', [
-          parseReferenceExpression(property),
-          sql`${searchString}`.toOperationNode(),
-        ]),
-      )
+        FunctionNode.create('FullTextContains', [parseReferenceExpression(property), sql`${searchString}`.toOperationNode()])
+      );
     },
 
     fullTextContainsAll<RE extends StringReference<DB, TB>>(
@@ -2488,15 +1835,8 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       searchString: string,
       ...additionalSearchStrings: ReadonlyArray<string>
     ): ExpressionWrapper<DB, TB, boolean> {
-      const args = [searchString, ...additionalSearchStrings].map((s) =>
-        sql`${s}`.toOperationNode(),
-      )
-      return new ExpressionWrapper(
-        FunctionNode.create('FullTextContainsAll', [
-          parseReferenceExpression(property),
-          ...args,
-        ]),
-      )
+      const args = [searchString, ...additionalSearchStrings].map(s => sql`${s}`.toOperationNode());
+      return new ExpressionWrapper(FunctionNode.create('FullTextContainsAll', [parseReferenceExpression(property), ...args]));
     },
 
     fullTextContainsAny<RE extends StringReference<DB, TB>>(
@@ -2504,15 +1844,8 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       searchString: string,
       ...additionalSearchStrings: ReadonlyArray<string>
     ): ExpressionWrapper<DB, TB, boolean> {
-      const args = [searchString, ...additionalSearchStrings].map((s) =>
-        sql`${s}`.toOperationNode(),
-      )
-      return new ExpressionWrapper(
-        FunctionNode.create('FullTextContainsAny', [
-          parseReferenceExpression(property),
-          ...args,
-        ]),
-      )
+      const args = [searchString, ...additionalSearchStrings].map(s => sql`${s}`.toOperationNode());
+      return new ExpressionWrapper(FunctionNode.create('FullTextContainsAny', [parseReferenceExpression(property), ...args]));
     },
 
     fullTextScore<RE extends StringReference<DB, TB>>(
@@ -2520,258 +1853,243 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       searchString: string,
       ...additionalSearchStrings: ReadonlyArray<string>
     ): ExpressionWrapper<DB, TB, number> {
-      const args = [searchString, ...additionalSearchStrings].map((s) =>
-        sql`${s}`.toOperationNode(),
-      )
-      return new ExpressionWrapper(
-        FunctionNode.create('FullTextScore', [
-          parseReferenceExpression(property),
-          ...args,
-        ]),
-      )
+      const args = [searchString, ...additionalSearchStrings].map(s => sql`${s}`.toOperationNode());
+      return new ExpressionWrapper(FunctionNode.create('FullTextScore', [parseReferenceExpression(property), ...args]));
     },
 
     vectorDistance<
       P extends AnyArrayPropertyPathWithTable<DB, TB>,
       O extends {
-        distanceFunction: 'cosine' | 'euclidean' | 'inner-product'
-        dataType: 'float32' | 'int8' | 'uint8'
-        searchListSizeMultiplier: number
-        quantizedVectorListMultiplier: number
+        distanceFunction: 'cosine' | 'euclidean' | 'inner-product';
+        dataType: 'float32' | 'int8' | 'uint8';
+        searchListSizeMultiplier: number;
+        quantizedVectorListMultiplier: number;
       } = {
-        distanceFunction: 'cosine'
-        dataType: 'float32'
-        searchListSizeMultiplier: 10
-        quantizedVectorListMultiplier: 5
+        distanceFunction: 'cosine';
+        dataType: 'float32';
+        searchListSizeMultiplier: 10;
+        quantizedVectorListMultiplier: 5;
       },
-    >(
-      vectorProperty: P,
-      queryVector: number[],
-      useIndex?: boolean,
-      options?: O,
-    ): ExpressionWrapper<DB, TB, number> {
-      const args = [
-        parseReferenceExpression(vectorProperty),
-        sql`${queryVector}`.toOperationNode(),
-      ]
+    >(vectorProperty: P, queryVector: number[], useIndex?: boolean, options?: O): ExpressionWrapper<DB, TB, number> {
+      const args = [parseReferenceExpression(vectorProperty), sql`${queryVector}`.toOperationNode()];
 
       if (useIndex) {
-        args.push(sql`true`.toOperationNode())
+        args.push(sql`true`.toOperationNode());
       } else {
-        args.push(sql`false`.toOperationNode())
+        args.push(sql`false`.toOperationNode());
       }
       if (options) {
-        args.push(sql`${options}`.toOperationNode())
+        args.push(sql`${options}`.toOperationNode());
       }
 
-      return new ExpressionWrapper<DB, TB, number>(
-        FunctionNode.create('VectorDistance', args),
-      )
+      return new ExpressionWrapper<DB, TB, number>(FunctionNode.create('VectorDistance', args));
+    },
+
+    arrayAvg<P extends AnyArrayPropertyPathWithTable<DB, TB>>(property: P): ExpressionWrapper<DB, TB, number> {
+      return new ExpressionWrapper(FunctionNode.create('ARRAY_AVG', [parseReferenceExpression(property)]));
+    },
+
+    arrayConcat<P extends AnyArrayPropertyPathWithTable<DB, TB>, Item = ExtractArrayItemTypeWithTable<DB, TB, P>>(
+      arrayProp: P,
+      ...items: (Item | Partial<Item> | null | undefined)[]
+    ): ExpressionWrapper<DB, TB, Item[]> {
+      const args = [parseReferenceExpression(arrayProp), ...items.map(item => sql`${item}`.toOperationNode())];
+
+      return new ExpressionWrapper(FunctionNode.create('ARRAY_CONCAT', args));
+    },
+
+    arrayMax<P extends AnyArrayPropertyPathWithTable<DB, TB>>(property: P): ExpressionWrapper<DB, TB, number> {
+      return new ExpressionWrapper(FunctionNode.create('ARRAY_MAX', [parseReferenceExpression(property)]));
+    },
+
+    arrayMedian<P extends AnyArrayPropertyPathWithTable<DB, TB>>(property: P): ExpressionWrapper<DB, TB, number> {
+      return new ExpressionWrapper(FunctionNode.create('ARRAY_MEDIAN', [parseReferenceExpression(property)]));
+    },
+
+    arrayMin<P extends AnyArrayPropertyPathWithTable<DB, TB>>(property: P): ExpressionWrapper<DB, TB, number> {
+      return new ExpressionWrapper(FunctionNode.create('ARRAY_MIN', [parseReferenceExpression(property)]));
+    },
+
+    arrayLength<P extends AnyArrayPropertyPathWithTable<DB, TB>>(property: P): ExpressionWrapper<DB, TB, number> {
+      return new ExpressionWrapper(FunctionNode.create('ARRAY_LENGTH', [parseReferenceExpression(property)]));
+    },
+
+    arraySum<P extends AnyArrayPropertyPathWithTable<DB, TB>>(property: P): ExpressionWrapper<DB, TB, number> {
+      return new ExpressionWrapper(FunctionNode.create('ARRAY_SUM', [parseReferenceExpression(property)]));
     },
 
     arrayContains<P extends AnyArrayPropertyPathWithTable<DB, TB>>(
       property: P,
-      value: Partial<ExtractArrayItemTypeWithTable<DB, TB, P>>,
-    ): Expression<boolean> {
+      value: Partial<ExtractArrayItemTypeWithTable<DB, TB, P>>
+    ): ExpressionWrapper<DB, TB, boolean> {
       return new ExpressionWrapper(
         FunctionNode.create('ARRAY_CONTAINS', [
           parseReferenceExpression(property), // Parse property as a reference
           sql`${value}`.toOperationNode(), // Pass value as a literal
-        ]),
-      )
+        ])
+      );
     },
 
     arrayContainsAny<P extends AnyArrayPropertyPathWithTable<DB, TB>>(
       property: P,
       ...values: Partial<ExtractArrayItemTypeWithTable<DB, TB, P>>[]
-    ): Expression<boolean> {
-
+    ): ExpressionWrapper<DB, TB, boolean> {
       // Convert each literal value to a separate operation node so they can be rendered as individual query parameters.
-      const opNodes = values.map(v => sql`${v}`.toOperationNode())
+      const opNodes = values.map(v => sql`${v}`.toOperationNode());
 
       return new ExpressionWrapper(
         FunctionNode.create('ARRAY_CONTAINS_ANY', [
           parseReferenceExpression(property), // Parse property as a reference
           ...opNodes, // Spread the operation nodes
-        ]),
-      )
+        ])
+      );
     },
 
     arrayContainsAll<P extends AnyArrayPropertyPathWithTable<DB, TB>>(
       property: P,
       ...values: Partial<ExtractArrayItemTypeWithTable<DB, TB, P>>[]
-    ): Expression<boolean> {
-
+    ): ExpressionWrapper<DB, TB, boolean> {
       // Convert each literal value to a separate operation node so they can be rendered as individual query parameters.
-      const opNodes = values.map(v => sql`${v}`.toOperationNode())
+      const opNodes = values.map(v => sql`${v}`.toOperationNode());
 
       return new ExpressionWrapper(
         FunctionNode.create('ARRAY_CONTAINS_ALL', [
           parseReferenceExpression(property), // Parse property as a reference
           ...opNodes, // Spread the operation nodes
-        ]),
-      )
+        ])
+      );
     },
 
-    area<
-      P extends
-        | AnyMatchingObjectPropertyPathWithTable<DB, TB, Polygon | MultiPolygon>
-        | Polygon
-        | MultiPolygon,
-    >(polygon: P): ExpressionWrapper<DB, TB, number> {
+    area<P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, Polygon | MultiPolygon> | Polygon | MultiPolygon>(
+      polygon: P
+    ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper<DB, TB, number>(
-        FunctionNode.create('ST_AREA', [
-          isString(polygon)
-            ? parseReferenceExpression(polygon)
-            : sql`${polygon}`.toOperationNode(),
-        ]),
-      )
+        FunctionNode.create('ST_AREA', [isString(polygon) ? parseReferenceExpression(polygon) : sql`${polygon}`.toOperationNode()])
+      );
     },
 
-    isValid<
-      P extends
-        | AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>
-        | GeoJsonObject,
-    >(property: P): ExpressionWrapper<DB, TB, boolean> {
+    isValid<P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject> | GeoJsonObject>(
+      property: P
+    ): ExpressionWrapper<DB, TB, boolean> {
       return new ExpressionWrapper<DB, TB, boolean>(
-        FunctionNode.create('ST_ISVALID', [
-          isString(property)
-            ? parseReferenceExpression(property)
-            : sql`${property}`.toOperationNode(),
-        ]),
-      )
+        FunctionNode.create('ST_ISVALID', [isString(property) ? parseReferenceExpression(property) : sql`${property}`.toOperationNode()])
+      );
     },
 
-    isValidDetailed<
-      P extends
-        | AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>
-        | GeoJsonObject,
-    >(
-      property: P,
+    isValidDetailed<P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject> | GeoJsonObject>(
+      property: P
     ): ExpressionWrapper<
       DB,
       TB,
       {
-        valid: boolean
-        reason?: string
+        valid: boolean;
+        reason?: string;
       }
     > {
       return new ExpressionWrapper<
         DB,
         TB,
         {
-          valid: boolean
-          reason?: string
+          valid: boolean;
+          reason?: string;
         }
-      >(
-        FunctionNode.create('ST_ISVALIDDETAILED', [
-          isString(property)
-            ? parseReferenceExpression(property)
-            : sql`${property}`.toOperationNode(),
-        ]),
-      )
+      >(FunctionNode.create('ST_ISVALIDDETAILED', [isString(property) ? parseReferenceExpression(property) : sql`${property}`.toOperationNode()]));
     },
 
-    distance<
-      P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>,
-    >(
+    distance<P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>>(
       spatial1: P | GeoJsonObject,
-      spatial2: P | GeoJsonObject,
+      spatial2: P | GeoJsonObject
     ): ExpressionWrapper<DB, TB, number> {
-      let property: P
-      let geo: GeoJsonObject
+      let property: P;
+      let geo: GeoJsonObject;
 
       // Determine parameter order based on argument types
       if (isString(spatial1)) {
         // First argument is property (string reference)
-        property = spatial1 as P
-        geo = spatial2 as GeoJsonObject
+        property = spatial1 as P;
+        geo = spatial2 as GeoJsonObject;
         return new ExpressionWrapper<DB, TB, number>(
           FunctionNode.create('ST_DISTANCE', [
             parseReferenceExpression(property), // Parse property as a reference
             sql`${geo}`.toOperationNode(), // Treat geo as a literal
-          ]),
-        )
+          ])
+        );
       } else {
         // First argument is GeoJsonObject
-        geo = spatial1 as GeoJsonObject
-        property = spatial2 as P
+        geo = spatial1 as GeoJsonObject;
+        property = spatial2 as P;
 
         return new ExpressionWrapper<DB, TB, number>(
           FunctionNode.create('ST_DISTANCE', [
             sql`${geo}`.toOperationNode(), // Treat geo as a literal
             parseReferenceExpression(property), // Parse property as a reference
-          ]),
-        )
+          ])
+        );
       }
     },
 
-    within<
-      P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>,
-    >(
+    within<P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>>(
       spatial1: P | GeoJsonObject,
-      spatial2: P | GeoJsonObject,
+      spatial2: P | GeoJsonObject
     ): ExpressionWrapper<DB, TB, boolean> {
-      let property: P
-      let geo: GeoJsonObject
+      let property: P;
+      let geo: GeoJsonObject;
 
       // Determine parameter order based on argument types
       if (isString(spatial1)) {
         // First argument is property (string reference)
-        property = spatial1 as P
-        geo = spatial2 as GeoJsonObject
+        property = spatial1 as P;
+        geo = spatial2 as GeoJsonObject;
         return new ExpressionWrapper<DB, TB, boolean>(
           FunctionNode.create('ST_WITHIN', [
             parseReferenceExpression(property), // Parse property as a reference
             sql`${geo}`.toOperationNode(), // Treat geo as a literal
-          ]),
-        )
+          ])
+        );
       } else {
         // First argument is GeoJsonObject
-        geo = spatial1 as GeoJsonObject
-        property = spatial2 as P
+        geo = spatial1 as GeoJsonObject;
+        property = spatial2 as P;
 
         return new ExpressionWrapper<DB, TB, boolean>(
           FunctionNode.create('ST_WITHIN', [
             sql`${geo}`.toOperationNode(), // Treat geo as a literal
             parseReferenceExpression(property), // Parse property as a reference
-          ]),
-        )
+          ])
+        );
       }
     },
 
-    intersects<
-      P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>,
-    >(
+    intersects<P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>>(
       spatial1: P | GeoJsonObject,
-      spatial2: P | GeoJsonObject,
+      spatial2: P | GeoJsonObject
     ): ExpressionWrapper<DB, TB, boolean> {
-      let property: P
-      let geo: GeoJsonObject
+      let property: P;
+      let geo: GeoJsonObject;
 
       // Determine parameter order based on argument types
       if (isString(spatial1)) {
         // First argument is property (string reference)
-        property = spatial1 as P
-        geo = spatial2 as GeoJsonObject
+        property = spatial1 as P;
+        geo = spatial2 as GeoJsonObject;
         return new ExpressionWrapper<DB, TB, boolean>(
           FunctionNode.create('ST_INTERSECTS', [
             parseReferenceExpression(property), // Parse property as a reference
             sql`${geo}`.toOperationNode(), // Treat geo as a literal
-          ]),
-        )
+          ])
+        );
       } else {
         // First argument is GeoJsonObject
-        geo = spatial1 as GeoJsonObject
-        property = spatial2 as P
+        geo = spatial1 as GeoJsonObject;
+        property = spatial2 as P;
 
         return new ExpressionWrapper<DB, TB, boolean>(
           FunctionNode.create('ST_INTERSECTS', [
             sql`${geo}`.toOperationNode(), // Treat geo as a literal
             parseReferenceExpression(property), // Parse property as a reference
-          ]),
-        )
+          ])
+        );
       }
     },
-  })
+  });
 }
