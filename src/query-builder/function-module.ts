@@ -821,6 +821,14 @@ export interface FunctionModule<DB, TB extends keyof DB> {
 
   containsRef<RE extends StringReference<DB, TB>>(column: RE, searchStringColumn: RE, ignoreCase?: boolean): ExpressionWrapper<DB, TB, boolean>;
 
+  containsAllCi<RE extends StringReference<DB, TB>>(column: RE, ...searchStrings: string[]): ExpressionWrapper<DB, TB, boolean>;
+
+  containsAllCs<RE extends StringReference<DB, TB>>(column: RE, ...searchStrings: string[]): ExpressionWrapper<DB, TB, boolean>;
+
+  containsAnyCi<RE extends StringReference<DB, TB>>(column: RE, ...searchStrings: string[]): ExpressionWrapper<DB, TB, boolean>;
+
+  containsAnyCs<RE extends StringReference<DB, TB>>(column: RE, ...searchStrings: string[]): ExpressionWrapper<DB, TB, boolean>;
+
   endsWith<RE extends StringReference<DB, TB>>(column: RE, searchString: string, ignoreCase?: boolean): ExpressionWrapper<DB, TB, boolean>;
 
   endsWithRef<RE extends StringReference<DB, TB>>(column: RE, searchStringColumn: RE, ignoreCase?: boolean): ExpressionWrapper<DB, TB, boolean>;
@@ -1483,6 +1491,30 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       }
 
       return new ExpressionWrapper(FunctionNode.create('CONTAINS', args));
+    },
+
+    containsAllCi<RE extends StringReference<DB, TB>>(column: RE, ...searchStrings: string[]): ExpressionWrapper<DB, TB, boolean> {
+      const args = [parseReferenceExpression(column), ...searchStrings.map(item => sql`${item}`.toOperationNode())];
+
+      return new ExpressionWrapper(FunctionNode.create('CONTAINS_ALL_CI', args));
+    },
+
+    containsAllCs<RE extends StringReference<DB, TB>>(column: RE, ...searchStrings: string[]): ExpressionWrapper<DB, TB, boolean> {
+      const args = [parseReferenceExpression(column), ...searchStrings.map(item => sql`${item}`.toOperationNode())];
+
+      return new ExpressionWrapper(FunctionNode.create('CONTAINS_ALL_CS', args));
+    },
+
+    containsAnyCi<RE extends StringReference<DB, TB>>(column: RE, ...searchStrings: string[]): ExpressionWrapper<DB, TB, boolean> {
+      const args = [parseReferenceExpression(column), ...searchStrings.map(item => sql`${item}`.toOperationNode())];
+
+      return new ExpressionWrapper(FunctionNode.create('CONTAINS_ANY_CI', args));
+    },
+
+    containsAnyCs<RE extends StringReference<DB, TB>>(column: RE, ...searchStrings: string[]): ExpressionWrapper<DB, TB, boolean> {
+      const args = [parseReferenceExpression(column), ...searchStrings.map(item => sql`${item}`.toOperationNode())];
+
+      return new ExpressionWrapper(FunctionNode.create('CONTAINS_ANY_CS', args));
     },
 
     endsWith<RE extends StringReference<DB, TB>>(column: RE, searchString: string, ignoreCase?: boolean): ExpressionWrapper<DB, TB, boolean> {
