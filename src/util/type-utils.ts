@@ -8,6 +8,8 @@ import { sql } from '../raw-builder/sql.js';
 import { Point } from 'geojson';
 import { SelectExpression } from '../parser/select-parser.js';
 import { AliasedExpressionOrFactory } from '../parser/expression-parser.js';
+import { StringReference } from '../parser/reference-parser.js';
+import { Temporal } from 'temporal-polyfill';
 
 /**
  * Given a database type and a union of table names in that db, returns
@@ -40,6 +42,8 @@ import { AliasedExpressionOrFactory } from '../parser/expression-parser.js';
  * // Columns == 'id' | 'name' | 'species'
  * ```
  */
+export type TemporalDateTime = Temporal.Instant | Temporal.PlainDateTime | Temporal.ZonedDateTime;
+export type DateTime = Date | TemporalDateTime;
 
 // Helper type to decrement depth
 type Decrement = [never, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -129,6 +133,125 @@ export type AnyPropertyPathWithTable<DB, TB extends keyof DB> = {
  * Just like {@link AnyPropertyPathWithTable} but with a ` as <string>` suffix.
  */
 export type AnyAliasedPropertyPathWithTable<DB, TB extends keyof DB> = `${AnyPropertyPathWithTable<DB, TB>} as ${string}`;
+
+/**
+ * Given a table type and depth limit, returns union of all property paths
+ * (including nested and array-indexed) whose final value type is `string`.
+ */
+export type AnyStringPropertyPath<DB, T extends keyof DB, Depth extends number = 5, Path extends string = ''> = Depth extends 0
+  ? never
+  : {
+      [K in keyof DB[T]]: NonNullable<DB[T][K]> extends string // Direct string property
+        ? Path extends ''
+          ? K & string
+          : `${Path}.${K & string}`
+        : // Array of strings
+          DB[T][K] extends (infer U)[] | undefined
+          ? U extends string
+            ?
+                | (Path extends '' ? `${K & string}` : `${Path}.${K & string}`)
+                | (Path extends '' ? `${K & string}[${number}]` : `${Path}.${K & string}[${number}]`)
+            : U extends object
+              ? AnyStringPropertyPath<
+                  { _: U },
+                  '_',
+                  Decrement[Depth],
+                  Path extends '' ? `${K & string}[${number}]` : `${Path}.${K & string}[${number}]`
+                >
+              : never
+          : // Nested object (not array, not Date)
+            NonUndefined<DB[T][K]> extends object
+            ? NonUndefined<DB[T][K]> extends Date
+              ? never
+              :
+                  | (Path extends '' ? `${K & string}` : `${Path}.${K & string}`)
+                  | AnyStringPropertyPath<
+                      { _: NonUndefined<DB[T][K]> },
+                      '_',
+                      Decrement[Depth],
+                      Path extends '' ? `${K & string}` : `${Path}.${K & string}`
+                    >
+            : never;
+    }[keyof DB[T]];
+
+// type StringPathsInPerson = AnyStringPropertyPath<Database, 'persons'>;
+// const nameY: StringPathsInPerson = 'name'; // ok, name is a string
+// // const ageY: StringPathsInPerson = 'age'; // ok, expected type error. age is not a string
+
+// type StringPathsInPersonWithTable = AnyStringPropertyPathWithTable<Database, 'persons'>;
+// const nameX: StringPathsInPersonWithTable = 'persons.name'; // ok, name is a string
+// // const ageX: StringPathsInPersonWithTable = 'persons.age'; // ok, expected type error. age is not a string
+
+// type StringReferenceInPerson = StringReference<Database, 'persons'>;
+// // const perRef: StringReferenceInPerson = 'persons.age'; // Not ok, age is not a string. I expect a type error here.
+
+/**
+ * Just like AnyStringPropertyPath but prefixed with `table.`
+ */
+export type AnyStringPropertyPathWithTable<DB, TB extends keyof DB> = {
+  [T in TB]: `${T & string}.${AnyStringPropertyPath<DB, T> & string}`;
+}[TB];
+
+/**
+ * Just like AnyStringPropertyPathWithTable but with ` as <string>` suffix
+ * (useful for select expressions)
+ */
+export type AnyAliasedStringPropertyPathWithTable<DB, TB extends keyof DB> = `${AnyStringPropertyPathWithTable<DB, TB>} as ${string}`;
+
+/**
+ * Given a table type and depth limit, returns union of all property paths
+ * (including nested and array-indexed) whose final value type is DateTime
+ * (i.e. Date | Temporal.Instant | Temporal.PlainDateTime | Temporal.ZonedDateTime).
+ *
+ * Only returns paths that resolve to a DateTime value — not intermediate objects.
+ */
+export type AnyDateTimePropertyPath<DB, T extends keyof DB, Depth extends number = 5, Path extends string = ''> = Depth extends 0
+  ? never
+  : {
+      [K in keyof DB[T]]: // Direct DateTime property
+      NonNullable<DB[T][K]> extends DateTime
+        ? Path extends ''
+          ? K & string
+          : `${Path}.${K & string}`
+        : // Array of DateTimes
+          DB[T][K] extends (infer U)[] | undefined
+          ? U extends DateTime
+            ?
+                | (Path extends '' ? `${K & string}` : `${Path}.${K & string}`)
+                | (Path extends '' ? `${K & string}[${number}]` : `${Path}.${K & string}[${number}]`)
+            : U extends object
+              ? AnyDateTimePropertyPath<
+                  { _: U },
+                  '_',
+                  Decrement[Depth],
+                  Path extends '' ? `${K & string}[${number}]` : `${Path}.${K & string}[${number}]`
+                >
+              : never
+          : // Nested object (not array, not DateTime)
+            NonUndefined<DB[T][K]> extends object
+            ? NonUndefined<DB[T][K]> extends DateTime
+              ? never // Should not happen due to first check, but safety
+              : AnyDateTimePropertyPath<
+                  { _: NonUndefined<DB[T][K]> },
+                  '_',
+                  Decrement[Depth],
+                  Path extends '' ? `${K & string}` : `${Path}.${K & string}`
+                >
+            : never;
+    }[keyof DB[T]];
+
+/**
+ * Just like {@link AnyDateTimePropertyPath} but prefixed with `table.`
+ */
+export type AnyDateTimePropertyPathWithTable<DB, TB extends keyof DB> = {
+  [T in TB]: `${T & string}.${AnyDateTimePropertyPath<DB, T> & string}`;
+}[TB];
+
+/**
+ * Just like {@link AnyDateTimePropertyPathWithTable} but with ` as <string>` suffix
+ * (useful for select expressions)
+ */
+export type AnyAliasedDateTimePropertyPathWithTable<DB, TB extends keyof DB> = `${AnyDateTimePropertyPathWithTable<DB, TB>} as ${string}`;
 
 export type AnyArrayPropertyPath<DB, T extends keyof DB, Depth extends number = 5, Path extends string = ''> = Depth extends 0
   ? never
@@ -547,8 +670,6 @@ interface Database {
   families: Family;
   nested: Nested;
 }
-
-let a: AnyArrayPropertyPathWithTable<Database, 'orders'> = 'orders.phoneNumbers';
 
 async function JoinTest(db: Kysely<Database>) {
   test('select all tests', async () => {

@@ -12,14 +12,15 @@ import { FunctionNode } from '../operation-node/function-node.js';
 import {
   ExtractTypeFromReferenceExpression,
   ReferenceExpression,
-  StringReference,
+  AnyReference,
+  DateTimeReference,
   parseReferenceExpressionOrList,
   ExtractTypeFromStringReference,
   parseReferenceExpression,
 } from '../parser/reference-parser.js';
 import { parseSelectAll } from '../parser/select-parser.js';
 // import { KyselyTypeError } from '../util/type-error.js'
-import { AnyArrayPropertyPathWithTable, AnyMatchingObjectPropertyPathWithTable, ExtractArrayItemTypeWithTable, IsNever } from '../util/type-utils.js';
+import { ExtractArrayItemTypeWithTable, IsNever, TemporalDateTime, DateTime } from '../util/type-utils.js';
 import { AggregateFunctionBuilder } from './aggregate-function-builder.js';
 import { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js';
 import { isNull, isString } from '../util/object-utils.js';
@@ -27,6 +28,10 @@ import { parseTable } from '../parser/table-parser.js';
 import { Selectable } from '../util/column-type.js';
 import { sql } from '../raw-builder/sql.js';
 import type { GeoJsonObject, MultiPolygon, Polygon } from 'geojson';
+import { StringReference, ArrayReference, MatchingObjectReference } from '../index.js';
+
+//TODO: Once Temporal is supported in node.js, remove import of the temporal-polyfill.
+import { Temporal } from 'temporal-polyfill';
 
 /**
  * Helpers for type safe SQL function calls.
@@ -873,23 +878,23 @@ export interface FunctionModule<DB, TB extends keyof DB> {
 
   // Date and Time functions
 
-  dateTimeAdd<RE extends ReferenceExpression<DB, TB>>(
+  dateTimeAdd<RE extends DateTimeReference<DB, TB>>(
     dateTimePart: 'yyyy' | 'MM' | 'dd' | 'hh' | 'mm' | 'ss' | 'ms',
     numericExpression: number,
-    dateTime: Date | RE
+    dateTime: DateTime | RE
   ): ExpressionWrapper<DB, TB, string>;
 
-  dateTimeBin<RE extends ReferenceExpression<DB, TB>>(
-    dateTime: Date | RE,
+  dateTimeBin<RE extends DateTimeReference<DB, TB>>(
+    dateTime: DateTime | RE,
     dateTimePart: 'yyyy' | 'MM' | 'dd' | 'hh' | 'mm' | 'ss' | 'ms',
     binSize?: number,
-    binStartDateTime?: Date | RE
+    binStartDateTime?: DateTime | RE
   ): ExpressionWrapper<DB, TB, string>;
 
-  dateTimeDiff<RE extends ReferenceExpression<DB, TB>>(
+  dateTimeDiff<RE extends DateTimeReference<DB, TB>>(
     dateTimePart: 'yyyy' | 'MM' | 'dd' | 'hh' | 'mm' | 'ss' | 'ms',
-    startDateTime: Date | RE,
-    endDateTime: Date | RE
+    startDateTime: DateTime | RE,
+    endDateTime: DateTime | RE
   ): ExpressionWrapper<DB, TB, number>;
 
   dateTimeFromParts(
@@ -902,14 +907,14 @@ export interface FunctionModule<DB, TB extends keyof DB> {
     secondFraction?: number
   ): ExpressionWrapper<DB, TB, string>;
 
-  dateTimePart<RE extends ReferenceExpression<DB, TB>>(
+  dateTimePart<RE extends DateTimeReference<DB, TB>>(
     dateTimePart: 'yyyy' | 'MM' | 'dd' | 'hh' | 'mm' | 'ss' | 'ms',
-    dateTime: Date | RE
+    dateTime: DateTime | RE
   ): ExpressionWrapper<DB, TB, number>;
 
-  dateTimeToTicks<RE extends ReferenceExpression<DB, TB>>(dateTime: Date | RE): ExpressionWrapper<DB, TB, number>;
+  dateTimeToTicks<RE extends DateTimeReference<DB, TB>>(dateTime: DateTime | RE): ExpressionWrapper<DB, TB, number>;
 
-  dateTimeToTimestamp<RE extends ReferenceExpression<DB, TB>>(dateTime: Date | RE): ExpressionWrapper<DB, TB, number>;
+  dateTimeToTimestamp<RE extends DateTimeReference<DB, TB>>(dateTime: DateTime | RE): ExpressionWrapper<DB, TB, number>;
 
   getCurrentDateTime(): ExpressionWrapper<DB, TB, string>;
 
@@ -930,24 +935,24 @@ export interface FunctionModule<DB, TB extends keyof DB> {
   // Full Text Search functions
 
   // Returns true if a given string is contained in the specified property of a document. This is useful in a WHERE clause when you want to ensure specific keywords are included in the documents returned by your query.
-  fullTextContains<RE extends StringReference<DB, TB>>(column: RE, searchString: string): ExpressionWrapper<DB, TB, boolean>;
+  fullTextContains<RE extends AnyReference<DB, TB>>(column: RE, searchString: string): ExpressionWrapper<DB, TB, boolean>;
 
   // Returns true if all of the given strings are contained in the specified property of a document. This is useful in a WHERE clause when you want to ensure that multiple keywords are included in the documents returned by your query.
-  fullTextContainsAll<RE extends StringReference<DB, TB>>(
+  fullTextContainsAll<RE extends AnyReference<DB, TB>>(
     property: RE,
     searchString: string,
     ...additionalSearchStrings: ReadonlyArray<string>
   ): ExpressionWrapper<DB, TB, boolean>;
 
   //  Returns true if any of the given strings are contained in the specified property of a document. This is useful in a WHERE clause when you want to ensure that at least one of the keywords is included in the documents returned by your query.
-  fullTextContainsAny<RE extends StringReference<DB, TB>>(
+  fullTextContainsAny<RE extends AnyReference<DB, TB>>(
     property: RE,
     searchString: string,
     ...additionalSearchStrings: ReadonlyArray<string>
   ): ExpressionWrapper<DB, TB, boolean>;
 
   // Returns a score. This can only be used in an ORDER BY RANK clause, where the returned documents are ordered by the rank of the full text score, with most relevant (highest scoring) documents at the top, and least relevant (lowest scoring) documents at the bottom.
-  fullTextScore<RE extends StringReference<DB, TB>>(
+  fullTextScore<RE extends AnyReference<DB, TB>>(
     property: RE,
     searchString: string,
     ...additionalSearchStrings: ReadonlyArray<string>
@@ -956,7 +961,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
   // Vector functions
 
   vectorDistance<
-    P extends AnyArrayPropertyPathWithTable<DB, TB>,
+    P extends ArrayReference<DB, TB>,
     M extends {
       distanceFunction: 'cosine' | 'euclidean' | 'inner-product';
       dataType: 'float32' | 'int8' | 'uint8';
@@ -980,12 +985,12 @@ export interface FunctionModule<DB, TB extends keyof DB> {
   /**
    * Calls the ARRAY_AVG function to calculate the average of the values in the specified array property.
    */
-  arrayAvg<P extends AnyArrayPropertyPathWithTable<DB, TB>>(property: P): ExpressionWrapper<DB, TB, number>;
+  arrayAvg<P extends ArrayReference<DB, TB>>(property: P): ExpressionWrapper<DB, TB, number>;
 
   /**
    * Calls the ARRAY_CONCAT function to return an array that is the result of concatenating two or more array values.
    */
-  arrayConcat<P extends AnyArrayPropertyPathWithTable<DB, TB>, Item = ExtractArrayItemTypeWithTable<DB, TB, P>>(
+  arrayConcat<P extends ArrayReference<DB, TB>, Item = ExtractArrayItemTypeWithTable<DB, TB, P>>(
     arrayProp: P,
     ...items: (Item | Partial<Item> | null | undefined)[]
   ): ExpressionWrapper<DB, TB, Item[]>;
@@ -993,32 +998,32 @@ export interface FunctionModule<DB, TB extends keyof DB> {
   /**
    * Calls the ARRAY_MAX function to return the maximal value of elements in the specified array expression.
    */
-  arrayMax<P extends AnyArrayPropertyPathWithTable<DB, TB>>(property: P): ExpressionWrapper<DB, TB, number>;
+  arrayMax<P extends ArrayReference<DB, TB>>(property: P): ExpressionWrapper<DB, TB, number>;
 
   /**
    * Calls the ARRAY_MEDIAN function to return the median value of elements in the specified array expression.
    */
-  arrayMedian<P extends AnyArrayPropertyPathWithTable<DB, TB>>(property: P): ExpressionWrapper<DB, TB, number>;
+  arrayMedian<P extends ArrayReference<DB, TB>>(property: P): ExpressionWrapper<DB, TB, number>;
 
   /**
    * Calls the ARRAY_MIN function to return the minimal value of elements in the specified array expression.
    */
-  arrayMin<P extends AnyArrayPropertyPathWithTable<DB, TB>>(property: P): ExpressionWrapper<DB, TB, number>;
+  arrayMin<P extends ArrayReference<DB, TB>>(property: P): ExpressionWrapper<DB, TB, number>;
 
   /**
    * Calls the ARRAY_LENGTH function to return the number of elements in the specified array expression.
    */
-  arrayLength<P extends AnyArrayPropertyPathWithTable<DB, TB>>(property: P): ExpressionWrapper<DB, TB, number>;
+  arrayLength<P extends ArrayReference<DB, TB>>(property: P): ExpressionWrapper<DB, TB, number>;
 
   /**
    * Calls the ARRAY_SUM function to return the sum of elements in the specified array expression.
    */
-  arraySum<P extends AnyArrayPropertyPathWithTable<DB, TB>>(property: P): ExpressionWrapper<DB, TB, number>;
+  arraySum<P extends ArrayReference<DB, TB>>(property: P): ExpressionWrapper<DB, TB, number>;
 
   /**
    * Calls the ARRAY_CONTAINS function to determine whether the specified array property contains the given value.
    */
-  arrayContains<P extends AnyArrayPropertyPathWithTable<DB, TB>>(
+  arrayContains<P extends ArrayReference<DB, TB>>(
     property: P,
     value: Partial<ExtractArrayItemTypeWithTable<DB, TB, P>>
   ): ExpressionWrapper<DB, TB, boolean>;
@@ -1026,7 +1031,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
   /**
    * Calls the ARRAY_CONTAINS_ANY function to determine whether the specified array property contains any of the given values.
    */
-  arrayContainsAny<P extends AnyArrayPropertyPathWithTable<DB, TB>>(
+  arrayContainsAny<P extends ArrayReference<DB, TB>>(
     property: P,
     ...values: Partial<ExtractArrayItemTypeWithTable<DB, TB, P>>[]
   ): ExpressionWrapper<DB, TB, boolean>;
@@ -1034,7 +1039,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
   /**
    * Calls the ARRAY_CONTAINS_ALL function to determine whether the specified array property contains all of the given values.
    */
-  arrayContainsAll<P extends AnyArrayPropertyPathWithTable<DB, TB>>(
+  arrayContainsAll<P extends ArrayReference<DB, TB>>(
     property: P,
     ...values: Partial<ExtractArrayItemTypeWithTable<DB, TB, P>>[]
   ): ExpressionWrapper<DB, TB, boolean>;
@@ -1044,19 +1049,17 @@ export interface FunctionModule<DB, TB extends keyof DB> {
   /**
    * Calls the ST_AREA function to calculate the total area of a GeoJSON Polygon or MultiPolygon property.
    */
-  area<P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, Polygon | MultiPolygon> | Polygon | MultiPolygon>(
-    polygon: P
-  ): ExpressionWrapper<DB, TB, number>;
+  area<P extends MatchingObjectReference<DB, TB, Polygon | MultiPolygon> | Polygon | MultiPolygon>(polygon: P): ExpressionWrapper<DB, TB, number>;
 
   /**
    * Calls the ST_ISVALID function to determine whether the specified GeoJSON property is valid.
    */
-  isValid<P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>>(property: P): ExpressionWrapper<DB, TB, boolean>;
+  isValid<P extends MatchingObjectReference<DB, TB, GeoJsonObject>>(property: P): ExpressionWrapper<DB, TB, boolean>;
 
   /**
    * Calls the ST_ISVALIDDETAILED function to determine whether the specified GeoJSON property is valid, and if invalid, the reason.
    */
-  isValidDetailed<P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject> | GeoJsonObject>(
+  isValidDetailed<P extends MatchingObjectReference<DB, TB, GeoJsonObject> | GeoJsonObject>(
     property: P
   ): ExpressionWrapper<
     DB,
@@ -1070,50 +1073,32 @@ export interface FunctionModule<DB, TB extends keyof DB> {
   /**
    * Calls the ST_DISTANCE function to calculate the distance between the GeoJSON object (GeoJSON Point, Polygon, or LineString expression) specified in the first argument is within the GeoJSON object in the second argument.
    */
-  distance<P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>>(
-    property: P,
-    geo: GeoJsonObject
-  ): ExpressionWrapper<DB, TB, number>;
+  distance<P extends MatchingObjectReference<DB, TB, GeoJsonObject>>(property: P, geo: GeoJsonObject): ExpressionWrapper<DB, TB, number>;
 
   /**
    * Calls the ST_DISTANCE function with swapped parameters (geo first, property second).
    */
-  distance<P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>>(
-    geo: GeoJsonObject,
-    property: P
-  ): ExpressionWrapper<DB, TB, number>;
+  distance<P extends MatchingObjectReference<DB, TB, GeoJsonObject>>(geo: GeoJsonObject, property: P): ExpressionWrapper<DB, TB, number>;
 
   /**
    * Calls the ST_WITHIN function to determine whether the GeoJSON object (GeoJSON Point, Polygon, or LineString expression) specified in the first argument is within the GeoJSON object in the second argument.
    */
-  within<P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>>(
-    property: P,
-    geo: GeoJsonObject
-  ): ExpressionWrapper<DB, TB, boolean>;
+  within<P extends MatchingObjectReference<DB, TB, GeoJsonObject>>(property: P, geo: GeoJsonObject): ExpressionWrapper<DB, TB, boolean>;
 
   /**
    * Calls the ST_WITHIN function with swapped parameters (geo first, property second).
    */
-  within<P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>>(
-    geo: GeoJsonObject,
-    property: P
-  ): ExpressionWrapper<DB, TB, boolean>;
+  within<P extends MatchingObjectReference<DB, TB, GeoJsonObject>>(geo: GeoJsonObject, property: P): ExpressionWrapper<DB, TB, boolean>;
 
   /**
    * Calls the ST_INTERSECTS function determines whether the GeoJSON object (Point, Polygon, MultiPolygon, or LineString) specified in the first argument intersects the GeoJSON object in the second argument.
    */
-  intersects<P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>>(
-    property: P,
-    geo: GeoJsonObject
-  ): ExpressionWrapper<DB, TB, boolean>;
+  intersects<P extends MatchingObjectReference<DB, TB, GeoJsonObject>>(property: P, geo: GeoJsonObject): ExpressionWrapper<DB, TB, boolean>;
 
   /**
    * Calls the ST_INTERSECTS function with swapped parameters (geo first, property second).
    */
-  intersects<P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>>(
-    geo: GeoJsonObject,
-    property: P
-  ): ExpressionWrapper<DB, TB, boolean>;
+  intersects<P extends MatchingObjectReference<DB, TB, GeoJsonObject>>(geo: GeoJsonObject, property: P): ExpressionWrapper<DB, TB, boolean>;
 }
 
 export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<DB, TB> {
@@ -1694,10 +1679,10 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       return new ExpressionWrapper(FunctionNode.create('UPPER', [parseReferenceExpression(column)]));
     },
 
-    dateTimeAdd<RE extends ReferenceExpression<DB, TB>>(
+    dateTimeAdd<RE extends DateTimeReference<DB, TB>>(
       dateTimePart: 'yyyy' | 'MM' | 'dd' | 'hh' | 'mm' | 'ss' | 'ms',
       numericExpression: number,
-      dateTime: Date | RE
+      dateTime: DateTime | RE
     ): ExpressionWrapper<DB, TB, string> {
       return new ExpressionWrapper(
         FunctionNode.create('DateTimeAdd', [
@@ -1705,22 +1690,27 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
 
           isString(numericExpression) ? parseReferenceExpression(numericExpression) : sql`${numericExpression}`.toOperationNode(),
 
-          isString(dateTime) // ie, an RE not a Date object
+          isString(dateTime) // ie, an RE not a DateTime object
             ? parseReferenceExpression(dateTime)
-            : sql`${(dateTime as Date).toISOString()}`.toOperationNode(),
+            : isTemporalDateTime(dateTime)
+              ? sql`${(dateTime as TemporalDateTime).toString()}`.toOperationNode()
+              : sql`${(dateTime as Date).toISOString()}`.toOperationNode(),
         ])
       );
     },
 
-    dateTimeBin<RE extends ReferenceExpression<DB, TB>>(
-      dateTime: Date | RE,
+    dateTimeBin<RE extends DateTimeReference<DB, TB>>(
+      dateTime: DateTime | RE,
       dateTimePart: 'yyyy' | 'MM' | 'dd' | 'hh' | 'mm' | 'ss' | 'ms',
       binSize?: number,
-      binStartDateTime?: Date | RE
+      binStartDateTime?: DateTime | RE
     ): ExpressionWrapper<DB, TB, string> {
       const args = [
-        isString(dateTime) ? parseReferenceExpression(dateTime) : sql`${(dateTime as Date).toISOString()}`.toOperationNode(),
-
+        isString(dateTime)
+          ? parseReferenceExpression(dateTime)
+          : isTemporalDateTime(dateTime)
+            ? sql`${(dateTime as TemporalDateTime).toString()}`.toOperationNode()
+            : sql`${(dateTime as Date).toISOString()}`.toOperationNode(),
         sql`${dateTimePart}`.toOperationNode(),
       ];
 
@@ -1732,29 +1722,35 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         args.push(
           typeof binStartDateTime === 'string'
             ? parseReferenceExpression(binStartDateTime)
-            : sql`${(binStartDateTime as Date).toISOString()}`.toOperationNode()
+            : isTemporalDateTime(binStartDateTime)
+              ? sql`${(binStartDateTime as TemporalDateTime).toString()}`.toOperationNode()
+              : sql`${(binStartDateTime as Date).toISOString()}`.toOperationNode()
         );
       }
 
       return new ExpressionWrapper(FunctionNode.create('DateTimeBin', args));
     },
 
-    dateTimeDiff<RE extends ReferenceExpression<DB, TB>>(
+    dateTimeDiff<RE extends DateTimeReference<DB, TB>>(
       dateTimePart: 'yyyy' | 'MM' | 'dd' | 'hh' | 'mm' | 'ss' | 'ms',
-      startDateTime: Date | RE,
-      endDateTime: Date | RE
+      startDateTime: DateTime | RE,
+      endDateTime: DateTime | RE
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
         FunctionNode.create('DateTimeDiff', [
           sql`${dateTimePart}`.toOperationNode(),
 
-          typeof startDateTime === 'string' // ie, an RE not a Date object
+          typeof startDateTime === 'string' // ie, an RE not a DateTime object
             ? parseReferenceExpression(startDateTime)
-            : sql`${(startDateTime as Date).toISOString()}`.toOperationNode(),
+            : isTemporalDateTime(startDateTime)
+              ? sql`${(startDateTime as TemporalDateTime).toString()}`.toOperationNode()
+              : sql`${(startDateTime as Date).toISOString()}`.toOperationNode(),
 
-          typeof endDateTime === 'string' // ie, an RE not a Date object
+          typeof endDateTime === 'string' // ie, an RE not a DateTime object
             ? parseReferenceExpression(endDateTime)
-            : sql`${(endDateTime as Date).toISOString()}`.toOperationNode(),
+            : isTemporalDateTime(endDateTime)
+              ? sql`${(endDateTime as TemporalDateTime).toString()}`.toOperationNode()
+              : sql`${(endDateTime as Date).toISOString()}`.toOperationNode(),
         ])
       );
     },
@@ -1789,37 +1785,43 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       return new ExpressionWrapper(FunctionNode.create('DateTimeFromParts', args));
     },
 
-    dateTimePart<RE extends ReferenceExpression<DB, TB>>(
+    dateTimePart<RE extends DateTimeReference<DB, TB>>(
       dateTimePart: 'yyyy' | 'MM' | 'dd' | 'hh' | 'mm' | 'ss' | 'ms',
-      dateTime: Date | RE
+      dateTime: DateTime | RE
     ): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
         FunctionNode.create('DateTimePart', [
           sql`${dateTimePart}`.toOperationNode(),
 
-          isString(dateTime) // ie, an RE not a Date object
+          isString(dateTime) // ie, an RE not a DateTime object
             ? parseReferenceExpression(dateTime)
-            : sql`${(dateTime as Date).toISOString()}`.toOperationNode(),
+            : isTemporalDateTime(dateTime)
+              ? sql`${(dateTime as TemporalDateTime).toString()}`.toOperationNode()
+              : sql`${(dateTime as Date).toISOString()}`.toOperationNode(),
         ])
       );
     },
 
-    dateTimeToTicks<RE extends ReferenceExpression<DB, TB>>(dateTime: Date | RE): ExpressionWrapper<DB, TB, number> {
+    dateTimeToTicks<RE extends DateTimeReference<DB, TB>>(dateTime: DateTime | RE): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
         FunctionNode.create('DateTimeToTicks', [
-          isString(dateTime) // ie, an RE not a Date object
+          isString(dateTime) // ie, an RE not a DateTime object
             ? parseReferenceExpression(dateTime)
-            : sql`${(dateTime as Date).toISOString()}`.toOperationNode(),
+            : isTemporalDateTime(dateTime)
+              ? sql`${(dateTime as TemporalDateTime).toString()}`.toOperationNode()
+              : sql`${(dateTime as Date).toISOString()}`.toOperationNode(),
         ])
       );
     },
 
-    dateTimeToTimestamp<RE extends ReferenceExpression<DB, TB>>(dateTime: Date | RE): ExpressionWrapper<DB, TB, number> {
+    dateTimeToTimestamp<RE extends DateTimeReference<DB, TB>>(dateTime: DateTime | RE): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(
         FunctionNode.create('DateTimeToTimestamp', [
-          isString(dateTime) // ie, an RE not a Date object
+          isString(dateTime) // ie, an RE not a DateTime object
             ? parseReferenceExpression(dateTime)
-            : sql`${(dateTime as Date).toISOString()}`.toOperationNode(),
+            : isTemporalDateTime(dateTime)
+              ? sql`${(dateTime as TemporalDateTime).toString()}`.toOperationNode()
+              : sql`${(dateTime as Date).toISOString()}`.toOperationNode(),
         ])
       );
     },
@@ -1856,13 +1858,13 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       return new ExpressionWrapper(FunctionNode.create('TimestampToDateTime', [sql`${timestamp}`.toOperationNode()]));
     },
 
-    fullTextContains<RE extends StringReference<DB, TB>>(property: RE, searchString: string): ExpressionWrapper<DB, TB, boolean> {
+    fullTextContains<RE extends AnyReference<DB, TB>>(property: RE, searchString: string): ExpressionWrapper<DB, TB, boolean> {
       return new ExpressionWrapper(
         FunctionNode.create('FullTextContains', [parseReferenceExpression(property), sql`${searchString}`.toOperationNode()])
       );
     },
 
-    fullTextContainsAll<RE extends StringReference<DB, TB>>(
+    fullTextContainsAll<RE extends AnyReference<DB, TB>>(
       property: RE,
       searchString: string,
       ...additionalSearchStrings: ReadonlyArray<string>
@@ -1871,7 +1873,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       return new ExpressionWrapper(FunctionNode.create('FullTextContainsAll', [parseReferenceExpression(property), ...args]));
     },
 
-    fullTextContainsAny<RE extends StringReference<DB, TB>>(
+    fullTextContainsAny<RE extends AnyReference<DB, TB>>(
       property: RE,
       searchString: string,
       ...additionalSearchStrings: ReadonlyArray<string>
@@ -1880,7 +1882,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       return new ExpressionWrapper(FunctionNode.create('FullTextContainsAny', [parseReferenceExpression(property), ...args]));
     },
 
-    fullTextScore<RE extends StringReference<DB, TB>>(
+    fullTextScore<RE extends AnyReference<DB, TB>>(
       property: RE,
       searchString: string,
       ...additionalSearchStrings: ReadonlyArray<string>
@@ -1890,7 +1892,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
     },
 
     vectorDistance<
-      P extends AnyArrayPropertyPathWithTable<DB, TB>,
+      P extends ArrayReference<DB, TB>,
       O extends {
         distanceFunction: 'cosine' | 'euclidean' | 'inner-product';
         dataType: 'float32' | 'int8' | 'uint8';
@@ -1917,11 +1919,11 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       return new ExpressionWrapper<DB, TB, number>(FunctionNode.create('VectorDistance', args));
     },
 
-    arrayAvg<P extends AnyArrayPropertyPathWithTable<DB, TB>>(property: P): ExpressionWrapper<DB, TB, number> {
+    arrayAvg<P extends ArrayReference<DB, TB>>(property: P): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(FunctionNode.create('ARRAY_AVG', [parseReferenceExpression(property)]));
     },
 
-    arrayConcat<P extends AnyArrayPropertyPathWithTable<DB, TB>, Item = ExtractArrayItemTypeWithTable<DB, TB, P>>(
+    arrayConcat<P extends ArrayReference<DB, TB>, Item = ExtractArrayItemTypeWithTable<DB, TB, P>>(
       arrayProp: P,
       ...items: (Item | Partial<Item> | null | undefined)[]
     ): ExpressionWrapper<DB, TB, Item[]> {
@@ -1930,27 +1932,27 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       return new ExpressionWrapper(FunctionNode.create('ARRAY_CONCAT', args));
     },
 
-    arrayMax<P extends AnyArrayPropertyPathWithTable<DB, TB>>(property: P): ExpressionWrapper<DB, TB, number> {
+    arrayMax<P extends ArrayReference<DB, TB>>(property: P): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(FunctionNode.create('ARRAY_MAX', [parseReferenceExpression(property)]));
     },
 
-    arrayMedian<P extends AnyArrayPropertyPathWithTable<DB, TB>>(property: P): ExpressionWrapper<DB, TB, number> {
+    arrayMedian<P extends ArrayReference<DB, TB>>(property: P): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(FunctionNode.create('ARRAY_MEDIAN', [parseReferenceExpression(property)]));
     },
 
-    arrayMin<P extends AnyArrayPropertyPathWithTable<DB, TB>>(property: P): ExpressionWrapper<DB, TB, number> {
+    arrayMin<P extends ArrayReference<DB, TB>>(property: P): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(FunctionNode.create('ARRAY_MIN', [parseReferenceExpression(property)]));
     },
 
-    arrayLength<P extends AnyArrayPropertyPathWithTable<DB, TB>>(property: P): ExpressionWrapper<DB, TB, number> {
+    arrayLength<P extends ArrayReference<DB, TB>>(property: P): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(FunctionNode.create('ARRAY_LENGTH', [parseReferenceExpression(property)]));
     },
 
-    arraySum<P extends AnyArrayPropertyPathWithTable<DB, TB>>(property: P): ExpressionWrapper<DB, TB, number> {
+    arraySum<P extends ArrayReference<DB, TB>>(property: P): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper(FunctionNode.create('ARRAY_SUM', [parseReferenceExpression(property)]));
     },
 
-    arrayContains<P extends AnyArrayPropertyPathWithTable<DB, TB>>(
+    arrayContains<P extends ArrayReference<DB, TB>>(
       property: P,
       value: Partial<ExtractArrayItemTypeWithTable<DB, TB, P>>
     ): ExpressionWrapper<DB, TB, boolean> {
@@ -1962,7 +1964,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       );
     },
 
-    arrayContainsAny<P extends AnyArrayPropertyPathWithTable<DB, TB>>(
+    arrayContainsAny<P extends ArrayReference<DB, TB>>(
       property: P,
       ...values: Partial<ExtractArrayItemTypeWithTable<DB, TB, P>>[]
     ): ExpressionWrapper<DB, TB, boolean> {
@@ -1977,7 +1979,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       );
     },
 
-    arrayContainsAll<P extends AnyArrayPropertyPathWithTable<DB, TB>>(
+    arrayContainsAll<P extends ArrayReference<DB, TB>>(
       property: P,
       ...values: Partial<ExtractArrayItemTypeWithTable<DB, TB, P>>[]
     ): ExpressionWrapper<DB, TB, boolean> {
@@ -1992,23 +1994,19 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       );
     },
 
-    area<P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, Polygon | MultiPolygon> | Polygon | MultiPolygon>(
-      polygon: P
-    ): ExpressionWrapper<DB, TB, number> {
+    area<P extends MatchingObjectReference<DB, TB, Polygon | MultiPolygon> | Polygon | MultiPolygon>(polygon: P): ExpressionWrapper<DB, TB, number> {
       return new ExpressionWrapper<DB, TB, number>(
         FunctionNode.create('ST_AREA', [isString(polygon) ? parseReferenceExpression(polygon) : sql`${polygon}`.toOperationNode()])
       );
     },
 
-    isValid<P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject> | GeoJsonObject>(
-      property: P
-    ): ExpressionWrapper<DB, TB, boolean> {
+    isValid<P extends MatchingObjectReference<DB, TB, GeoJsonObject> | GeoJsonObject>(property: P): ExpressionWrapper<DB, TB, boolean> {
       return new ExpressionWrapper<DB, TB, boolean>(
         FunctionNode.create('ST_ISVALID', [isString(property) ? parseReferenceExpression(property) : sql`${property}`.toOperationNode()])
       );
     },
 
-    isValidDetailed<P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject> | GeoJsonObject>(
+    isValidDetailed<P extends MatchingObjectReference<DB, TB, GeoJsonObject> | GeoJsonObject>(
       property: P
     ): ExpressionWrapper<
       DB,
@@ -2028,7 +2026,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       >(FunctionNode.create('ST_ISVALIDDETAILED', [isString(property) ? parseReferenceExpression(property) : sql`${property}`.toOperationNode()]));
     },
 
-    distance<P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>>(
+    distance<P extends MatchingObjectReference<DB, TB, GeoJsonObject>>(
       spatial1: P | GeoJsonObject,
       spatial2: P | GeoJsonObject
     ): ExpressionWrapper<DB, TB, number> {
@@ -2060,7 +2058,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       }
     },
 
-    within<P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>>(
+    within<P extends MatchingObjectReference<DB, TB, GeoJsonObject>>(
       spatial1: P | GeoJsonObject,
       spatial2: P | GeoJsonObject
     ): ExpressionWrapper<DB, TB, boolean> {
@@ -2092,7 +2090,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       }
     },
 
-    intersects<P extends AnyMatchingObjectPropertyPathWithTable<DB, TB, GeoJsonObject>>(
+    intersects<P extends MatchingObjectReference<DB, TB, GeoJsonObject>>(
       spatial1: P | GeoJsonObject,
       spatial2: P | GeoJsonObject
     ): ExpressionWrapper<DB, TB, boolean> {
@@ -2125,3 +2123,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
     },
   });
 }
+
+const isTemporalDateTime = (value: unknown): value is TemporalDateTime => {
+  return value instanceof Temporal.Instant || value instanceof Temporal.PlainDateTime || value instanceof Temporal.ZonedDateTime;
+};

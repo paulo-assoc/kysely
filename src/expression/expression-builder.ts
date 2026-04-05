@@ -1,19 +1,9 @@
-import {
-  SelectQueryBuilder,
-  createSelectQueryBuilder,
-} from '../query-builder/select-query-builder.js'
-import { SelectQueryNode } from '../operation-node/select-query-node.js'
-import {
-  parseTableExpressionOrList,
-  TableExpressionOrList,
-  parseTable,
-} from '../parser/table-parser.js'
-import { WithSchemaPlugin } from '../plugin/with-schema/with-schema-plugin.js'
-import { createQueryId } from '../util/query-id.js'
-import {
-  createFunctionModule,
-  FunctionModule,
-} from '../query-builder/function-module.js'
+import { SelectQueryBuilder, createSelectQueryBuilder } from '../query-builder/select-query-builder.js';
+import { SelectQueryNode } from '../operation-node/select-query-node.js';
+import { parseTableExpressionOrList, TableExpressionOrList, parseTable } from '../parser/table-parser.js';
+import { WithSchemaPlugin } from '../plugin/with-schema/with-schema-plugin.js';
+import { createQueryId } from '../util/query-id.js';
+import { createFunctionModule, FunctionModule } from '../query-builder/function-module.js';
 import {
   ExtractTypeFromReferenceExpression,
   parseJSONReference,
@@ -21,9 +11,9 @@ import {
   parseStringReference,
   ReferenceExpression,
   SimpleReferenceExpression,
-  StringReference,
-} from '../parser/reference-parser.js'
-import { QueryExecutor } from '../query-executor/query-executor.js'
+  AnyReference,
+} from '../parser/reference-parser.js';
+import { QueryExecutor } from '../query-executor/query-executor.js';
 import {
   BinaryOperatorExpression,
   FilterObject,
@@ -33,51 +23,30 @@ import {
   parseFilterObject,
   parseValueBinaryOperation,
   parseValueBinaryOperationOrExpression,
-} from '../parser/binary-operation-parser.js'
-import { Expression } from './expression.js'
-import { ParensNode } from '../operation-node/parens-node.js'
-import { ExpressionWrapper } from './expression-wrapper.js'
-import {
-  ComparisonOperator,
-  JSONOperatorWith$,
-  OperatorNode,
-  UnaryOperator,
-} from '../operation-node/operator-node.js'
-import { IsNever, SqlBool } from '../util/type-utils.js'
-import { parseUnaryOperation } from '../parser/unary-operation-parser.js'
-import {
-  ExtractTypeFromValueExpression,
-  parseSafeImmediateValue,
-  parseValueExpression,
-} from '../parser/value-parser.js'
-import { NOOP_QUERY_EXECUTOR } from '../query-executor/noop-query-executor.js'
-import { CaseBuilder } from '../query-builder/case-builder.js'
-import { CaseNode } from '../operation-node/case-node.js'
-import { isReadonlyArray, isUndefined } from '../util/object-utils.js'
-import { JSONPathBuilder } from '../query-builder/json-path-builder.js'
-import { OperandExpression } from '../parser/expression-parser.js'
-import { BinaryOperationNode } from '../operation-node/binary-operation-node.js'
-import { AndNode } from '../operation-node/and-node.js'
-import {
-  RefTuple2,
-  RefTuple3,
-  RefTuple4,
-  RefTuple5,
-  ValTuple2,
-  ValTuple3,
-  ValTuple4,
-  ValTuple5,
-} from '../parser/tuple-parser.js'
-import { TupleNode } from '../operation-node/tuple-node.js'
-import { Selectable } from '../util/column-type.js'
-import { JSONPathNode } from '../operation-node/json-path-node.js'
-import { KyselyTypeError } from '../util/type-error.js'
-import {
-  DataTypeExpression,
-  parseDataTypeExpression,
-} from '../parser/data-type-parser.js'
-import { CastNode } from '../operation-node/cast-node.js'
-import { SelectFrom } from '../parser/select-from-parser.js'
+} from '../parser/binary-operation-parser.js';
+import { Expression } from './expression.js';
+import { ParensNode } from '../operation-node/parens-node.js';
+import { ExpressionWrapper } from './expression-wrapper.js';
+import { ComparisonOperator, JSONOperatorWith$, OperatorNode, UnaryOperator } from '../operation-node/operator-node.js';
+import { IsNever, SqlBool } from '../util/type-utils.js';
+import { parseUnaryOperation } from '../parser/unary-operation-parser.js';
+import { ExtractTypeFromValueExpression, parseSafeImmediateValue, parseValueExpression } from '../parser/value-parser.js';
+import { NOOP_QUERY_EXECUTOR } from '../query-executor/noop-query-executor.js';
+import { CaseBuilder } from '../query-builder/case-builder.js';
+import { CaseNode } from '../operation-node/case-node.js';
+import { isReadonlyArray, isUndefined } from '../util/object-utils.js';
+import { JSONPathBuilder } from '../query-builder/json-path-builder.js';
+import { OperandExpression } from '../parser/expression-parser.js';
+import { BinaryOperationNode } from '../operation-node/binary-operation-node.js';
+import { AndNode } from '../operation-node/and-node.js';
+import { RefTuple2, RefTuple3, RefTuple4, RefTuple5, ValTuple2, ValTuple3, ValTuple4, ValTuple5 } from '../parser/tuple-parser.js';
+import { TupleNode } from '../operation-node/tuple-node.js';
+import { Selectable } from '../util/column-type.js';
+import { JSONPathNode } from '../operation-node/json-path-node.js';
+import { KyselyTypeError } from '../util/type-error.js';
+import { DataTypeExpression, parseDataTypeExpression } from '../parser/data-type-parser.js';
+import { CastNode } from '../operation-node/cast-node.js';
+import { SelectFrom } from '../parser/select-from-parser.js';
 
 export interface ExpressionBuilder<DB, TB extends keyof DB> {
   /**
@@ -170,21 +139,11 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * )
    * ```
    */
-  <
-    RE extends ReferenceExpression<DB, TB>,
-    OP extends BinaryOperatorExpression,
-    VE extends OperandValueExpressionOrList<DB, TB, RE>,
-  >(
+  <RE extends ReferenceExpression<DB, TB>, OP extends BinaryOperatorExpression, VE extends OperandValueExpressionOrList<DB, TB, RE>>(
     lhs: RE,
     op: OP,
-    rhs: VE,
-  ): ExpressionWrapper<
-    DB,
-    TB,
-    OP extends ComparisonOperator
-      ? SqlBool
-      : ExtractTypeFromReferenceExpression<DB, TB, RE>
-  >
+    rhs: VE
+  ): ExpressionWrapper<DB, TB, OP extends ComparisonOperator ? SqlBool : ExtractTypeFromReferenceExpression<DB, TB, RE>>;
 
   /**
    * Returns a copy of `this` expression builder, for destructuring purposes.
@@ -210,7 +169,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * )
    * ```
    */
-  get eb(): ExpressionBuilder<DB, TB>
+  get eb(): ExpressionBuilder<DB, TB>;
 
   /**
    * Returns a {@link FunctionModule} that can be used to write type safe function
@@ -243,7 +202,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * having count("pet"."id") > $1
    * ```
    */
-  get fn(): FunctionModule<DB, TB>
+  get fn(): FunctionModule<DB, TB>;
 
   /**
    * Creates a subquery.
@@ -289,9 +248,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * that case Kysely typings wouldn't allow you to reference `pet.owner_id`
    * because `pet` is not joined to that query.
    */
-  selectFrom<TE extends TableExpressionOrList<DB, TB>>(
-    from: TE,
-  ): SelectFrom<DB, TB, TE>
+  selectFrom<TE extends TableExpressionOrList<DB, TB>>(from: TE): SelectFrom<DB, TB, TE>;
 
   /**
    * Creates a `case` statement/operator.
@@ -342,15 +299,11 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * where "id" = $7
    * ```
    */
-  case(): CaseBuilder<DB, TB>
+  case(): CaseBuilder<DB, TB>;
 
-  case<C extends SimpleReferenceExpression<DB, TB>>(
-    column: C,
-  ): CaseBuilder<DB, TB, ExtractTypeFromReferenceExpression<DB, TB, C>>
+  case<C extends SimpleReferenceExpression<DB, TB>>(column: C): CaseBuilder<DB, TB, ExtractTypeFromReferenceExpression<DB, TB, C>>;
 
-  case<E extends Expression<any>>(
-    expression: E,
-  ): CaseBuilder<DB, TB, ExtractTypeFromValueExpression<E>>
+  case<E extends Expression<any>>(expression: E): CaseBuilder<DB, TB, ExtractTypeFromValueExpression<E>>;
 
   /**
    * This method can be used to reference columns within the query's context. For
@@ -474,14 +427,9 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * select `profile`->'$.addresses[last].city' as `current_city` from `person`
    * ```
    */
-  ref<RE extends StringReference<DB, TB>>(
-    reference: RE,
-  ): ExpressionWrapper<DB, TB, ExtractTypeFromReferenceExpression<DB, TB, RE>>
+  ref<RE extends AnyReference<DB, TB>>(reference: RE): ExpressionWrapper<DB, TB, ExtractTypeFromReferenceExpression<DB, TB, RE>>;
 
-  ref<RE extends StringReference<DB, TB>>(
-    reference: RE,
-    op: JSONOperatorWith$,
-  ): JSONPathBuilder<ExtractTypeFromReferenceExpression<DB, TB, RE>>
+  ref<RE extends AnyReference<DB, TB>>(reference: RE, op: JSONOperatorWith$): JSONPathBuilder<ExtractTypeFromReferenceExpression<DB, TB, RE>>;
 
   /**
    * Creates a JSON path expression with provided column as root document (the $).
@@ -509,9 +457,9 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * where `id` = $2
    * ```
    */
-  jsonPath<$ extends StringReference<DB, TB> = never>(): IsNever<$> extends true
+  jsonPath<$ extends AnyReference<DB, TB> = never>(): IsNever<$> extends true
     ? KyselyTypeError<"You must provide a column reference as this method's $ generic">
-    : JSONPathBuilder<ExtractTypeFromReferenceExpression<DB, TB, $>>
+    : JSONPathBuilder<ExtractTypeFromReferenceExpression<DB, TB, $>>;
 
   /**
    * Creates a table reference.
@@ -543,9 +491,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *
    * If you need a column reference, use {@link ref}.
    */
-  table<T extends TB & string>(
-    table: T,
-  ): ExpressionWrapper<DB, TB, Selectable<DB[T]>>
+  table<T extends TB & string>(table: T): ExpressionWrapper<DB, TB, Selectable<DB[T]>>;
 
   /**
    * Returns a value expression.
@@ -586,9 +532,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * )
    * ```
    */
-  val<VE>(
-    value: VE,
-  ): ExpressionWrapper<DB, TB, ExtractTypeFromValueExpression<VE>>
+  val<VE>(value: VE): ExpressionWrapper<DB, TB, ExtractTypeFromValueExpression<VE>>;
 
   /**
    * Creates a tuple expression.
@@ -663,23 +607,16 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *   )
    * ```
    */
-  refTuple<
-    R1 extends ReferenceExpression<DB, TB>,
-    R2 extends ReferenceExpression<DB, TB>,
-  >(
+  refTuple<R1 extends ReferenceExpression<DB, TB>, R2 extends ReferenceExpression<DB, TB>>(
     value1: R1,
-    value2: R2,
-  ): ExpressionWrapper<DB, TB, RefTuple2<DB, TB, R1, R2>>
+    value2: R2
+  ): ExpressionWrapper<DB, TB, RefTuple2<DB, TB, R1, R2>>;
 
-  refTuple<
-    R1 extends ReferenceExpression<DB, TB>,
-    R2 extends ReferenceExpression<DB, TB>,
-    R3 extends ReferenceExpression<DB, TB>,
-  >(
+  refTuple<R1 extends ReferenceExpression<DB, TB>, R2 extends ReferenceExpression<DB, TB>, R3 extends ReferenceExpression<DB, TB>>(
     value1: R1,
     value2: R2,
-    value3: R3,
-  ): ExpressionWrapper<DB, TB, RefTuple3<DB, TB, R1, R2, R3>>
+    value3: R3
+  ): ExpressionWrapper<DB, TB, RefTuple3<DB, TB, R1, R2, R3>>;
 
   refTuple<
     R1 extends ReferenceExpression<DB, TB>,
@@ -690,8 +627,8 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
     value1: R1,
     value2: R2,
     value3: R3,
-    value4: R4,
-  ): ExpressionWrapper<DB, TB, RefTuple4<DB, TB, R1, R2, R3, R4>>
+    value4: R4
+  ): ExpressionWrapper<DB, TB, RefTuple4<DB, TB, R1, R2, R3, R4>>;
 
   refTuple<
     R1 extends ReferenceExpression<DB, TB>,
@@ -704,8 +641,8 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
     value2: R2,
     value3: R3,
     value4: R4,
-    value5: R5,
-  ): ExpressionWrapper<DB, TB, RefTuple5<DB, TB, R1, R2, R3, R4, R5>>
+    value5: R5
+  ): ExpressionWrapper<DB, TB, RefTuple5<DB, TB, R1, R2, R3, R4, R5>>;
 
   /**
    * Creates a value tuple expression.
@@ -745,31 +682,13 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *   )
    * ```
    */
-  tuple<V1, V2>(
-    value1: V1,
-    value2: V2,
-  ): ExpressionWrapper<DB, TB, ValTuple2<V1, V2>>
+  tuple<V1, V2>(value1: V1, value2: V2): ExpressionWrapper<DB, TB, ValTuple2<V1, V2>>;
 
-  tuple<V1, V2, V3>(
-    value1: V1,
-    value2: V2,
-    value3: V3,
-  ): ExpressionWrapper<DB, TB, ValTuple3<V1, V2, V3>>
+  tuple<V1, V2, V3>(value1: V1, value2: V2, value3: V3): ExpressionWrapper<DB, TB, ValTuple3<V1, V2, V3>>;
 
-  tuple<V1, V2, V3, V4>(
-    value1: V1,
-    value2: V2,
-    value3: V3,
-    value4: V4,
-  ): ExpressionWrapper<DB, TB, ValTuple4<V1, V2, V3, V4>>
+  tuple<V1, V2, V3, V4>(value1: V1, value2: V2, value3: V3, value4: V4): ExpressionWrapper<DB, TB, ValTuple4<V1, V2, V3, V4>>;
 
-  tuple<V1, V2, V3, V4, V5>(
-    value1: V1,
-    value2: V2,
-    value3: V3,
-    value4: V4,
-    value5: V5,
-  ): ExpressionWrapper<DB, TB, ValTuple5<V1, V2, V3, V4, V5>>
+  tuple<V1, V2, V3, V4, V5>(value1: V1, value2: V2, value3: V3, value4: V4, value5: V5): ExpressionWrapper<DB, TB, ValTuple5<V1, V2, V3, V4, V5>>;
 
   /**
    * Returns a literal value expression.
@@ -792,9 +711,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * select 1 as "one" from "person"
    * ```
    */
-  lit<VE extends number | boolean | null>(
-    literal: VE,
-  ): ExpressionWrapper<DB, TB, VE>
+  lit<VE extends number | boolean | null>(literal: VE): ExpressionWrapper<DB, TB, VE>;
 
   /**
    * Creates an unary expression.
@@ -824,8 +741,8 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    */
   unary<RE extends ReferenceExpression<DB, TB>>(
     op: UnaryOperator,
-    expr: RE,
-  ): ExpressionWrapper<DB, TB, ExtractTypeFromReferenceExpression<DB, TB, RE>>
+    expr: RE
+  ): ExpressionWrapper<DB, TB, ExtractTypeFromReferenceExpression<DB, TB, RE>>;
 
   /**
    * Creates a `not` operation.
@@ -834,9 +751,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *
    * @see {@link unary}
    */
-  not<RE extends ReferenceExpression<DB, TB>>(
-    expr: RE,
-  ): ExpressionWrapper<DB, TB, ExtractTypeFromReferenceExpression<DB, TB, RE>>
+  not<RE extends ReferenceExpression<DB, TB>>(expr: RE): ExpressionWrapper<DB, TB, ExtractTypeFromReferenceExpression<DB, TB, RE>>;
 
   /**
    * Creates an `exists` operation.
@@ -845,9 +760,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *
    * @see {@link unary}
    */
-  exists<RE extends ReferenceExpression<DB, TB>>(
-    expr: RE,
-  ): ExpressionWrapper<DB, TB, SqlBool>
+  exists<RE extends ReferenceExpression<DB, TB>>(expr: RE): ExpressionWrapper<DB, TB, SqlBool>;
 
   /**
    * Creates a negation operation.
@@ -856,9 +769,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *
    * @see {@link unary}
    */
-  neg<RE extends ReferenceExpression<DB, TB>>(
-    expr: RE,
-  ): ExpressionWrapper<DB, TB, ExtractTypeFromReferenceExpression<DB, TB, RE>>
+  neg<RE extends ReferenceExpression<DB, TB>>(expr: RE): ExpressionWrapper<DB, TB, ExtractTypeFromReferenceExpression<DB, TB, RE>>;
 
   /**
    * Creates a `between` expression.
@@ -878,15 +789,11 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * select * from "person" where "age" between $1 and $2
    * ```
    */
-  between<
-    RE extends ReferenceExpression<DB, TB>,
-    SE extends OperandValueExpression<DB, TB, RE>,
-    EE extends OperandValueExpression<DB, TB, RE>,
-  >(
+  between<RE extends ReferenceExpression<DB, TB>, SE extends OperandValueExpression<DB, TB, RE>, EE extends OperandValueExpression<DB, TB, RE>>(
     expr: RE,
     start: SE,
-    end: EE,
-  ): ExpressionWrapper<DB, TB, SqlBool>
+    end: EE
+  ): ExpressionWrapper<DB, TB, SqlBool>;
 
   /**
    * Creates a `between symmetric` expression.
@@ -913,8 +820,8 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   >(
     expr: RE,
     start: SE,
-    end: EE,
-  ): ExpressionWrapper<DB, TB, SqlBool>
+    end: EE
+  ): ExpressionWrapper<DB, TB, SqlBool>;
 
   /**
    * Combines two or more expressions using the logical `and` operator.
@@ -976,13 +883,9 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * )
    * ```
    */
-  and<E extends OperandExpression<SqlBool>>(
-    exprs: ReadonlyArray<E>,
-  ): ExpressionWrapper<DB, TB, SqlBool>
+  and<E extends OperandExpression<SqlBool>>(exprs: ReadonlyArray<E>): ExpressionWrapper<DB, TB, SqlBool>;
 
-  and<E extends Readonly<FilterObject<DB, TB>>>(
-    exprs: E,
-  ): ExpressionWrapper<DB, TB, SqlBool>
+  and<E extends Readonly<FilterObject<DB, TB>>>(exprs: E): ExpressionWrapper<DB, TB, SqlBool>;
 
   /**
    * Combines two or more expressions using the logical `or` operator.
@@ -1044,13 +947,9 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * )
    * ```
    */
-  or<E extends OperandExpression<SqlBool>>(
-    exprs: ReadonlyArray<E>,
-  ): ExpressionWrapper<DB, TB, SqlBool>
+  or<E extends OperandExpression<SqlBool>>(exprs: ReadonlyArray<E>): ExpressionWrapper<DB, TB, SqlBool>;
 
-  or<E extends Readonly<FilterObject<DB, TB>>>(
-    exprs: E,
-  ): ExpressionWrapper<DB, TB, SqlBool>
+  or<E extends Readonly<FilterObject<DB, TB>>>(exprs: E): ExpressionWrapper<DB, TB, SqlBool>;
 
   /**
    * Wraps the expression in parentheses.
@@ -1093,23 +992,13 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * where ("age" = $1 or "age" = $2) and ("first_name" = $3 or "first_name" = $4)
    * ```
    */
-  parens<
-    RE extends ReferenceExpression<DB, TB>,
-    OP extends BinaryOperatorExpression,
-    VE extends OperandValueExpressionOrList<DB, TB, RE>,
-  >(
+  parens<RE extends ReferenceExpression<DB, TB>, OP extends BinaryOperatorExpression, VE extends OperandValueExpressionOrList<DB, TB, RE>>(
     lhs: RE,
     op: OP,
-    rhs: VE,
-  ): ExpressionWrapper<
-    DB,
-    TB,
-    OP extends ComparisonOperator
-      ? SqlBool
-      : ExtractTypeFromReferenceExpression<DB, TB, RE>
-  >
+    rhs: VE
+  ): ExpressionWrapper<DB, TB, OP extends ComparisonOperator ? SqlBool : ExtractTypeFromReferenceExpression<DB, TB, RE>>;
 
-  parens<T>(expr: Expression<T>): ExpressionWrapper<DB, TB, T>
+  parens<T>(expr: Expression<T>): ExpressionWrapper<DB, TB, T>;
 
   /**
    * Creates a `cast(expr as dataType)` expression.
@@ -1136,44 +1025,30 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * from "person"
    * ```
    */
-  cast<T, RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>>(
-    expr: RE,
-    dataType: DataTypeExpression,
-  ): ExpressionWrapper<DB, TB, T>
+  cast<T, RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>>(expr: RE, dataType: DataTypeExpression): ExpressionWrapper<DB, TB, T>;
 
   /**
    * See {@link QueryCreator.withSchema}
    *
    * @deprecated Will be removed in kysely 0.25.0.
    */
-  withSchema(schema: string): ExpressionBuilder<DB, TB>
+  withSchema(schema: string): ExpressionBuilder<DB, TB>;
 }
 
-export function createExpressionBuilder<DB, TB extends keyof DB>(
-  executor: QueryExecutor = NOOP_QUERY_EXECUTOR,
-): ExpressionBuilder<DB, TB> {
-  function binary<
-    RE extends ReferenceExpression<DB, TB>,
-    OP extends BinaryOperatorExpression,
-  >(
+export function createExpressionBuilder<DB, TB extends keyof DB>(executor: QueryExecutor = NOOP_QUERY_EXECUTOR): ExpressionBuilder<DB, TB> {
+  function binary<RE extends ReferenceExpression<DB, TB>, OP extends BinaryOperatorExpression>(
     lhs: RE,
     op: OP,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>,
-  ): ExpressionWrapper<
-    DB,
-    TB,
-    OP extends ComparisonOperator
-      ? SqlBool
-      : ExtractTypeFromReferenceExpression<DB, TB, RE>
-  > {
-    return new ExpressionWrapper(parseValueBinaryOperation(lhs, op, rhs))
+    rhs: OperandValueExpressionOrList<DB, TB, RE>
+  ): ExpressionWrapper<DB, TB, OP extends ComparisonOperator ? SqlBool : ExtractTypeFromReferenceExpression<DB, TB, RE>> {
+    return new ExpressionWrapper(parseValueBinaryOperation(lhs, op, rhs));
   }
 
   function unary<RE extends ReferenceExpression<DB, TB>>(
     op: UnaryOperator,
-    expr: RE,
+    expr: RE
   ): ExpressionWrapper<DB, TB, ExtractTypeFromReferenceExpression<DB, TB, RE>> {
-    return new ExpressionWrapper(parseUnaryOperation(op, expr))
+    return new ExpressionWrapper(parseUnaryOperation(op, expr));
   }
 
   const eb = Object.assign(binary, {
@@ -1184,208 +1059,138 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
       return createSelectQueryBuilder({
         queryId: createQueryId(),
         executor,
-        queryNode: SelectQueryNode.createFrom(
-          parseTableExpressionOrList(table),
-        ),
-      })
+        queryNode: SelectQueryNode.createFrom(parseTableExpressionOrList(table)),
+      });
     },
 
-    case<RE extends ReferenceExpression<DB, TB>>(
-      reference?: RE,
-    ): CaseBuilder<DB, TB, ExtractTypeFromReferenceExpression<DB, TB, RE>> {
+    case<RE extends ReferenceExpression<DB, TB>>(reference?: RE): CaseBuilder<DB, TB, ExtractTypeFromReferenceExpression<DB, TB, RE>> {
       return new CaseBuilder({
-        node: CaseNode.create(
-          isUndefined(reference)
-            ? undefined
-            : parseReferenceExpression(reference),
-        ),
-      })
+        node: CaseNode.create(isUndefined(reference) ? undefined : parseReferenceExpression(reference)),
+      });
     },
 
-    ref<RE extends StringReference<DB, TB>>(
-      reference: RE,
-      op?: JSONOperatorWith$,
-    ): any {
+    ref<RE extends AnyReference<DB, TB>>(reference: RE, op?: JSONOperatorWith$): any {
       if (isUndefined(op)) {
-        return new ExpressionWrapper(parseStringReference(reference))
+        return new ExpressionWrapper(parseStringReference(reference));
       }
 
-      return new JSONPathBuilder(parseJSONReference(reference, op))
+      return new JSONPathBuilder(parseJSONReference(reference, op));
     },
 
-    jsonPath<
-      $ extends StringReference<DB, TB> = never,
-    >(): IsNever<$> extends true
+    jsonPath<$ extends AnyReference<DB, TB> = never>(): IsNever<$> extends true
       ? KyselyTypeError<"You must provide a column reference as this method's $ generic">
       : JSONPathBuilder<ExtractTypeFromReferenceExpression<DB, TB, $>> {
-      return new JSONPathBuilder(JSONPathNode.create()) as any
+      return new JSONPathBuilder(JSONPathNode.create()) as any;
     },
 
-    table<T extends TB & string>(
-      table: T,
-    ): ExpressionWrapper<DB, TB, Selectable<DB[T]>> {
-      return new ExpressionWrapper(parseTable(table))
+    table<T extends TB & string>(table: T): ExpressionWrapper<DB, TB, Selectable<DB[T]>> {
+      return new ExpressionWrapper(parseTable(table));
     },
 
-    val<VE>(
-      value: VE,
-    ): ExpressionWrapper<DB, TB, ExtractTypeFromValueExpression<VE>> {
-      return new ExpressionWrapper(parseValueExpression(value))
+    val<VE>(value: VE): ExpressionWrapper<DB, TB, ExtractTypeFromValueExpression<VE>> {
+      return new ExpressionWrapper(parseValueExpression(value));
     },
 
-    refTuple(
-      ...values: ReadonlyArray<ReferenceExpression<any, any>>
-    ): ExpressionWrapper<DB, TB, any> {
-      return new ExpressionWrapper(
-        TupleNode.create(values.map(parseReferenceExpression)),
-      )
+    refTuple(...values: ReadonlyArray<ReferenceExpression<any, any>>): ExpressionWrapper<DB, TB, any> {
+      return new ExpressionWrapper(TupleNode.create(values.map(parseReferenceExpression)));
     },
 
     tuple(...values: ReadonlyArray<unknown>): ExpressionWrapper<DB, TB, any> {
-      return new ExpressionWrapper(
-        TupleNode.create(values.map(parseValueExpression)),
-      )
+      return new ExpressionWrapper(TupleNode.create(values.map(parseValueExpression)));
     },
 
-    lit<VE extends number | boolean | null>(
-      value: VE,
-    ): ExpressionWrapper<DB, TB, VE> {
-      return new ExpressionWrapper(parseSafeImmediateValue(value))
+    lit<VE extends number | boolean | null>(value: VE): ExpressionWrapper<DB, TB, VE> {
+      return new ExpressionWrapper(parseSafeImmediateValue(value));
     },
 
     unary,
 
-    not<RE extends ReferenceExpression<DB, TB>>(
-      expr: RE,
-    ): ExpressionWrapper<
-      DB,
-      TB,
-      ExtractTypeFromReferenceExpression<DB, TB, RE>
-    > {
-      return unary('not', expr)
+    not<RE extends ReferenceExpression<DB, TB>>(expr: RE): ExpressionWrapper<DB, TB, ExtractTypeFromReferenceExpression<DB, TB, RE>> {
+      return unary('not', expr);
     },
 
-    exists<RE extends ReferenceExpression<DB, TB>>(
-      expr: RE,
-    ): ExpressionWrapper<DB, TB, SqlBool> {
-      return unary('exists', expr)
+    exists<RE extends ReferenceExpression<DB, TB>>(expr: RE): ExpressionWrapper<DB, TB, SqlBool> {
+      return unary('exists', expr);
     },
 
-    neg<RE extends ReferenceExpression<DB, TB>>(
-      expr: RE,
-    ): ExpressionWrapper<
-      DB,
-      TB,
-      ExtractTypeFromReferenceExpression<DB, TB, RE>
-    > {
-      return unary('-', expr)
+    neg<RE extends ReferenceExpression<DB, TB>>(expr: RE): ExpressionWrapper<DB, TB, ExtractTypeFromReferenceExpression<DB, TB, RE>> {
+      return unary('-', expr);
     },
 
     between<RE extends ReferenceExpression<DB, TB>>(
       expr: RE,
       start: OperandValueExpression<DB, TB, RE>,
-      end: OperandValueExpression<DB, TB, RE>,
+      end: OperandValueExpression<DB, TB, RE>
     ): ExpressionWrapper<DB, TB, SqlBool> {
       return new ExpressionWrapper(
         BinaryOperationNode.create(
           parseReferenceExpression(expr),
           OperatorNode.create('between'),
-          AndNode.create(
-            parseValueExpression(start),
-            parseValueExpression(end),
-          ),
-        ),
-      )
+          AndNode.create(parseValueExpression(start), parseValueExpression(end))
+        )
+      );
     },
 
     betweenSymmetric<RE extends ReferenceExpression<DB, TB>>(
       expr: RE,
       start: OperandValueExpression<DB, TB, RE>,
-      end: OperandValueExpression<DB, TB, RE>,
+      end: OperandValueExpression<DB, TB, RE>
     ): ExpressionWrapper<DB, TB, SqlBool> {
       return new ExpressionWrapper(
         BinaryOperationNode.create(
           parseReferenceExpression(expr),
           OperatorNode.create('between symmetric'),
-          AndNode.create(
-            parseValueExpression(start),
-            parseValueExpression(end),
-          ),
-        ),
-      )
+          AndNode.create(parseValueExpression(start), parseValueExpression(end))
+        )
+      );
     },
 
-    and(
-      exprs:
-        | ReadonlyArray<OperandExpression<SqlBool>>
-        | Readonly<FilterObject<DB, TB>>,
-    ): ExpressionWrapper<DB, TB, SqlBool> {
+    and(exprs: ReadonlyArray<OperandExpression<SqlBool>> | Readonly<FilterObject<DB, TB>>): ExpressionWrapper<DB, TB, SqlBool> {
       if (isReadonlyArray(exprs)) {
-        return new ExpressionWrapper(parseFilterList(exprs, 'and'))
+        return new ExpressionWrapper(parseFilterList(exprs, 'and'));
       }
 
-      return new ExpressionWrapper(parseFilterObject(exprs, 'and'))
+      return new ExpressionWrapper(parseFilterObject(exprs, 'and'));
     },
 
-    or(
-      exprs:
-        | ReadonlyArray<OperandExpression<SqlBool>>
-        | Readonly<FilterObject<DB, TB>>,
-    ): ExpressionWrapper<DB, TB, SqlBool> {
+    or(exprs: ReadonlyArray<OperandExpression<SqlBool>> | Readonly<FilterObject<DB, TB>>): ExpressionWrapper<DB, TB, SqlBool> {
       if (isReadonlyArray(exprs)) {
-        return new ExpressionWrapper(parseFilterList(exprs, 'or'))
+        return new ExpressionWrapper(parseFilterList(exprs, 'or'));
       }
 
-      return new ExpressionWrapper(parseFilterObject(exprs, 'or'))
+      return new ExpressionWrapper(parseFilterObject(exprs, 'or'));
     },
 
     parens(...args: any[]) {
-      const node = parseValueBinaryOperationOrExpression(args)
+      const node = parseValueBinaryOperationOrExpression(args);
 
       if (ParensNode.is(node)) {
         // No double wrapping.
-        return new ExpressionWrapper(node)
+        return new ExpressionWrapper(node);
       } else {
-        return new ExpressionWrapper(ParensNode.create(node))
+        return new ExpressionWrapper(ParensNode.create(node));
       }
     },
 
-    cast<T, RE extends ReferenceExpression<DB, TB>>(
-      expr: RE,
-      dataType: DataTypeExpression,
-    ) {
-      return new ExpressionWrapper<DB, TB, T>(
-        CastNode.create(
-          parseReferenceExpression(expr),
-          parseDataTypeExpression(dataType),
-        ),
-      )
+    cast<T, RE extends ReferenceExpression<DB, TB>>(expr: RE, dataType: DataTypeExpression) {
+      return new ExpressionWrapper<DB, TB, T>(CastNode.create(parseReferenceExpression(expr), parseDataTypeExpression(dataType)));
     },
 
     withSchema(schema: string): ExpressionBuilder<DB, TB> {
-      return createExpressionBuilder(
-        executor.withPluginAtFront(new WithSchemaPlugin(schema)),
-      )
+      return createExpressionBuilder(executor.withPluginAtFront(new WithSchemaPlugin(schema)));
     },
-  })
+  });
 
-  eb.fn = createFunctionModule()
-  eb.eb = eb
+  eb.fn = createFunctionModule();
+  eb.eb = eb;
 
-  return eb
+  return eb;
 }
 
-export function expressionBuilder<DB, TB extends keyof DB>(
-  _: SelectQueryBuilder<DB, TB, any>,
-): ExpressionBuilder<DB, TB>
+export function expressionBuilder<DB, TB extends keyof DB>(_: SelectQueryBuilder<DB, TB, any>): ExpressionBuilder<DB, TB>;
 
-export function expressionBuilder<
-  DB,
-  TB extends keyof DB = never,
->(): ExpressionBuilder<DB, TB>
+export function expressionBuilder<DB, TB extends keyof DB = never>(): ExpressionBuilder<DB, TB>;
 
-export function expressionBuilder<DB, TB extends keyof DB>(
-  _?: unknown,
-): ExpressionBuilder<DB, TB> {
-  return createExpressionBuilder()
+export function expressionBuilder<DB, TB extends keyof DB>(_?: unknown): ExpressionBuilder<DB, TB> {
+  return createExpressionBuilder();
 }
