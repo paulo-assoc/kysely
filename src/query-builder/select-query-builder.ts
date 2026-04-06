@@ -1,12 +1,8 @@
-import { AliasNode } from '../operation-node/alias-node.js'
-import { CompiledQuery } from '../query-compiler/compiled-query.js'
-import { SelectModifierNode } from '../operation-node/select-modifier-node.js'
-import {
-  JoinCallbackExpression,
-  JoinReferenceExpression,
-  parseJoin,
-} from '../parser/join-parser.js'
-import { TableExpression, parseTable } from '../parser/table-parser.js'
+import { AliasNode } from '../operation-node/alias-node.js';
+import { CompiledQuery } from '../query-compiler/compiled-query.js';
+import { SelectModifierNode } from '../operation-node/select-modifier-node.js';
+import { JoinCallbackExpression, JoinReferenceExpression, parseJoin } from '../parser/join-parser.js';
+import { TableExpression, parseTable } from '../parser/table-parser.js';
 import {
   parseSelectArg,
   parseSelectAll,
@@ -18,14 +14,10 @@ import {
   CallbackSelection,
   ExtractTypeFromSelectExpression,
   parseSelectValueExpression,
-} from '../parser/select-parser.js'
-import {
-  parseReferenceExpressionOrList,
-  ReferenceExpression,
-  ReferenceExpressionOrList,
-} from '../parser/reference-parser.js'
-import { SelectQueryNode } from '../operation-node/select-query-node.js'
-import { QueryNode } from '../operation-node/query-node.js'
+} from '../parser/select-parser.js';
+import { parseReferenceExpressionOrList, ReferenceExpression, ReferenceExpressionOrList } from '../parser/reference-parser.js';
+import { SelectQueryNode } from '../operation-node/select-query-node.js';
+import { QueryNode } from '../operation-node/query-node.js';
 import {
   AnyArrayPropertyPathWithTable,
   DrainOuterGeneric,
@@ -39,107 +31,79 @@ import {
   ExtractPropertyPathType,
   AnyPropertyPathWithTable,
   AnyArrayPropertyPath,
-} from '../util/type-utils.js'
-import {
-  DirectedOrderByStringReference,
-  OrderByExpression,
-  OrderByModifiers,
-  parseOrderBy,
-} from '../parser/order-by-parser.js'
-import { LimitNode } from '../operation-node/limit-node.js'
-import { OffsetNode } from '../operation-node/offset-node.js'
-import { Compilable } from '../util/compilable.js'
-import { QueryExecutor } from '../query-executor/query-executor.js'
-import { QueryId } from '../util/query-id.js'
-import { asArray, freeze } from '../util/object-utils.js'
-import { GroupByArg, parseGroupBy } from '../parser/group-by-parser.js'
-import { KyselyPlugin } from '../plugin/kysely-plugin.js'
-import { WhereInterface } from './where-interface.js'
-import {
-  isNoResultErrorConstructor,
-  NoResultError,
-  NoResultErrorConstructor,
-} from './no-result-error.js'
-import { HavingInterface } from './having-interface.js'
-import { IdentifierNode } from '../operation-node/identifier-node.js'
-import { Explainable, ExplainFormat } from '../util/explainable.js'
-import {
-  SetOperandExpression,
-  parseSetOperations,
-} from '../parser/set-operation-parser.js'
-import { AliasedExpression, Expression } from '../expression/expression.js'
+} from '../util/type-utils.js';
+import { DirectedOrderByStringReference, OrderByExpression, OrderByModifiers, parseOrderBy } from '../parser/order-by-parser.js';
+import { LimitNode } from '../operation-node/limit-node.js';
+import { OffsetNode } from '../operation-node/offset-node.js';
+import { Compilable } from '../util/compilable.js';
+import { QueryExecutor } from '../query-executor/query-executor.js';
+import { QueryId } from '../util/query-id.js';
+import { asArray, freeze } from '../util/object-utils.js';
+import { GroupByArg, parseGroupBy } from '../parser/group-by-parser.js';
+import { KyselyPlugin } from '../plugin/kysely-plugin.js';
+import { WhereInterface } from './where-interface.js';
+import { isNoResultErrorConstructor, NoResultError, NoResultErrorConstructor } from './no-result-error.js';
+import { HavingInterface } from './having-interface.js';
+import { IdentifierNode } from '../operation-node/identifier-node.js';
+import { Explainable, ExplainFormat } from '../util/explainable.js';
+import { SetOperandExpression, parseSetOperations } from '../parser/set-operation-parser.js';
+import { AliasedExpression, Expression } from '../expression/expression.js';
 import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
   parseValueBinaryOperationOrExpression,
   parseReferentialBinaryOperation,
-} from '../parser/binary-operation-parser.js'
-import { KyselyTypeError } from '../util/type-error.js'
-import { Selectable } from '../util/column-type.js'
-import { Streamable } from '../util/streamable.js'
-import { ExpressionOrFactory } from '../parser/expression-parser.js'
-import { ExpressionWrapper } from '../expression/expression-wrapper.js'
-import { SelectQueryBuilderExpression } from './select-query-builder-expression.js'
-import {
-  ValueExpression,
-  parseValueExpression,
-} from '../parser/value-parser.js'
-import { FetchModifier } from '../operation-node/fetch-node.js'
-import { parseFetch } from '../parser/fetch-parser.js'
-import { TopModifier } from '../operation-node/top-node.js'
-import { parseTop } from '../parser/top-parser.js'
-import { JoinType } from '../operation-node/join-node.js'
-import { OrderByInterface } from './order-by-interface.js'
-import { FeedOptions, FeedResponse } from '@azure/cosmos'
-import { FeedResult } from '../driver/database-connection.js'
+} from '../parser/binary-operation-parser.js';
+import { KyselyTypeError } from '../util/type-error.js';
+import { Selectable } from '../util/column-type.js';
+import { Streamable } from '../util/streamable.js';
+import { ExpressionOrFactory } from '../parser/expression-parser.js';
+import { ExpressionWrapper } from '../expression/expression-wrapper.js';
+import { SelectQueryBuilderExpression } from './select-query-builder-expression.js';
+import { ValueExpression, parseValueExpression } from '../parser/value-parser.js';
+import { FetchModifier } from '../operation-node/fetch-node.js';
+import { parseFetch } from '../parser/fetch-parser.js';
+import { TopModifier } from '../operation-node/top-node.js';
+import { parseTop } from '../parser/top-parser.js';
+import { JoinType } from '../operation-node/join-node.js';
+import { OrderByInterface } from './order-by-interface.js';
+import { FeedOptions, FeedResponse } from '@azure/cosmos';
+import { FeedResult } from '../driver/database-connection.js';
 
-export type JoinArrayProperty<
-  DB,
-  TB extends keyof DB,
-  O,
-  P extends string,
-  A extends string,
-> = P extends `${infer T}.${infer Rest}`
+export type JoinArrayProperty<DB, TB extends keyof DB, O, P extends string, A extends string> = P extends `${infer T}.${infer Rest}`
   ? T extends TB
     ? Rest extends AnyArrayPropertyPath<DB, T>
       ? SelectQueryBuilder<
           DB & ShallowRecord<A, ArrayItemType<ExtractPropertyPathType<DB[T], Rest>>>,
-          TB | A,        // original tables + new alias
-          O              // preserve selections/output type
+          TB | A, // original tables + new alias
+          O // preserve selections/output type
         >
       : never
     : never
-  : never
+  : never;
 
 export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
-  extends WhereInterface<DB, TB>,
+  extends
+    WhereInterface<DB, TB>,
     // HavingInterface<DB, TB>,
     OrderByInterface<DB, TB, O>,
     SelectQueryBuilderExpression<O>,
     Compilable<O> {
   // Explainable,
   // Streamable<O>
-  where<
-    RE extends ReferenceExpression<DB, TB>,
-    VE extends OperandValueExpressionOrList<DB, TB, RE>,
-  >(
+  where<RE extends ReferenceExpression<DB, TB>, VE extends OperandValueExpressionOrList<DB, TB, RE>>(
     lhs: RE,
     op: ComparisonOperatorExpression,
-    rhs: VE,
-  ): SelectQueryBuilder<DB, TB, O>
+    rhs: VE
+  ): SelectQueryBuilder<DB, TB, O>;
 
-  where<E extends ExpressionOrFactory<DB, TB, SqlBool>>(
-    expression: E,
-  ): SelectQueryBuilder<DB, TB, O>
+  where<E extends ExpressionOrFactory<DB, TB, SqlBool>>(expression: E): SelectQueryBuilder<DB, TB, O>;
 
-  whereRef<
-    LRE extends ReferenceExpression<DB, TB>,
-    RRE extends ReferenceExpression<DB, TB>,
-  >(
+  whereRef<LRE extends ReferenceExpression<DB, TB>, RRE extends ReferenceExpression<DB, TB>>(
     lhs: LRE,
     op: ComparisonOperatorExpression,
-    rhs: RRE,
-  ): SelectQueryBuilder<DB, TB, O>
+    rhs: RRE
+  ): SelectQueryBuilder<DB, TB, O>;
 
   // having<
   //   RE extends ReferenceExpression<DB, TB>,
@@ -396,27 +360,15 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * people[0].id
    * ```
    */
-  select<SE extends SelectExpression<DB, TB>>(
-    selections: ReadonlyArray<SE>,
-  ): SelectQueryBuilder<DB, TB, O & Selection<DB, TB, SE>>
+  select<SE extends SelectExpression<DB, TB>>(selections: ReadonlyArray<SE>): SelectQueryBuilder<DB, TB, O & Selection<DB, TB, SE>>;
 
-  select<CB extends SelectCallback<DB, TB>>(
-    callback: CB,
-  ): SelectQueryBuilder<DB, TB, O & CallbackSelection<DB, TB, CB>>
+  select<CB extends SelectCallback<DB, TB>>(callback: CB): SelectQueryBuilder<DB, TB, O & CallbackSelection<DB, TB, CB>>;
 
-  select<SE extends SelectExpression<DB, TB>>(
-    selection: SE,
-  ): SelectQueryBuilder<DB, TB, O & Selection<DB, TB, SE>>
+  select<SE extends SelectExpression<DB, TB>>(selection: SE): SelectQueryBuilder<DB, TB, O & Selection<DB, TB, SE>>;
 
   selectValue<SE extends AnyPropertyPathWithTable<DB, TB> | TB>(
-    selection: SE,
-  ): SelectQueryBuilder<
-    DB,
-    TB,
-    SE extends TB
-      ? Selectable<DB[Extract<keyof DB, SE>]>
-      : ExtractTypeFromSelectExpression<DB, TB, SE>
-  >
+    selection: SE
+  ): SelectQueryBuilder<DB, TB, SE extends TB ? Selectable<DB[Extract<keyof DB, SE>]> : ExtractTypeFromSelectExpression<DB, TB, SE>>;
 
   /**
    * Adds `distinct on` expressions to the select clause.
@@ -521,7 +473,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * select distinct "first_name" from "person"
    * ```
    */
-  distinct(): SelectQueryBuilder<DB, TB, O>
+  distinct(): SelectQueryBuilder<DB, TB, O>;
 
   /**
    * Adds the `for update` modifier to a select query on supported databases.
@@ -607,15 +559,11 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * select "person".*, "pet".* from "person", "pet"
    * ```
    */
-  selectAll<T extends TB>(
-    table: ReadonlyArray<T>,
-  ): SelectQueryBuilder<DB, TB, O & AllSelection<DB, T>>
+  selectAll<T extends TB>(table: ReadonlyArray<T>): SelectQueryBuilder<DB, TB, O & AllSelection<DB, T>>;
 
-  selectAll<T extends TB>(
-    table: T,
-  ): SelectQueryBuilder<DB, TB, O & Selectable<DB[T]>>
+  selectAll<T extends TB>(table: T): SelectQueryBuilder<DB, TB, O & Selectable<DB[T]>>;
 
-  selectAll(): SelectQueryBuilder<DB, TB, O & AllSelection<DB, TB>>
+  selectAll(): SelectQueryBuilder<DB, TB, O & AllSelection<DB, TB>>;
 
   /**
    * Joins another table to the query using an `inner join`.
@@ -835,12 +783,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   // join<TE extends `${string} in ${AnyArrayPropertyPathWithTable<DB, TB>}`>(
   //   table: TE,
   // ): SelectQueryBuilderWithJoin<DB, TB, O, TE>
-  join<
-    TE extends
-      `${string} in ${AnyArrayPropertyPathWithTable<DB, TB | keyof DB>}`,
-  >(
-    table: TE,
-  ): SelectQueryBuilderWithJoin<DB, TB, O, TE>
+  join<TE extends `${string} in ${AnyArrayPropertyPathWithTable<DB, TB | keyof DB>}`>(table: TE): SelectQueryBuilderWithJoin<DB, TB, O, TE>;
 
   /**
    * Just like {@link innerJoin} but adds a lateral join instead of an inner join.
@@ -1131,47 +1074,11 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * group by "first_name"
    * ```
    */
-  groupBy<GE extends GroupByArg<DB, TB, O>>(
-    groupBy: GE,
-  ): SelectQueryBuilder<DB, TB, O>
+  groupBy<GE extends GroupByArg<DB, TB, O>>(groupBy: GE): SelectQueryBuilder<DB, TB, O>;
 
-  orderBy<OE extends OrderByExpression<DB, TB, O>>(
-    expr: OE,
-    modifiers?: OrderByModifiers,
-  ): SelectQueryBuilder<DB, TB, O>
+  orderBy<OE extends OrderByExpression<DB, TB, O>>(expr: OE, modifiers?: OrderByModifiers): SelectQueryBuilder<DB, TB, O>;
 
-  orderByRank<OE extends OrderByExpression<DB, TB, O>>(
-    expr: OE,
-  ): SelectQueryBuilder<DB, TB, O>
-
-  // TODO: remove in v0.29
-  /**
-   * @deprecated It does ~2-2.5x more compile-time instantiations than multiple `orderBy(expr, modifiers?)` calls, and has broken autocompletion.
-   */
-  orderBy<
-    OE extends
-      | OrderByExpression<DB, TB, O>
-      | DirectedOrderByStringReference<DB, TB, O>,
-  >(
-    exprs: ReadonlyArray<OE>,
-  ): SelectQueryBuilder<DB, TB, O>
-
-  // TODO: remove in v0.29
-  /**
-   * @deprecated Use orderBy(expr, direction) instead.
-   */
-  orderBy<OE extends DirectedOrderByStringReference<DB, TB, O>>(
-    expr: OE,
-  ): SelectQueryBuilder<DB, TB, O>
-
-  // TODO: remove in v0.29
-  /**
-   * @deprecated Use `orderBy(expr, (ob) => ...)` instead.
-   */
-  orderBy<OE extends OrderByExpression<DB, TB, O>>(
-    expr: OE,
-    modifiers: Expression<any>,
-  ): SelectQueryBuilder<DB, TB, O>
+  orderByRank<OE extends OrderByExpression<DB, TB, O>>(expr: OE): SelectQueryBuilder<DB, TB, O>;
 
   /**
    * Adds a limit clause to the query.
@@ -1214,9 +1121,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * select "first_name" from "person" limit $1 offset $2
    * ```
    */
-  limit(
-    limit: ValueExpression<DB, TB, number | bigint | null>,
-  ): SelectQueryBuilder<DB, TB, O>
+  limit(limit: ValueExpression<DB, TB, number | bigint | null>): SelectQueryBuilder<DB, TB, O>;
 
   /**
    * Adds an `offset` clause to the query.
@@ -1240,9 +1145,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * select "first_name" from "person" limit $1 offset $2
    * ```
    */
-  offset(
-    offset: ValueExpression<DB, TB, number | bigint>,
-  ): SelectQueryBuilder<DB, TB, O>
+  offset(offset: ValueExpression<DB, TB, number | bigint>): SelectQueryBuilder<DB, TB, O>;
 
   /**
    * Adds a `fetch` clause to the query.
@@ -1316,7 +1219,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * select top(10) percent * from "person"
    * ```
    */
-  top(expression: number | bigint): SelectQueryBuilder<DB, TB, O>
+  top(expression: number | bigint): SelectQueryBuilder<DB, TB, O>;
 
   /**
    * Combines another select query or raw expression to this query using `union`.
@@ -1684,7 +1587,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * from "pet"
    * ```
    */
-  as<A extends string>(alias: A): AliasedSelectQueryBuilder<O, A>
+  as<A extends string>(alias: A): AliasedSelectQueryBuilder<O, A>;
 
   /**
    * Clears all select clauses from the query.
@@ -1705,9 +1608,9 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * select "id", "gender" from "person"
    * ```
    */
-  clearSelect(): SelectQueryBuilder<DB, TB, {}>
+  clearSelect(): SelectQueryBuilder<DB, TB, {}>;
 
-  clearWhere(): SelectQueryBuilder<DB, TB, O>
+  clearWhere(): SelectQueryBuilder<DB, TB, O>;
 
   /**
    * Clears limit clause from the query.
@@ -1728,7 +1631,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * select * from "person"
    * ```
    */
-  clearLimit(): SelectQueryBuilder<DB, TB, O>
+  clearLimit(): SelectQueryBuilder<DB, TB, O>;
 
   /**
    * Clears offset clause from the query.
@@ -1750,7 +1653,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * select * from "person" limit 10
    * ```
    */
-  clearOffset(): SelectQueryBuilder<DB, TB, O>
+  clearOffset(): SelectQueryBuilder<DB, TB, O>;
 
   /**
    * Clears all `order by` clauses from the query.
@@ -1771,7 +1674,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * select * from "person"
    * ```
    */
-  clearOrderBy(): SelectQueryBuilder<DB, TB, O>
+  clearOrderBy(): SelectQueryBuilder<DB, TB, O>;
 
   /**
    * Clears `group by` clause from the query.
@@ -1792,7 +1695,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * select * from "person"
    * ```
    */
-  clearGroupBy(): SelectQueryBuilder<DB, TB, O>
+  clearGroupBy(): SelectQueryBuilder<DB, TB, O>;
 
   /**
    * Simply calls the provided function passing `this` as the only argument. `$call` returns
@@ -1819,7 +1722,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .execute()
    * ```
    */
-  $call<T>(func: (qb: this) => T): T
+  $call<T>(func: (qb: this) => T): T;
 
   /**
    * Call `func(this)` if `condition` is true.
@@ -1891,10 +1794,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * }
    * ```
    */
-  $if<O2>(
-    condition: boolean,
-    func: (qb: this) => SelectQueryBuilder<any, any, O & O2>,
-  ): SelectQueryBuilder<DB, TB, O & Partial<Omit<O2, keyof O>>>
+  $if<O2>(condition: boolean, func: (qb: this) => SelectQueryBuilder<any, any, O & O2>): SelectQueryBuilder<DB, TB, O & Partial<Omit<O2, keyof O>>>;
 
   /**
    * Change the output type of the query.
@@ -1902,7 +1802,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * This method call doesn't change the SQL in any way. This methods simply
    * returns a copy of this `SelectQueryBuilder` with a new output type.
    */
-  $castTo<C>(): SelectQueryBuilder<DB, TB, C>
+  $castTo<C>(): SelectQueryBuilder<DB, TB, C>;
 
   /**
    * Changes the output type from an object to a tuple.
@@ -1951,36 +1851,27 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    */
   $asTuple<K1 extends keyof O, K2 extends Exclude<keyof O, K1>>(
     key1: K1,
-    key2: K2,
+    key2: K2
   ): keyof O extends K1 | K2
     ? ExpressionWrapper<DB, TB, [O[K1], O[K2]]>
-    : KyselyTypeError<'$asTuple() call failed: All selected columns must be provided as arguments'>
+    : KyselyTypeError<'$asTuple() call failed: All selected columns must be provided as arguments'>;
 
-  $asTuple<
-    K1 extends keyof O,
-    K2 extends Exclude<keyof O, K1>,
-    K3 extends Exclude<keyof O, K1 | K2>,
-  >(
+  $asTuple<K1 extends keyof O, K2 extends Exclude<keyof O, K1>, K3 extends Exclude<keyof O, K1 | K2>>(
     key1: K1,
     key2: K2,
-    key3: K3,
+    key3: K3
   ): keyof O extends K1 | K2 | K3
     ? ExpressionWrapper<DB, TB, [O[K1], O[K2], O[K3]]>
-    : KyselyTypeError<'$asTuple() call failed: All selected columns must be provided as arguments'>
+    : KyselyTypeError<'$asTuple() call failed: All selected columns must be provided as arguments'>;
 
-  $asTuple<
-    K1 extends keyof O,
-    K2 extends Exclude<keyof O, K1>,
-    K3 extends Exclude<keyof O, K1 | K2>,
-    K4 extends Exclude<keyof O, K1 | K2 | K3>,
-  >(
+  $asTuple<K1 extends keyof O, K2 extends Exclude<keyof O, K1>, K3 extends Exclude<keyof O, K1 | K2>, K4 extends Exclude<keyof O, K1 | K2 | K3>>(
     key1: K1,
     key2: K2,
     key3: K3,
-    key4: K4,
+    key4: K4
   ): keyof O extends K1 | K2 | K3 | K4
     ? ExpressionWrapper<DB, TB, [O[K1], O[K2], O[K3], O[K4]]>
-    : KyselyTypeError<'$asTuple() call failed: All selected columns must be provided as arguments'>
+    : KyselyTypeError<'$asTuple() call failed: All selected columns must be provided as arguments'>;
 
   $asTuple<
     K1 extends keyof O,
@@ -1993,10 +1884,10 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
     key2: K2,
     key3: K3,
     key4: K4,
-    key5: K5,
+    key5: K5
   ): keyof O extends K1 | K2 | K3 | K4 | K5
     ? ExpressionWrapper<DB, TB, [O[K1], O[K2], O[K3], O[K4], O[K5]]>
-    : KyselyTypeError<'$asTuple() call failed: All selected columns must be provided as arguments'>
+    : KyselyTypeError<'$asTuple() call failed: All selected columns must be provided as arguments'>;
 
   /**
    * Plucks the value type of the output record.
@@ -2046,7 +1937,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * since the return value should only be used as a part of an expression
    * and never executed as the main query.
    */
-  $asScalar<K extends keyof O = keyof O>(): ExpressionWrapper<DB, TB, O[K]>
+  $asScalar<K extends keyof O = keyof O>(): ExpressionWrapper<DB, TB, O[K]>;
 
   /**
    * Narrows (parts of) the output type of the query.
@@ -2112,7 +2003,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * functionThatExpectsPersonWithNonNullValue(person)
    * ```
    */
-  $narrowType<T>(): SelectQueryBuilder<DB, TB, NarrowPartial<O, T>>
+  $narrowType<T>(): SelectQueryBuilder<DB, TB, NarrowPartial<O, T>>;
 
   /**
    * Asserts that query's output row type equals the given type `T`.
@@ -2155,16 +2046,16 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    */
   $assertType<T extends O>(): O extends T
     ? SelectQueryBuilder<DB, TB, T>
-    : KyselyTypeError<`$assertType() call failed: The type passed in is not equal to the output type of the query.`>
+    : KyselyTypeError<`$assertType() call failed: The type passed in is not equal to the output type of the query.`>;
 
   /**
    * Returns a copy of this SelectQueryBuilder instance with the given plugin installed.
    */
   // withPlugin(plugin: KyselyPlugin): SelectQueryBuilder<DB, TB, O>
 
-  toOperationNode(): SelectQueryNode
+  toOperationNode(): SelectQueryNode;
 
-  compile(): CompiledQuery<Simplify<O>>
+  compile(): CompiledQuery<Simplify<O>>;
 
   /**
    * Executes the query and returns an array of rows.
@@ -2177,19 +2068,19 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * Executes the query and returns a FeedResult.
    *
    */
-  execute(options?: FeedOptions): Promise<FeedResult<O>>
+  execute(options?: FeedOptions): Promise<FeedResult<O>>;
 
   /**
    * Executes the query and returns a FeedResult.
    *
    */
-  executeFeed(options?: FeedOptions): Promise<FeedResult<O>>
+  executeFeed(options?: FeedOptions): Promise<FeedResult<O>>;
 
   /**
    * Executes the query and returns the first result or undefined if
    * the query returned no result.
    */
-  executeTakeFirst(): Promise<SimplifySingleResult<O>>
+  executeTakeFirst(): Promise<SimplifySingleResult<O>>;
 
   /**
    * Executes the query and returns the first result or throws if
@@ -2199,9 +2090,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * provide a custom error class, or callback to throw a different
    * error.
    */
-  executeTakeFirstOrThrow(
-    errorConstructor?: NoResultErrorConstructor | ((node: QueryNode) => Error),
-  ): Promise<Simplify<O>>
+  executeTakeFirstOrThrow(errorConstructor?: NoResultErrorConstructor | ((node: QueryNode) => Error)): Promise<Simplify<O>>;
 
   // stream(chunkSize?: number): AsyncIterableIterator<O>
 
@@ -2211,45 +2100,33 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   // ): Promise<ER[]>
 }
 
-class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
-  implements SelectQueryBuilder<DB, TB, O>
-{
-  readonly #props: SelectQueryBuilderProps
+class SelectQueryBuilderImpl<DB, TB extends keyof DB, O> implements SelectQueryBuilder<DB, TB, O> {
+  readonly #props: SelectQueryBuilderProps;
 
   constructor(props: SelectQueryBuilderProps) {
-    this.#props = freeze(props)
+    this.#props = freeze(props);
   }
 
   get expressionType(): O | undefined {
-    return undefined
+    return undefined;
   }
 
   get isSelectQueryBuilder(): true {
-    return true
+    return true;
   }
 
   where(...args: any[]): any {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: QueryNode.cloneWithWhere(
-        this.#props.queryNode,
-        parseValueBinaryOperationOrExpression(args),
-      ),
-    })
+      queryNode: QueryNode.cloneWithWhere(this.#props.queryNode, parseValueBinaryOperationOrExpression(args)),
+    });
   }
 
-  whereRef(
-    lhs: ReferenceExpression<DB, TB>,
-    op: ComparisonOperatorExpression,
-    rhs: ReferenceExpression<DB, TB>,
-  ): SelectQueryBuilder<DB, TB, O> {
+  whereRef(lhs: ReferenceExpression<DB, TB>, op: ComparisonOperatorExpression, rhs: ReferenceExpression<DB, TB>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: QueryNode.cloneWithWhere(
-        this.#props.queryNode,
-        parseReferentialBinaryOperation(lhs, op, rhs),
-      ),
-    })
+      queryNode: QueryNode.cloneWithWhere(this.#props.queryNode, parseReferentialBinaryOperation(lhs, op, rhs)),
+    });
   }
 
   // having(...args: any[]): any {
@@ -2276,30 +2153,20 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   //   })
   // }
 
-  select<SE extends SelectExpression<DB, TB>>(
-    selection: SelectArg<DB, TB, SE>,
-  ): SelectQueryBuilder<DB, TB, O & Selection<DB, TB, SE>> {
+  select<SE extends SelectExpression<DB, TB>>(selection: SelectArg<DB, TB, SE>): SelectQueryBuilder<DB, TB, O & Selection<DB, TB, SE>> {
     return new SelectQueryBuilderImpl<DB, TB, O & Selection<DB, TB, SE>>({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithSelections(
-        this.#props.queryNode,
-        parseSelectArg(selection),
-      ),
-    })
+      queryNode: SelectQueryNode.cloneWithSelections(this.#props.queryNode, parseSelectArg(selection)),
+    });
   }
 
-  selectValue<SE extends AnyPropertyPathWithTable<DB, TB> | TB>(
-    selection: SE,
-  ): SelectQueryBuilder<DB, TB, any> {
+  selectValue<SE extends AnyPropertyPathWithTable<DB, TB> | TB>(selection: SE): SelectQueryBuilder<DB, TB, any> {
     const sel = selection as string;
 
     // Property path case (e.g. 'tax.rate')
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithSelections(
-        this.#props.queryNode,
-        parseSelectValueExpression(selection),
-      ),
+      queryNode: SelectQueryNode.cloneWithSelections(this.#props.queryNode, parseSelectValueExpression(selection)),
     }) as any;
   }
 
@@ -2336,11 +2203,8 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   distinct(): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithFrontModifier(
-        this.#props.queryNode,
-        SelectModifierNode.create('Distinct'),
-      ),
-    })
+      queryNode: SelectQueryNode.cloneWithFrontModifier(this.#props.queryNode, SelectModifierNode.create('Distinct')),
+    });
   }
 
   // forUpdate(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O> {
@@ -2418,11 +2282,8 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   selectAll(table?: any): any {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithSelections(
-        this.#props.queryNode,
-        parseSelectAll(table),
-      ),
-    })
+      queryNode: SelectQueryNode.cloneWithSelections(this.#props.queryNode, parseSelectAll(table)),
+    });
   }
 
   // innerJoin(...args: any): any {
@@ -2446,7 +2307,7 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   // }
 
   join(...args: any): any {
-    return this.#join('Join', args)
+    return this.#join('Join', args);
   }
 
   // innerJoinLateral(...args: any): any {
@@ -2472,65 +2333,43 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   #join(joinType: JoinType, args: any[]): any {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: QueryNode.cloneWithJoin(
-        this.#props.queryNode,
-        parseJoin(joinType, args),
-      ),
-    })
+      queryNode: QueryNode.cloneWithJoin(this.#props.queryNode, parseJoin(joinType, args)),
+    });
   }
 
   orderBy(...args: any[]): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: QueryNode.cloneWithOrderByItems(
-        this.#props.queryNode,
-        parseOrderBy(args),
-      ),
-    })
+      queryNode: QueryNode.cloneWithOrderByItems(this.#props.queryNode, parseOrderBy(args)),
+    });
   }
 
   orderByRank(...args: any[]): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: QueryNode.cloneWithOrderByRankItems(
-        this.#props.queryNode,
-        parseOrderBy(args),
-      ),
-    })
+      queryNode: QueryNode.cloneWithOrderByRankItems(this.#props.queryNode, parseOrderBy(args)),
+    });
   }
 
   groupBy(groupBy: GroupByArg<DB, TB, O>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithGroupByItems(
-        this.#props.queryNode,
-        parseGroupBy(groupBy),
-      ),
-    })
+      queryNode: SelectQueryNode.cloneWithGroupByItems(this.#props.queryNode, parseGroupBy(groupBy)),
+    });
   }
 
-  limit(
-    limit: ValueExpression<DB, TB, number | bigint | null>,
-  ): SelectQueryBuilder<DB, TB, O> {
+  limit(limit: ValueExpression<DB, TB, number | bigint | null>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithLimit(
-        this.#props.queryNode,
-        LimitNode.create(parseValueExpression(limit)),
-      ),
-    })
+      queryNode: SelectQueryNode.cloneWithLimit(this.#props.queryNode, LimitNode.create(parseValueExpression(limit))),
+    });
   }
 
-  offset(
-    offset: ValueExpression<DB, TB, number | bigint>,
-  ): SelectQueryBuilder<DB, TB, O> {
+  offset(offset: ValueExpression<DB, TB, number | bigint>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithOffset(
-        this.#props.queryNode,
-        OffsetNode.create(parseValueExpression(offset)),
-      ),
-    })
+      queryNode: SelectQueryNode.cloneWithOffset(this.#props.queryNode, OffsetNode.create(parseValueExpression(offset))),
+    });
   }
 
   // fetch(
@@ -2549,168 +2388,132 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   top(expression: number | bigint): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: QueryNode.cloneWithTop(
-        this.#props.queryNode,
-        parseTop(expression),
-      ),
-    })
+      queryNode: QueryNode.cloneWithTop(this.#props.queryNode, parseTop(expression)),
+    });
   }
 
-  union(
-    expression: SetOperandExpression<DB, O>,
-  ): SelectQueryBuilder<DB, TB, O> {
+  union(expression: SetOperandExpression<DB, O>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithSetOperations(
-        this.#props.queryNode,
-        parseSetOperations('union', expression, false),
-      ),
-    })
+      queryNode: SelectQueryNode.cloneWithSetOperations(this.#props.queryNode, parseSetOperations('union', expression, false)),
+    });
   }
 
-  unionAll(
-    expression: SetOperandExpression<DB, O>,
-  ): SelectQueryBuilder<DB, TB, O> {
+  unionAll(expression: SetOperandExpression<DB, O>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithSetOperations(
-        this.#props.queryNode,
-        parseSetOperations('union', expression, true),
-      ),
-    })
+      queryNode: SelectQueryNode.cloneWithSetOperations(this.#props.queryNode, parseSetOperations('union', expression, true)),
+    });
   }
 
-  intersect(
-    expression: SetOperandExpression<DB, O>,
-  ): SelectQueryBuilder<DB, TB, O> {
+  intersect(expression: SetOperandExpression<DB, O>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithSetOperations(
-        this.#props.queryNode,
-        parseSetOperations('intersect', expression, false),
-      ),
-    })
+      queryNode: SelectQueryNode.cloneWithSetOperations(this.#props.queryNode, parseSetOperations('intersect', expression, false)),
+    });
   }
 
-  intersectAll(
-    expression: SetOperandExpression<DB, O>,
-  ): SelectQueryBuilder<DB, TB, O> {
+  intersectAll(expression: SetOperandExpression<DB, O>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithSetOperations(
-        this.#props.queryNode,
-        parseSetOperations('intersect', expression, true),
-      ),
-    })
+      queryNode: SelectQueryNode.cloneWithSetOperations(this.#props.queryNode, parseSetOperations('intersect', expression, true)),
+    });
   }
 
-  except(
-    expression: SetOperandExpression<DB, O>,
-  ): SelectQueryBuilder<DB, TB, O> {
+  except(expression: SetOperandExpression<DB, O>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithSetOperations(
-        this.#props.queryNode,
-        parseSetOperations('except', expression, false),
-      ),
-    })
+      queryNode: SelectQueryNode.cloneWithSetOperations(this.#props.queryNode, parseSetOperations('except', expression, false)),
+    });
   }
 
-  exceptAll(
-    expression: SetOperandExpression<DB, O>,
-  ): SelectQueryBuilder<DB, TB, O> {
+  exceptAll(expression: SetOperandExpression<DB, O>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithSetOperations(
-        this.#props.queryNode,
-        parseSetOperations('except', expression, true),
-      ),
-    })
+      queryNode: SelectQueryNode.cloneWithSetOperations(this.#props.queryNode, parseSetOperations('except', expression, true)),
+    });
   }
 
   as<A extends string>(alias: A): AliasedSelectQueryBuilder<O, A> {
-    return new AliasedSelectQueryBuilderImpl(this, alias)
+    return new AliasedSelectQueryBuilderImpl(this, alias);
   }
 
   clearSelect(): SelectQueryBuilder<DB, TB, {}> {
     return new SelectQueryBuilderImpl<DB, TB, {}>({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithoutSelections(this.#props.queryNode),
-    })
+    });
   }
 
   clearWhere(): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl<DB, TB, O>({
       ...this.#props,
       queryNode: QueryNode.cloneWithoutWhere(this.#props.queryNode),
-    })
+    });
   }
 
   clearLimit(): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl<DB, TB, O>({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithoutLimit(this.#props.queryNode),
-    })
+    });
   }
 
   clearOffset(): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl<DB, TB, O>({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithoutOffset(this.#props.queryNode),
-    })
+    });
   }
 
   clearOrderBy(): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl<DB, TB, O>({
       ...this.#props,
       queryNode: QueryNode.cloneWithoutOrderBy(this.#props.queryNode),
-    })
+    });
   }
 
   clearGroupBy(): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl<DB, TB, O>({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithoutGroupBy(this.#props.queryNode),
-    })
+    });
   }
 
   $call<T>(func: (qb: this) => T): T {
-    return func(this)
+    return func(this);
   }
 
-  $if<O2>(
-    condition: boolean,
-    func: (qb: this) => SelectQueryBuilder<any, any, O & O2>,
-  ): SelectQueryBuilder<DB, TB, O & Partial<Omit<O2, keyof O>>> {
+  $if<O2>(condition: boolean, func: (qb: this) => SelectQueryBuilder<any, any, O & O2>): SelectQueryBuilder<DB, TB, O & Partial<Omit<O2, keyof O>>> {
     if (condition) {
-      return func(this)
+      return func(this);
     }
 
     return new SelectQueryBuilderImpl({
       ...this.#props,
-    }) as any
+    }) as any;
   }
 
   $castTo<C>(): SelectQueryBuilder<DB, TB, C> {
-    return new SelectQueryBuilderImpl(this.#props)
+    return new SelectQueryBuilderImpl(this.#props);
   }
 
   $narrowType<T>(): SelectQueryBuilder<DB, TB, NarrowPartial<O, T>> {
-    return new SelectQueryBuilderImpl(this.#props)
+    return new SelectQueryBuilderImpl(this.#props);
   }
 
   $assertType<T extends O>(): O extends T
     ? SelectQueryBuilder<DB, TB, T>
     : KyselyTypeError<`$assertType() call failed: The type passed in is not equal to the output type of the query.`> {
-    return new SelectQueryBuilderImpl(this.#props) as unknown as any
+    return new SelectQueryBuilderImpl(this.#props) as unknown as any;
   }
 
   $asTuple(): ExpressionWrapper<DB, TB, any> {
-    return new ExpressionWrapper(this.toOperationNode())
+    return new ExpressionWrapper(this.toOperationNode());
   }
 
   $asScalar(): ExpressionWrapper<DB, TB, any> {
-    return new ExpressionWrapper(this.toOperationNode())
+    return new ExpressionWrapper(this.toOperationNode());
   }
 
   // withPlugin(plugin: KyselyPlugin): SelectQueryBuilder<DB, TB, O> {
@@ -2721,17 +2524,11 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   // }
 
   toOperationNode(): SelectQueryNode {
-    return this.#props.executor.transformQuery(
-      this.#props.queryNode,
-      this.#props.queryId,
-    )
+    return this.#props.executor.transformQuery(this.#props.queryNode, this.#props.queryId);
   }
 
   compile(): CompiledQuery<Simplify<O>> {
-    return this.#props.executor.compileQuery(
-      this.toOperationNode(),
-      this.#props.queryId,
-    )
+    return this.#props.executor.compileQuery(this.toOperationNode(), this.#props.queryId);
   }
 
   // async execute(): Promise<Simplify<O>[]> {
@@ -2746,53 +2543,41 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   // }
 
   async execute(options?: FeedOptions): Promise<FeedResponse<O>> {
-    const compiledQuery = this.compile()
+    const compiledQuery = this.compile();
 
-    const result = await this.#props.executor.executeQuery<O>(
-      compiledQuery,
-      this.#props.queryId,
-      options,
-    )
+    const result = await this.#props.executor.executeQuery<O>(compiledQuery, this.#props.queryId, options);
 
-    return result
+    return result;
   }
 
   async executeFeed(options?: FeedOptions): Promise<FeedResponse<O>> {
-    const compiledQuery = this.compile()
+    const compiledQuery = this.compile();
 
-    const result = await this.#props.executor.executeQueryFeed<O>(
-      compiledQuery,
-      this.#props.queryId,
-      options,
-    )
+    const result = await this.#props.executor.executeQueryFeed<O>(compiledQuery, this.#props.queryId, options);
 
-    return result
+    return result;
   }
 
   async executeTakeFirst(): Promise<SimplifySingleResult<O>> {
     // const [result] = await this.execute()
     // return result as SimplifySingleResult<O>
-    const result = await this.execute()
-    const [resources] = result.resources || []
-    return resources as SimplifySingleResult<O>
+    const result = await this.execute();
+    const [resources] = result.resources || [];
+    return resources as SimplifySingleResult<O>;
   }
 
-  async executeTakeFirstOrThrow(
-    errorConstructor:
-      | NoResultErrorConstructor
-      | ((node: QueryNode) => Error) = NoResultError,
-  ): Promise<Simplify<O>> {
-    const result = await this.executeTakeFirst()
+  async executeTakeFirstOrThrow(errorConstructor: NoResultErrorConstructor | ((node: QueryNode) => Error) = NoResultError): Promise<Simplify<O>> {
+    const result = await this.executeTakeFirst();
 
     if (result === undefined) {
       const error = isNoResultErrorConstructor(errorConstructor)
         ? new errorConstructor(this.toOperationNode())
-        : errorConstructor(this.toOperationNode())
+        : errorConstructor(this.toOperationNode());
 
-      throw error
+      throw error;
     }
 
-    return result as O
+    return result as O;
   }
 
   // async *stream(chunkSize: number = 100): AsyncIterableIterator<O> {
@@ -2826,71 +2611,52 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   // }
 }
 
-export function createSelectQueryBuilder<DB, TB extends keyof DB, O>(
-  props: SelectQueryBuilderProps,
-): SelectQueryBuilder<DB, TB, O> {
-  return new SelectQueryBuilderImpl(props)
+export function createSelectQueryBuilder<DB, TB extends keyof DB, O>(props: SelectQueryBuilderProps): SelectQueryBuilder<DB, TB, O> {
+  return new SelectQueryBuilderImpl(props);
 }
 
 export interface SelectQueryBuilderProps {
-  readonly queryId: QueryId
-  readonly queryNode: SelectQueryNode
-  readonly executor: QueryExecutor
+  readonly queryId: QueryId;
+  readonly queryNode: SelectQueryNode;
+  readonly executor: QueryExecutor;
 }
 
-export interface AliasedSelectQueryBuilder<
-  O = undefined,
-  A extends string = never,
-> extends AliasedExpression<O, A> {
-  get isAliasedSelectQueryBuilder(): true
+export interface AliasedSelectQueryBuilder<O = undefined, A extends string = never> extends AliasedExpression<O, A> {
+  get isAliasedSelectQueryBuilder(): true;
 }
 
 /**
  * {@link SelectQueryBuilder} with an alias. The result of calling {@link SelectQueryBuilder.as}.
  */
-class AliasedSelectQueryBuilderImpl<
-  DB,
-  TB extends keyof DB,
-  O = undefined,
-  A extends string = never,
-> implements AliasedSelectQueryBuilder<O, A>
-{
-  readonly #queryBuilder: SelectQueryBuilder<DB, TB, O>
-  readonly #alias: A
+class AliasedSelectQueryBuilderImpl<DB, TB extends keyof DB, O = undefined, A extends string = never> implements AliasedSelectQueryBuilder<O, A> {
+  readonly #queryBuilder: SelectQueryBuilder<DB, TB, O>;
+  readonly #alias: A;
 
   constructor(queryBuilder: SelectQueryBuilder<DB, TB, O>, alias: A) {
-    this.#queryBuilder = queryBuilder
-    this.#alias = alias
+    this.#queryBuilder = queryBuilder;
+    this.#alias = alias;
   }
 
   get expression(): Expression<O> {
-    return this.#queryBuilder
+    return this.#queryBuilder;
   }
 
   get alias(): A {
-    return this.#alias
+    return this.#alias;
   }
 
   get isAliasedSelectQueryBuilder(): true {
-    return true
+    return true;
   }
 
   toOperationNode(): AliasNode {
-    return AliasNode.create(
-      this.#queryBuilder.toOperationNode(),
-      IdentifierNode.create(this.#alias),
-    )
+    return AliasNode.create(this.#queryBuilder.toOperationNode(), IdentifierNode.create(this.#alias));
   }
 }
 
-export type SelectQueryBuilderWithJoin<
-  DB,
-  TB extends keyof DB,
-  O,
-  TE extends `${string} in ${string}`,
-> = TE extends `${infer A} in ${infer T}`
+export type SelectQueryBuilderWithJoin<DB, TB extends keyof DB, O, TE extends `${string} in ${string}`> = TE extends `${infer A} in ${infer T}`
   ? JoinArrayProperty<DB, TB, O, T, A>
-  : never
+  : never;
 
 // export type SelectQueryBuilderWithInnerJoin<
 //   DB,

@@ -743,12 +743,12 @@ export class DefaultQueryCompiler extends OperationNodeVisitor implements QueryC
   }
 
   protected override visitOrderBy(node: OrderByNode): void {
-    this.append('order by ');
+    this.append('ORDER BY ');
     this.compileList(node.items);
   }
 
   protected override visitOrderByRank(node: OrderByRankNode): void {
-    this.append('order by rank ');
+    this.append('ORDER BY RANK ');
     this.compileList(node.items);
   }
 

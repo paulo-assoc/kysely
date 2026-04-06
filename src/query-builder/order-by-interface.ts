@@ -1,9 +1,5 @@
-import { Expression } from '../expression/expression.js'
-import {
-  OrderByExpression,
-  DirectedOrderByStringReference,
-  OrderByModifiers,
-} from '../parser/order-by-parser.js'
+import { Expression } from '../expression/expression.js';
+import { OrderByExpression, DirectedOrderByStringReference, OrderByModifiers } from '../parser/order-by-parser.js';
 
 export interface OrderByInterface<DB, TB extends keyof DB, O> {
   /**
@@ -140,39 +136,7 @@ export interface OrderByInterface<DB, TB extends keyof DB, O> {
    * order by "fn"
    * ```
    */
-  orderBy<OE extends OrderByExpression<DB, TB, O>>(
-    expr: OE,
-    modifiers?: OrderByModifiers,
-  ): OrderByInterface<DB, TB, O>
-
-  // TODO: remove in v0.29
-  /**
-   * @deprecated It does ~2-2.6x more compile-time instantiations compared to multiple chained `orderBy(expr, modifiers?)` calls (in `order by` clauses with reasonable item counts), and has broken autocompletion.
-   */
-  orderBy<
-    OE extends
-      | OrderByExpression<DB, TB, O>
-      | DirectedOrderByStringReference<DB, TB, O>,
-  >(
-    exprs: ReadonlyArray<OE>,
-  ): OrderByInterface<DB, TB, O>
-
-  // TODO: remove in v0.29
-  /**
-   * @deprecated It does ~2.9x more compile-time instantiations compared to a `orderBy(expr, direction)` call.
-   */
-  orderBy<OE extends DirectedOrderByStringReference<DB, TB, O>>(
-    expr: OE,
-  ): OrderByInterface<DB, TB, O>
-
-  // TODO: remove in v0.29
-  /**
-   * @deprecated Use `orderBy(expr, (ob) => ...)` instead.
-   */
-  orderBy<OE extends OrderByExpression<DB, TB, O>>(
-    expr: OE,
-    modifiers: Expression<any>,
-  ): OrderByInterface<DB, TB, O>
+  orderBy<OE extends OrderByExpression<DB, TB, O>>(expr: OE, modifiers?: OrderByModifiers): OrderByInterface<DB, TB, O>;
 
   /**
    * Clears the `order by` clause from the query.
@@ -198,5 +162,5 @@ export interface OrderByInterface<DB, TB extends keyof DB, O> {
    * select * from "person"
    * ```
    */
-  clearOrderBy(): OrderByInterface<DB, TB, O>
+  clearOrderBy(): OrderByInterface<DB, TB, O>;
 }
