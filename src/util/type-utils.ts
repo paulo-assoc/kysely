@@ -95,19 +95,17 @@ export type AnyColumnWithTable<DB, TB extends keyof DB> = {
   [T in TB]: `${T & string}.${keyof DB[T] & string}`;
 }[TB];
 
-export type AnyPropertyPath<DB, TB extends keyof DB, Depth extends number = 5> = keyof DB[TB] extends string
-  ? Depth extends 0
-    ? never
-    : {
-        [K in keyof DB[TB]]: K extends string
-          ? NonNullable<DB[TB][K]> extends Array<infer AV>
-            ? K | `${K}[${number}]` | `${K}[${number}].${AnyPropertyPath<{ table: AV }, 'table', Decrement[Depth]>}`
-            : NonNullable<DB[TB][K]> extends object
-              ? K | `${K}.${AnyPropertyPath<{ table: NonNullable<DB[TB][K]> }, 'table', Decrement[Depth]>}`
-              : K
-          : never;
-      }[keyof DB[TB]]
-  : never & string;
+export type AnyPropertyPath<DB, TB extends keyof DB, Depth extends number = 5> = Depth extends 0
+  ? never
+  : {
+      [K in keyof DB[TB] & string]: NonNullable<DB[TB][K]> extends DateTime
+        ? K // ← DateTime is terminal
+        : NonNullable<DB[TB][K]> extends Array<infer AV>
+          ? K | `${K}[${number}]` | `${K}[${number}].${AnyPropertyPath<{ table: AV }, 'table', Decrement[Depth]>}`
+          : NonNullable<DB[TB][K]> extends object
+            ? K | `${K}.${AnyPropertyPath<{ table: NonNullable<DB[TB][K]> }, 'table', Decrement[Depth]>}`
+            : K;
+    }[keyof DB[TB] & string];
 
 export type ExtractPropertyPathType<T, P extends string> = T extends any
   ? P extends `${infer K}.${infer Rest}`
@@ -208,8 +206,7 @@ export type AnyAliasedStringPropertyPathWithTable<DB, TB extends keyof DB> = `${
 export type AnyDateTimePropertyPath<DB, T extends keyof DB, Depth extends number = 5, Path extends string = ''> = Depth extends 0
   ? never
   : {
-      [K in keyof DB[T]]: // Direct DateTime property
-      NonNullable<DB[T][K]> extends DateTime
+      [K in keyof DB[T]]: NonNullable<DB[T][K]> extends DateTime // Direct DateTime property
         ? Path extends ''
           ? K & string
           : `${Path}.${K & string}`
