@@ -82,7 +82,7 @@
     "Igal Klebanov <igalklebanov@gmail.com>"
   ],
   "dependencies": {
-    "temporal-polyfill": "^0.3.0",
+    "temporal-polyfill": "^0.3.2",
     "@azure/cosmos": "^4.3.0",
     "@types/geojson": "^7946.0.16"
   },
