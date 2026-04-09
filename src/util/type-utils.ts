@@ -768,13 +768,35 @@ async function JoinTest(db: Kysely<Database>) {
       .compile();
   });
 
-  test('join test', async () => {
+  // Case 1: Currently works fully and completely.
+  test('join using expression test', async () => {
     const result = db
       .selectFrom('orders as o')
       .join('i in o.items')
       .select(eb => eb.fn.sum('i.amount').as('totalAmount'))
       .where('o.total', '>=', 10_000)
       .where('i.category', '=', 'electronics')
+      .compile();
+  });
+
+  // Case 2: New, unimplemented use case for subquery support: joining using a subquery expression.
+  test('join using subquery test 1', async () => {
+    const result = db
+      .selectFrom('orders as o')
+      .join('i in o.items', sq => sq.where('i.category', '=', 'electronics').where('i.amount', '>', 100).selectValue('i').as('item'))
+      .join('t in o.tags', sq => sq.selectValue(sq.fn.count<number>('t')).as('tagCount'))
+      .select([eb => eb.fn.sum('i.amount').as('totalAmount'), 'tagCount'])
+      .where('o.total', '>=', 10_000)
+      .compile();
+  });
+
+  // selectValue() is required in subquery join callback — omitting it produces never
+  test('join without selectValue should error', async () => {
+    const result = db
+      .selectFrom('orders as o')
+      .join('i in o.items', sq => sq.where('i.category', '=', 'electronics'))
+      // @ts-expect-error - selectValue() was not called, so join returns never
+      .select('o.total')
       .compile();
   });
 

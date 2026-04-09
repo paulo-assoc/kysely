@@ -69,6 +69,7 @@ import { JoinType } from '../operation-node/join-node.js';
 import { OrderByInterface } from './order-by-interface.js';
 import { FeedOptions, FeedResponse } from '@azure/cosmos';
 import { FeedResult } from '../driver/database-connection.js';
+import { FunctionModule } from './function-module.js';
 
 export type JoinArrayProperty<DB, TB extends keyof DB, O, P extends string, A extends string> = P extends `${infer T}.${infer Rest}`
   ? T extends TB
@@ -369,6 +370,8 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   selectValue<SE extends AnyPropertyPathWithTable<DB, TB> | TB>(
     selection: SE
   ): SelectQueryBuilder<DB, TB, SE extends TB ? Selectable<DB[Extract<keyof DB, SE>]> : ExtractTypeFromSelectExpression<DB, TB, SE>>;
+
+  selectValue<T>(expression: Expression<T>): SelectQueryBuilder<DB, TB, T>;
 
   /**
    * Adds `distinct on` expressions to the select clause.
@@ -784,6 +787,14 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   //   table: TE,
   // ): SelectQueryBuilderWithJoin<DB, TB, O, TE>
   join<TE extends `${string} in ${AnyArrayPropertyPathWithTable<DB, TB | keyof DB>}`>(table: TE): SelectQueryBuilderWithJoin<DB, TB, O, TE>;
+
+  join<
+    TE extends `${string} in ${AnyArrayPropertyPathWithTable<DB, TB | keyof DB>}`,
+    R extends AliasedExpression<any, any> | SelectQueryBuilder<any, any, any>,
+  >(
+    table: TE,
+    callback: (sq: SubqueryJoinBuilderFor<DB, TB, TE>) => R
+  ): SelectQueryBuilderWithSubqueryJoin<DB, TB, O, TE, R>;
 
   /**
    * Just like {@link innerJoin} but adds a lateral join instead of an inner join.
@@ -2160,14 +2171,15 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O> implements SelectQueryB
     });
   }
 
-  selectValue<SE extends AnyPropertyPathWithTable<DB, TB> | TB>(selection: SE): SelectQueryBuilder<DB, TB, any> {
-    const sel = selection as string;
-
-    // Property path case (e.g. 'tax.rate')
+  selectValue<SE extends AnyPropertyPathWithTable<DB, TB> | TB>(
+    selection: SE
+  ): SelectQueryBuilder<DB, TB, SE extends TB ? Selectable<DB[Extract<keyof DB, SE>]> : ExtractTypeFromSelectExpression<DB, TB, SE>>;
+  selectValue<T>(expression: Expression<T>): SelectQueryBuilder<DB, TB, T>;
+  selectValue(selection: AnyPropertyPathWithTable<DB, TB> | TB | Expression<unknown>): SelectQueryBuilder<DB, TB, unknown> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithSelections(this.#props.queryNode, parseSelectValueExpression(selection)),
-    }) as any;
+    }) as SelectQueryBuilder<DB, TB, unknown>;
   }
 
   // distinctOn(selection: ReferenceExpressionOrList<DB, TB>): any {
@@ -2306,7 +2318,12 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O> implements SelectQueryB
   //   return this.#join('CrossJoin', args)
   // }
 
-  join(...args: any): any {
+  join<TE extends `${string} in ${AnyArrayPropertyPathWithTable<DB, TB | keyof DB>}`>(table: TE): SelectQueryBuilderWithJoin<DB, TB, O, TE>;
+  join<
+    TE extends `${string} in ${AnyArrayPropertyPathWithTable<DB, TB | keyof DB>}`,
+    R extends AliasedExpression<any, any> | SelectQueryBuilder<any, any, any>,
+  >(table: TE, callback: (sq: SubqueryJoinBuilderFor<DB, TB, TE>) => R): SelectQueryBuilderWithSubqueryJoin<DB, TB, O, TE, R>;
+  join(...args: any[]): any {
     return this.#join('Join', args);
   }
 
@@ -2656,6 +2673,70 @@ class AliasedSelectQueryBuilderImpl<DB, TB extends keyof DB, O = undefined, A ex
 
 export type SelectQueryBuilderWithJoin<DB, TB extends keyof DB, O, TE extends `${string} in ${string}`> = TE extends `${infer A} in ${infer T}`
   ? JoinArrayProperty<DB, TB, O, T, A>
+  : never;
+
+/**
+ * A builder for subquery joins. Has all methods of SelectQueryBuilder plus `fn`.
+ */
+export type SubqueryJoinBuilder<DB, TB extends keyof DB> = SelectQueryBuilder<DB, TB, {}> & { readonly fn: FunctionModule<DB, TB> };
+
+/**
+ * Computes the SubqueryJoinBuilder type for a given join expression `TE`.
+ * The iterator variable is added both as a table alias and as a self-referencing column,
+ * so it can be used directly in expressions like `COUNT(t)` in Cosmos DB.
+ */
+export type SubqueryJoinBuilderFor<DB, TB extends keyof DB, TE extends string> = TE extends `${infer Var} in ${infer Path}`
+  ? Path extends `${infer Table}.${infer Rest}`
+    ? Table extends (TB | keyof DB) & keyof DB
+      ? Rest extends AnyArrayPropertyPath<DB, Table>
+        ? SubqueryJoinBuilder<
+            DB &
+              ShallowRecord<
+                Var,
+                ArrayItemType<ExtractPropertyPathType<DB[Table], Rest>> & Record<Var, ArrayItemType<ExtractPropertyPathType<DB[Table], Rest>>>
+              >,
+            (TB | Var) &
+              keyof (DB &
+                ShallowRecord<
+                  Var,
+                  ArrayItemType<ExtractPropertyPathType<DB[Table], Rest>> & Record<Var, ArrayItemType<ExtractPropertyPathType<DB[Table], Rest>>>
+                >)
+          >
+        : never
+      : never
+    : never
+  : never;
+
+/**
+ * Wraps scalar types for use as virtual table entries in DB.
+ * Object types pass through; scalars get wrapped as `{ [A]: O }`.
+ */
+type SubqueryJoinAlias<A extends string, O> = Record<A, O>;
+
+/**
+ * Computes the result type after a subquery join.
+ * Adds both the iterator variable (with array element type) and the alias (with selected type).
+ */
+export type SelectQueryBuilderWithSubqueryJoin<DB, TB extends keyof DB, O, TE extends string, R> = TE extends `${infer Var} in ${infer Path}`
+  ? Path extends `${infer Table}.${infer Rest}`
+    ? Table extends (TB | keyof DB) & keyof DB
+      ? Rest extends AnyArrayPropertyPath<DB, Table>
+        ? R extends AliasedExpression<infer O2, infer A2>
+          ? {} extends O2
+            ? never // selectValue() is required before .as()
+            : SelectQueryBuilder<
+                DB & ShallowRecord<Var, ArrayItemType<ExtractPropertyPathType<DB[Table], Rest>>> & ShallowRecord<A2, SubqueryJoinAlias<A2, O2>>,
+                TB | Var | A2,
+                O
+              >
+          : R extends SelectQueryBuilder<any, any, infer O2>
+            ? {} extends O2
+              ? never // selectValue() is required
+              : SelectQueryBuilder<DB & ShallowRecord<Var, ArrayItemType<ExtractPropertyPathType<DB[Table], Rest>>>, TB | Var, O>
+            : never
+        : never
+      : never
+    : never
   : never;
 
 // export type SelectQueryBuilderWithInnerJoin<

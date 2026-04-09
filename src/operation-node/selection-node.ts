@@ -1,28 +1,24 @@
-import { freeze } from '../util/object-utils.js'
-import { AliasNode } from './alias-node.js'
-import { OperationNode } from './operation-node.js'
-import { ReferenceNode } from './reference-node.js'
-import { SelectAllNode } from './select-all-node.js'
-import { SelectValueNode } from './select-value-node.js'
-import { SimpleReferenceExpressionNode } from './simple-reference-expression-node.js'
-import { TableNode } from './table-node.js'
+import { freeze } from '../util/object-utils.js';
+import { AliasNode } from './alias-node.js';
+import { OperationNode } from './operation-node.js';
+import { ReferenceNode } from './reference-node.js';
+import { SelectAllNode } from './select-all-node.js';
+import { SelectValueNode } from './select-value-node.js';
+import { SimpleReferenceExpressionNode } from './simple-reference-expression-node.js';
+import { TableNode } from './table-node.js';
 
-type SelectionNodeChild =
-  | SimpleReferenceExpressionNode
-  | AliasNode
-  | SelectAllNode
-  | ValueSelectionNode // New node type for 'value' + expression
+type SelectionNodeChild = SimpleReferenceExpressionNode | AliasNode | SelectAllNode | ValueSelectionNode; // New node type for 'value' + expression
 
 // New node type to represent 'value' keyword followed by an expression
 export interface ValueSelectionNode extends OperationNode {
-  readonly kind: 'ValueSelectionNode'
-  readonly value: SelectValueNode
-  readonly expression: SimpleReferenceExpressionNode | AliasNode
+  readonly kind: 'ValueSelectionNode';
+  readonly value: SelectValueNode;
+  readonly expression: SimpleReferenceExpressionNode | AliasNode | OperationNode;
 }
 
 export interface SelectionNode extends OperationNode {
-  readonly kind: 'SelectionNode'
-  readonly selection: SelectionNodeChild
+  readonly kind: 'SelectionNode';
+  readonly selection: SelectionNodeChild;
 }
 
 /**
@@ -30,33 +26,31 @@ export interface SelectionNode extends OperationNode {
  */
 export const SelectionNode = freeze({
   is(node: OperationNode): node is SelectionNode {
-    return node.kind === 'SelectionNode'
+    return node.kind === 'SelectionNode';
   },
 
   create(selection: SelectionNodeChild): SelectionNode {
     return freeze({
       kind: 'SelectionNode',
       selection: selection,
-    })
+    });
   },
 
   createSelectAll(): SelectionNode {
     return freeze({
       kind: 'SelectionNode',
       selection: SelectAllNode.create(),
-    })
+    });
   },
 
   createSelectAllFromTable(table: TableNode): SelectionNode {
     return freeze({
       kind: 'SelectionNode',
       selection: ReferenceNode.createSelectAll(table),
-    })
+    });
   },
 
-  createValueSelection(
-    expression: SimpleReferenceExpressionNode | AliasNode,
-  ): SelectionNode {
+  createValueSelection(expression: SimpleReferenceExpressionNode | AliasNode | OperationNode): SelectionNode {
     return freeze({
       kind: 'SelectionNode',
       selection: {
@@ -64,25 +58,23 @@ export const SelectionNode = freeze({
         value: SelectValueNode.create(),
         expression,
       },
-    })
+    });
   },
-})
+});
 
 /**
  * @internal
  */
 export const ValueSelectionNode = freeze({
   is(node: OperationNode): node is ValueSelectionNode {
-    return node.kind === 'ValueSelectionNode'
+    return node.kind === 'ValueSelectionNode';
   },
 
-  create(
-    expression: SimpleReferenceExpressionNode | AliasNode,
-  ): ValueSelectionNode {
+  create(expression: SimpleReferenceExpressionNode | AliasNode | OperationNode): ValueSelectionNode {
     return freeze({
       kind: 'ValueSelectionNode',
       value: SelectValueNode.create(),
       expression,
-    })
+    });
   },
-})
+});
