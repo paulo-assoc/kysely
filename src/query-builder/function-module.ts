@@ -928,9 +928,9 @@ export interface FunctionModule<DB, TB extends keyof DB> {
 
   getCurrentTimestampStatic(): ExpressionWrapper<DB, TB, number>;
 
-  ticksToDateTime(ticks: number): ExpressionWrapper<DB, TB, string>;
+  ticksToDateTime<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number>;
 
-  timestampToDateTime(timestamp: number): ExpressionWrapper<DB, TB, string>;
+  timestampToDateTime<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number>;
 
   // Full Text Search functions
 
@@ -1850,12 +1850,16 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       return new ExpressionWrapper(FunctionNode.create('GetCurrentTimestampStatic', []));
     },
 
-    ticksToDateTime(ticks: number): ExpressionWrapper<DB, TB, string> {
-      return new ExpressionWrapper(FunctionNode.create('TicksToDateTime', [sql`${ticks}`.toOperationNode()]));
+    ticksToDateTime<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number> {
+      return new ExpressionWrapper(
+        FunctionNode.create('TicksToDateTime', [isString(column) ? parseReferenceExpression(column) : sql`${column}`.toOperationNode()])
+      );
     },
 
-    timestampToDateTime(timestamp: number): ExpressionWrapper<DB, TB, string> {
-      return new ExpressionWrapper(FunctionNode.create('TimestampToDateTime', [sql`${timestamp}`.toOperationNode()]));
+    timestampToDateTime<RE extends ReferenceExpression<DB, TB>>(column: number | RE): ExpressionWrapper<DB, TB, number> {
+      return new ExpressionWrapper(
+        FunctionNode.create('TimestampToDateTime', [isString(column) ? parseReferenceExpression(column) : sql`${column}`.toOperationNode()])
+      );
     },
 
     fullTextContains<RE extends AnyReference<DB, TB>>(property: RE, searchString: string): ExpressionWrapper<DB, TB, boolean> {
