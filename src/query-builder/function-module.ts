@@ -1025,7 +1025,8 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    */
   arrayContains<P extends ArrayReference<DB, TB>>(
     property: P,
-    value: Partial<ExtractArrayItemTypeWithTable<DB, TB, P>>
+    value: Partial<ExtractArrayItemTypeWithTable<DB, TB, P>>,
+    partialMatch?: boolean
   ): ExpressionWrapper<DB, TB, boolean>;
 
   /**
@@ -1958,14 +1959,16 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
 
     arrayContains<P extends ArrayReference<DB, TB>>(
       property: P,
-      value: Partial<ExtractArrayItemTypeWithTable<DB, TB, P>>
+      value: Partial<ExtractArrayItemTypeWithTable<DB, TB, P>>,
+      partialMatch?: boolean
     ): ExpressionWrapper<DB, TB, boolean> {
-      return new ExpressionWrapper(
-        FunctionNode.create('ARRAY_CONTAINS', [
-          parseReferenceExpression(property), // Parse property as a reference
-          sql`${value}`.toOperationNode(), // Pass value as a literal
-        ])
-      );
+      const args = [parseReferenceExpression(property), sql`${value}`.toOperationNode()];
+
+      if (partialMatch !== undefined) {
+        args.push(sql`${partialMatch}`.toOperationNode());
+      }
+
+      return new ExpressionWrapper<DB, TB, boolean>(FunctionNode.create('ARRAY_CONTAINS', args));
     },
 
     arrayContainsAny<P extends ArrayReference<DB, TB>>(
