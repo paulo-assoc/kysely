@@ -1,188 +1,188 @@
-import { ShallowRecord } from './type-utils.js'
+import { Temporal } from 'temporal-polyfill';
+import { ShallowRecord } from './type-utils.js';
 
 export function isEmpty(obj: ArrayLike<unknown> | string | object): boolean {
   if (Array.isArray(obj) || isString(obj) || isBuffer(obj)) {
-    return obj.length === 0
+    return obj.length === 0;
   } else if (obj) {
-    return Object.keys(obj).length === 0
+    return Object.keys(obj).length === 0;
   }
 
-  return false
+  return false;
 }
 
 export function isUndefined(obj: unknown): obj is undefined {
-  return typeof obj === 'undefined' || obj === undefined
+  return typeof obj === 'undefined' || obj === undefined;
 }
 
 export function isString(obj: unknown): obj is string {
-  return typeof obj === 'string'
+  return typeof obj === 'string';
 }
 
 export function isNumber(obj: unknown): obj is number {
-  return typeof obj === 'number'
+  return typeof obj === 'number';
 }
 
 export function isBoolean(obj: unknown): obj is boolean {
-  return typeof obj === 'boolean'
+  return typeof obj === 'boolean';
 }
 
 export function isNull(obj: unknown): obj is null {
-  return obj === null
+  return obj === null;
 }
 
 export function isDate(obj: unknown): obj is Date {
-  return obj instanceof Date
+  return obj instanceof Date;
+}
+
+export function isTemporalInstant(obj: unknown): obj is Temporal.Instant {
+  return obj instanceof Temporal.Instant;
+}
+
+export function isTemporalPlainDateTime(obj: unknown): obj is Temporal.PlainDateTime {
+  return obj instanceof Temporal.PlainDateTime;
+}
+
+export function isTemporalZonedDateTime(obj: unknown): obj is Temporal.ZonedDateTime {
+  return obj instanceof Temporal.ZonedDateTime;
 }
 
 export function isBigInt(obj: unknown): obj is bigint {
-  return typeof obj === 'bigint'
+  return typeof obj === 'bigint';
 }
 
-// Don't change the returnd type to `obj is Buffer` to not create a
+// Don't change the returned type to `obj is Buffer` to not create a
 // hard dependency to node.
 export function isBuffer(obj: unknown): obj is { length: number } {
-  return typeof Buffer !== 'undefined' && Buffer.isBuffer(obj)
+  return typeof Buffer !== 'undefined' && Buffer.isBuffer(obj);
 }
 
 export function isFunction(obj: unknown): obj is Function {
-  return typeof obj === 'function'
+  return typeof obj === 'function';
 }
 
 export function isObject(obj: unknown): obj is ShallowRecord<string, unknown> {
-  return typeof obj === 'object' && obj !== null
+  return typeof obj === 'object' && obj !== null;
 }
 
-export function isArrayBufferOrView(
-  obj: unknown,
-): obj is ArrayBuffer | ArrayBufferView {
-  return obj instanceof ArrayBuffer || ArrayBuffer.isView(obj)
+export function isArrayBufferOrView(obj: unknown): obj is ArrayBuffer | ArrayBufferView {
+  return obj instanceof ArrayBuffer || ArrayBuffer.isView(obj);
 }
 
 export function isPlainObject(obj: unknown): obj is Record<string, unknown> {
   if (!isObject(obj) || getTag(obj) !== '[object Object]') {
-    return false
+    return false;
   }
 
   if (Object.getPrototypeOf(obj) === null) {
-    return true
+    return true;
   }
 
-  let proto = obj
+  let proto = obj;
   while (Object.getPrototypeOf(proto) !== null) {
-    proto = Object.getPrototypeOf(proto)
+    proto = Object.getPrototypeOf(proto);
   }
 
-  return Object.getPrototypeOf(obj) === proto
+  return Object.getPrototypeOf(obj) === proto;
 }
 
 export function getLast<T>(arr: ArrayLike<T>): T | undefined {
-  return arr[arr.length - 1]
+  return arr[arr.length - 1];
 }
 
 export function freeze<T>(obj: T): Readonly<T> {
-  return Object.freeze(obj)
+  return Object.freeze(obj);
 }
 
 export function asArray<T>(arg: T | ReadonlyArray<T>): ReadonlyArray<T> {
   if (isReadonlyArray(arg)) {
-    return arg
+    return arg;
   } else {
-    return [arg]
+    return [arg];
   }
 }
 
-export function asReadonlyArray<T>(
-  arg: T | ReadonlyArray<T>,
-): ReadonlyArray<T> {
+export function asReadonlyArray<T>(arg: T | ReadonlyArray<T>): ReadonlyArray<T> {
   if (isReadonlyArray(arg)) {
-    return arg
+    return arg;
   } else {
-    return freeze([arg])
+    return freeze([arg]);
   }
 }
 
 export function isReadonlyArray(arg: unknown): arg is ReadonlyArray<unknown> {
-  return Array.isArray(arg)
+  return Array.isArray(arg);
 }
 
 export function noop<T>(obj: T): T {
-  return obj
+  return obj;
 }
 
 export function compare(obj1: unknown, obj2: unknown): boolean {
   if (isReadonlyArray(obj1) && isReadonlyArray(obj2)) {
-    return compareArrays(obj1, obj2)
+    return compareArrays(obj1, obj2);
   } else if (isObject(obj1) && isObject(obj2)) {
-    return compareObjects(obj1, obj2)
+    return compareObjects(obj1, obj2);
   }
 
-  return obj1 === obj2
+  return obj1 === obj2;
 }
 
-function compareArrays(
-  arr1: ReadonlyArray<unknown>,
-  arr2: ReadonlyArray<unknown>,
-): boolean {
+function compareArrays(arr1: ReadonlyArray<unknown>, arr2: ReadonlyArray<unknown>): boolean {
   if (arr1.length !== arr2.length) {
-    return false
+    return false;
   }
 
   for (let i = 0; i < arr1.length; ++i) {
     if (!compare(arr1[i], arr2[i])) {
-      return false
+      return false;
     }
   }
 
-  return true
+  return true;
 }
 
-function compareObjects(
-  obj1: Record<string, unknown>,
-  obj2: Record<string, unknown>,
-): boolean {
+function compareObjects(obj1: Record<string, unknown>, obj2: Record<string, unknown>): boolean {
   if (isBuffer(obj1) && isBuffer(obj2)) {
-    return compareBuffers(obj1, obj2)
+    return compareBuffers(obj1, obj2);
   } else if (isDate(obj1) && isDate(obj2)) {
-    return compareDates(obj1, obj2)
+    return compareDates(obj1, obj2);
   }
 
-  return compareGenericObjects(obj1, obj2)
+  return compareGenericObjects(obj1, obj2);
 }
 
 function compareBuffers(buf1: unknown, buf2: unknown): boolean {
-  return Buffer.compare(buf1 as any, buf2 as any) === 0
+  return Buffer.compare(buf1 as any, buf2 as any) === 0;
 }
 
 function compareDates(date1: Date, date2: Date) {
-  return date1.getTime() === date2.getTime()
+  return date1.getTime() === date2.getTime();
 }
 
-function compareGenericObjects(
-  obj1: Record<string, unknown>,
-  obj2: Record<string, unknown>,
-): boolean {
-  const keys1 = Object.keys(obj1)
-  const keys2 = Object.keys(obj2)
+function compareGenericObjects(obj1: Record<string, unknown>, obj2: Record<string, unknown>): boolean {
+  const keys1 = Object.keys(obj1);
+  const keys2 = Object.keys(obj2);
 
   if (keys1.length !== keys2.length) {
-    return false
+    return false;
   }
 
   for (const key of keys1) {
     if (!compare(obj1[key], obj2[key])) {
-      return false
+      return false;
     }
   }
 
-  return true
+  return true;
 }
 
-const toString = Object.prototype.toString
+const toString = Object.prototype.toString;
 
 function getTag(value: unknown): string {
   if (value == null) {
-    return value === undefined ? '[object Undefined]' : '[object Null]'
+    return value === undefined ? '[object Undefined]' : '[object Null]';
   }
 
-  return toString.call(value)
+  return toString.call(value);
 }

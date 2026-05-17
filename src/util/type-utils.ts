@@ -42,8 +42,8 @@ import { Temporal } from 'temporal-polyfill';
  * // Columns == 'id' | 'name' | 'species'
  * ```
  */
-export type TemporalDateTime = Temporal.Instant | Temporal.PlainDateTime | Temporal.ZonedDateTime;
-export type DateTime = Date | TemporalDateTime;
+
+export type DateTime = Date | Temporal.Instant;
 
 // Helper type to decrement depth
 type Decrement = [never, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];

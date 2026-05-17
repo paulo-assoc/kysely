@@ -20,7 +20,7 @@ import {
 } from '../parser/reference-parser.js';
 import { parseSelectAll } from '../parser/select-parser.js';
 // import { KyselyTypeError } from '../util/type-error.js'
-import { ExtractArrayItemTypeWithTable, IsNever, TemporalDateTime, DateTime } from '../util/type-utils.js';
+import { ExtractArrayItemTypeWithTable, IsNever, DateTime } from '../util/type-utils.js';
 import { AggregateFunctionBuilder } from './aggregate-function-builder.js';
 import { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js';
 import { isNull, isString } from '../util/object-utils.js';
@@ -1693,8 +1693,8 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
 
           isString(dateTime) // ie, an RE not a DateTime object
             ? parseReferenceExpression(dateTime)
-            : isTemporalDateTime(dateTime)
-              ? sql`${(dateTime as TemporalDateTime).toString()}`.toOperationNode()
+            : dateTime instanceof Temporal.Instant
+              ? sql`${(dateTime as Temporal.Instant).toString()}`.toOperationNode()
               : sql`${(dateTime as Date).toISOString()}`.toOperationNode(),
         ])
       );
@@ -1709,8 +1709,8 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       const args = [
         isString(dateTime)
           ? parseReferenceExpression(dateTime)
-          : isTemporalDateTime(dateTime)
-            ? sql`${(dateTime as TemporalDateTime).toString()}`.toOperationNode()
+          : dateTime instanceof Temporal.Instant
+            ? sql`${(dateTime as Temporal.Instant).toString()}`.toOperationNode()
             : sql`${(dateTime as Date).toISOString()}`.toOperationNode(),
         sql`${dateTimePart}`.toOperationNode(),
       ];
@@ -1723,8 +1723,8 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         args.push(
           typeof binStartDateTime === 'string'
             ? parseReferenceExpression(binStartDateTime)
-            : isTemporalDateTime(binStartDateTime)
-              ? sql`${(binStartDateTime as TemporalDateTime).toString()}`.toOperationNode()
+            : binStartDateTime instanceof Temporal.Instant
+              ? sql`${(binStartDateTime as Temporal.Instant).toString()}`.toOperationNode()
               : sql`${(binStartDateTime as Date).toISOString()}`.toOperationNode()
         );
       }
@@ -1743,14 +1743,14 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
 
           typeof startDateTime === 'string' // ie, an RE not a DateTime object
             ? parseReferenceExpression(startDateTime)
-            : isTemporalDateTime(startDateTime)
-              ? sql`${(startDateTime as TemporalDateTime).toString()}`.toOperationNode()
+            : startDateTime instanceof Temporal.Instant
+              ? sql`${(startDateTime as Temporal.Instant).toString()}`.toOperationNode()
               : sql`${(startDateTime as Date).toISOString()}`.toOperationNode(),
 
           typeof endDateTime === 'string' // ie, an RE not a DateTime object
             ? parseReferenceExpression(endDateTime)
-            : isTemporalDateTime(endDateTime)
-              ? sql`${(endDateTime as TemporalDateTime).toString()}`.toOperationNode()
+            : endDateTime instanceof Temporal.Instant
+              ? sql`${(endDateTime as Temporal.Instant).toString()}`.toOperationNode()
               : sql`${(endDateTime as Date).toISOString()}`.toOperationNode(),
         ])
       );
@@ -1796,8 +1796,8 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
 
           isString(dateTime) // ie, an RE not a DateTime object
             ? parseReferenceExpression(dateTime)
-            : isTemporalDateTime(dateTime)
-              ? sql`${(dateTime as TemporalDateTime).toString()}`.toOperationNode()
+            : dateTime instanceof Temporal.Instant
+              ? sql`${(dateTime as Temporal.Instant).toString()}`.toOperationNode()
               : sql`${(dateTime as Date).toISOString()}`.toOperationNode(),
         ])
       );
@@ -1808,8 +1808,8 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         FunctionNode.create('DateTimeToTicks', [
           isString(dateTime) // ie, an RE not a DateTime object
             ? parseReferenceExpression(dateTime)
-            : isTemporalDateTime(dateTime)
-              ? sql`${(dateTime as TemporalDateTime).toString()}`.toOperationNode()
+            : dateTime instanceof Temporal.Instant
+              ? sql`${(dateTime as Temporal.Instant).toString()}`.toOperationNode()
               : sql`${(dateTime as Date).toISOString()}`.toOperationNode(),
         ])
       );
@@ -1820,8 +1820,8 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         FunctionNode.create('DateTimeToTimestamp', [
           isString(dateTime) // ie, an RE not a DateTime object
             ? parseReferenceExpression(dateTime)
-            : isTemporalDateTime(dateTime)
-              ? sql`${(dateTime as TemporalDateTime).toString()}`.toOperationNode()
+            : dateTime instanceof Temporal.Instant
+              ? sql`${(dateTime as Temporal.Instant).toString()}`.toOperationNode()
               : sql`${(dateTime as Date).toISOString()}`.toOperationNode(),
         ])
       );
@@ -2130,7 +2130,3 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
     },
   });
 }
-
-const isTemporalDateTime = (value: unknown): value is TemporalDateTime => {
-  return value instanceof Temporal.Instant || value instanceof Temporal.PlainDateTime || value instanceof Temporal.ZonedDateTime;
-};

@@ -44,7 +44,18 @@ import { ValueNode } from '../operation-node/value-node.js';
 import { WhereNode } from '../operation-node/where-node.js';
 import { CommonTableExpressionNode } from '../operation-node/common-table-expression-node.js';
 import { WithNode } from '../operation-node/with-node.js';
-import { freeze, isString, isNumber, isBoolean, isNull, isDate, isBigInt } from '../util/object-utils.js';
+import {
+  freeze,
+  isString,
+  isNumber,
+  isBoolean,
+  isNull,
+  isDate,
+  isBigInt,
+  isTemporalInstant,
+  isTemporalZonedDateTime,
+  isTemporalPlainDateTime,
+} from '../util/object-utils.js';
 import { CompiledQuery } from './compiled-query.js';
 import { RootOperationNode, QueryCompiler } from './query-compiler.js';
 import { HavingNode } from '../operation-node/having-node.js';
@@ -1787,8 +1798,17 @@ export class DefaultQueryCompiler extends OperationNodeVisitor implements QueryC
   }
 
   protected addParameter(parameter: unknown): void {
+    // this.#parameters.push(this.normalizeParameter(parameter));
     this.#parameters.push(parameter);
   }
+
+  // protected normalizeParameter(parameter: unknown): unknown {
+  //   if (isTemporalInstant(parameter)) {
+  //     return parameter.toString();
+  //   }
+
+  //   return parameter;
+  // }
 
   protected appendImmediateValue(value: unknown): void {
     if (isString(value)) {
@@ -1799,6 +1819,12 @@ export class DefaultQueryCompiler extends OperationNodeVisitor implements QueryC
       this.append('null');
     } else if (isDate(value)) {
       this.appendImmediateValue(value.toISOString());
+    } else if (isTemporalInstant(value)) {
+      this.appendImmediateValue(value.toString());
+    } else if (isTemporalPlainDateTime(value)) {
+      this.appendImmediateValue(value.toString());
+    } else if (isTemporalZonedDateTime(value)) {
+      this.appendImmediateValue(value.toString());
     } else if (isBigInt(value)) {
       this.appendImmediateValue(value.toString());
     } else {
